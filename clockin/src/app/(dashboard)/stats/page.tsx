@@ -33,7 +33,7 @@ function StatCard({
   label,
   gradient,
 }: {
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   value: string | number;
   label: string;
   gradient: string;

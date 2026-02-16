@@ -18,6 +18,7 @@ import { POMODORO_PRESETS } from "@/lib/constants";
 import { BACKGROUND_IMAGES } from "@/data/background-images";
 import { VIDEO_BACKGROUNDS } from "@/data/video-backgrounds";
 import { AnimatedBackground } from "@/components/focus/animated-background";
+import { DreamCrystal } from "@/components/focus/dream-crystal";
 import { Video } from "lucide-react";
 import {
   Play,
@@ -472,17 +473,27 @@ export default function FocusPage() {
 
         {/* Main Timer Content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full">
-          {/* Circular Timer */}
-          <CircularProgress progress={progress} size={360} strokeWidth={6}>
-            <div className="text-center">
-              <div className="text-7xl sm:text-8xl font-mono font-bold text-white tracking-tight tabular-nums drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]">
+          {/* 3D Dream Crystal Visualization */}
+          <div className="relative w-[360px] h-[360px] sm:w-[420px] sm:h-[420px]">
+            <DreamCrystal
+              progress={progress}
+              phase={phase}
+              cycle={cycle}
+              totalCycles={totalCycles}
+              isComplete={showComplete}
+              className="absolute inset-0"
+            />
+
+            {/* Timer overlay on crystal */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <div className="text-6xl sm:text-7xl font-mono font-bold text-white tracking-tight tabular-nums drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
                 {formatted}
               </div>
-              <p className="mt-3 text-white text-sm font-bold bg-black/60 backdrop-blur-sm px-4 py-1.5 rounded-full inline-block border border-white/20 shadow-lg">
+              <p className="mt-2 text-white/90 text-sm font-bold bg-black/50 backdrop-blur-sm px-4 py-1.5 rounded-full inline-block border border-white/20 shadow-lg">
                 Cycle {cycle} of {totalCycles}
               </p>
             </div>
-          </CircularProgress>
+          </div>
 
           {/* Cycle Indicators */}
           <div className="mt-8 flex items-center gap-2">

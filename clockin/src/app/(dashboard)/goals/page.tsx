@@ -46,7 +46,7 @@ function StreakCard({
   label,
   gradient,
 }: {
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   value: number;
   label: string;
   gradient: string;

@@ -48,7 +48,7 @@ function StatCard({
   gradient,
   delay = 0,
 }: {
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   value: string | number;
   label: string;
   gradient: string;
