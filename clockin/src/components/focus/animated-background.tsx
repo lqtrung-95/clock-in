@@ -5,9 +5,10 @@ import { cn } from "@/lib/utils";
 
 interface AnimatedBackgroundProps {
   imageUrl?: string;
-  videoUrl?: string;
+  embedUrl?: string;
   overlay?: "none" | "aurora" | "particles" | "vignette" | "gradient" | "rain";
   className?: string;
+  videoMuted?: boolean;
 }
 
 // Aurora Overlay - flowing lights on top of image/video
@@ -231,53 +232,38 @@ function BaseImage({ url }: { url: string }) {
   );
 }
 
-// Video Background Component with error handling
-function VideoBackground({ url, fallbackImage }: { url: string; fallbackImage?: string }) {
-  const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setHasError(false);
-    setIsLoading(true);
-  }, [url]);
-
-  if (hasError && fallbackImage) {
-    return <BaseImage url={fallbackImage} />;
-  }
+// YouTube Background Component
+function VideoBackground({ embedUrl, muted = true }: { embedUrl: string; muted?: boolean }) {
+  // Replace mute parameter in URL based on muted state
+  const url = embedUrl.replace(/mute=[01]/, `mute=${muted ? 1 : 0}`);
 
   return (
-    <>
-      {isLoading && fallbackImage && (
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-opacity duration-500"
-          style={{ backgroundImage: `url(${fallbackImage})` }}
-        />
-      )}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        crossOrigin="anonymous"
-        className={cn(
-          "absolute inset-0 h-full w-full object-cover transition-opacity duration-500",
-          isLoading ? "opacity-0" : "opacity-100"
-        )}
-        onLoadedData={() => setIsLoading(false)}
-        onError={() => setHasError(true)}
-      >
-        <source src={url} type="video/mp4" />
-      </video>
-    </>
+    <div className="absolute inset-0">
+      <iframe
+        key={url} // Force re-render when muted state changes
+        src={url}
+        className="absolute inset-0 h-full w-full"
+        style={{
+          position: 'absolute',
+          top: '-60px',
+          left: 0,
+          width: '100vw',
+          height: 'calc(100vh + 120px)',
+          pointerEvents: 'none',
+        }}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    </div>
   );
 }
 
-export function AnimatedBackground({ imageUrl, videoUrl, overlay = "none", className }: AnimatedBackgroundProps) {
+export function AnimatedBackground({ imageUrl, embedUrl, overlay = "none", className, videoMuted = true }: AnimatedBackgroundProps) {
   return (
     <div className={cn("absolute inset-0 overflow-hidden", className)}>
-      {/* Base Layer - Image or Video */}
-      {videoUrl ? (
-        <VideoBackground url={videoUrl} fallbackImage={imageUrl} />
+      {/* Base Layer - Image or YouTube Embed */}
+      {embedUrl ? (
+        <VideoBackground embedUrl={embedUrl} muted={videoMuted} />
       ) : imageUrl ? (
         <BaseImage url={imageUrl} />
       ) : null}

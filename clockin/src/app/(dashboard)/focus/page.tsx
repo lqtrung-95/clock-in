@@ -4,6 +4,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { usePomodoro } from "@/hooks/use-pomodoro";
 import { usePomodoroStore } from "@/stores/pomodoro-store";
+import { useCategoryStore } from "@/stores/category-store";
+import { timeEntryService } from "@/services/time-entry-service";
+import { useAuthState } from "@/hooks/use-auth-state";
+import { createClient } from "@/lib/supabase/client";
+import { guestStorage } from "@/lib/guest-storage";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
@@ -22,17 +27,12 @@ import {
   Brain,
   Volume2,
   VolumeX,
-  ImageIcon,
   Maximize,
   Minimize,
-  Music,
   Clock,
-  Youtube,
-  Headphones,
-  X,
-  AlertTriangle,
   Sparkles,
   CheckCircle2,
+  Tag,
 } from "lucide-react";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
@@ -45,22 +45,6 @@ const AMBIENT_SOUNDS = [
   { name: "Thunder", src: "https://actions.google.com/sounds/v1/weather/thunder_crack.ogg", volume: 1 },
 ];
 
-const YOUTUBE_SUGGESTIONS = [
-  { title: "Lofi Girl - Study Beats", url: "https://www.youtube.com/watch?v=jfKfPfyJRdk", category: "Music" },
-  { title: "Rain Sounds 10 Hours", url: "https://www.youtube.com/watch?v=8plwv25NYRo", category: "Nature" },
-  { title: "Coffee Shop Ambience", url: "https://www.youtube.com/watch?v=7NOSDKb0HlU", category: "Ambience" },
-  { title: "Deep Focus Music", url: "https://www.youtube.com/watch?v=WPni755-Krg", category: "Music" },
-  { title: "Forest Sounds Birds", url: "https://www.youtube.com/watch?v=8myYyMg1fFE", category: "Nature" },
-  { title: "Ocean Waves Sleep", url: "https://www.youtube.com/watch?v=1ZYbU82GVz4", category: "Nature" },
-  { title: "Jazz Cafe Music", url: "https://www.youtube.com/watch?v=Dx5qFachd3A", category: "Music" },
-  { title: "Fireplace Crackling", url: "https://www.youtube.com/watch?v=L_LUpnjgPso", category: "Ambience" },
-  { title: "Classical Piano Focus", url: "https://www.youtube.com/watch?v=4oSfwxuvSRM", category: "Music" },
-  { title: "Thunderstorm Sounds", url: "https://www.youtube.com/watch?v=nDq6TstdEi8", category: "Nature" },
-  { title: "Ambient Study Music", url: "https://www.youtube.com/watch?v=5qap5aO4i9A", category: "Music" },
-  { title: "Nature Sounds Forest", url: "https://www.youtube.com/watch?v=xNN7iTA57jM", category: "Nature" },
-];
-
-type AudioSource = "ambient" | "youtube";
 type OverlayType = "none" | "aurora" | "particles" | "vignette" | "gradient" | "rain";
 
 // Circular Progress Component
@@ -131,16 +115,20 @@ export default function FocusPage() {
 
   const [selectedPreset, setSelectedPreset] = useState<keyof typeof POMODORO_PRESETS>("25/5");
   const [background, setBackground] = useState<string>("https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&q=80");
-  const [videoUrl, setVideoUrl] = useState<string>("");
+  const [videoEmbedUrl, setVideoEmbedUrl] = useState<string>("");
   const [overlay, setOverlay] = useState<OverlayType>("none");
   const [selectedSound, setSelectedSound] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [showComplete, setShowComplete] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [audioSource, setAudioSource] = useState<AudioSource>("youtube");
-  const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [embedUrl, setEmbedUrl] = useState("");
-  const [youtubeSearch, setYoutubeSearch] = useState("");
+  const [videoMuted, setVideoMuted] = useState(false);
+  const [bgOpacity, setBgOpacity] = useState(50); // 0-100, default 50%
+
+  // Category and auth
+  const { categories, setCategories } = useCategoryStore();
+  const { isAuthenticated } = useAuthState();
+  const supabase = createClient();
 
   // Audio refs for ambient sound
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -153,25 +141,29 @@ export default function FocusPage() {
   }, []);
   const [audioEnabled, setAudioEnabled] = useState(false);
 
-  const preset = POMODORO_PRESETS[selectedPreset];
-
-  // Parse YouTube URL to embed format
-  const getYoutubeEmbedUrl = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    const videoId = match && match[2].length === 11 ? match[2] : null;
-    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}` : "";
-  };
-
-  // Initialize embed when URL changes
+  // Load categories
   useEffect(() => {
-    if (audioSource === "youtube" && youtubeUrl) {
-      const embed = getYoutubeEmbedUrl(youtubeUrl);
-      setEmbedUrl(embed);
-    } else {
-      setEmbedUrl("");
+    async function loadCategories() {
+      if (isAuthenticated) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase
+            .from("categories")
+            .select("*")
+            .eq("user_id", user.id)
+            .eq("is_archived", false)
+            .order("name");
+          if (data) setCategories(data);
+        }
+      } else {
+        const cats = guestStorage.getCategories();
+        setCategories(cats as unknown as typeof categories);
+      }
     }
-  }, [audioSource, youtubeUrl]);
+    loadCategories();
+  }, [isAuthenticated]);
+
+  const preset = POMODORO_PRESETS[selectedPreset];
 
   // Initialize audio - create new Audio element each time to avoid issues
   const initAudio = useCallback(() => {
@@ -192,7 +184,7 @@ export default function FocusPage() {
   }, [selectedSound, volume]);
 
   const playAudio = useCallback(async () => {
-    if (audioSource !== "ambient" || !selectedSound) return true;
+    if (!selectedSound) return true;
 
     initAudio();
     if (!audioRef.current) return false;
@@ -206,7 +198,7 @@ export default function FocusPage() {
       console.error("Audio play failed:", err);
       return false;
     }
-  }, [audioSource, selectedSound, initAudio]);
+  }, [selectedSound, initAudio]);
 
   const pauseAudio = useCallback(() => {
     audioRef.current?.pause();
@@ -232,6 +224,45 @@ export default function FocusPage() {
     };
   }, []);
 
+  // Save time entry helper
+  const saveTimeEntry = useCallback(async () => {
+    if (!selectedCategory) return;
+
+    const workDuration = preset.work * 60; // convert minutes to seconds
+    const startedAt = new Date(Date.now() - workDuration * 1000);
+
+    if (isAuthenticated) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      try {
+        await timeEntryService.createManualEntry({
+          user_id: user.id,
+          category_id: selectedCategory,
+          started_at: startedAt.toISOString(),
+          ended_at: new Date().toISOString(),
+          duration_seconds: workDuration,
+          notes: `Focus session (${selectedPreset})`,
+        });
+        toast.success("Time tracked successfully!");
+      } catch (error) {
+        console.error("Failed to save time entry:", error);
+        toast.error("Failed to save time entry");
+      }
+    } else {
+      // Guest mode - save to localStorage
+      guestStorage.addEntry({
+        category_id: selectedCategory,
+        started_at: startedAt.toISOString(),
+        ended_at: new Date().toISOString(),
+        duration_seconds: workDuration,
+        notes: `Focus session (${selectedPreset})`,
+        entry_type: "manual",
+      });
+      toast.success("Time saved locally!");
+    }
+  }, [selectedCategory, preset.work, selectedPreset, isAuthenticated]);
+
   // Auto-complete
   useEffect(() => {
     if (phase !== "idle" && remaining <= 0 && !showComplete) {
@@ -239,6 +270,8 @@ export default function FocusPage() {
       if (isWork) {
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
         toast.success("Work session complete! Take a break.");
+        // Save time entry for work session
+        saveTimeEntry();
       } else {
         toast.info("Break over! Ready to focus?");
       }
@@ -246,7 +279,7 @@ export default function FocusPage() {
       completePhase();
       setShowComplete(false);
     }
-  }, [remaining, phase, isWork, completePhase, showComplete, pauseAudio]);
+  }, [remaining, phase, isWork, completePhase, showComplete, pauseAudio, saveTimeEntry]);
 
   // Fullscreen
   const toggleFullscreen = useCallback(() => {
@@ -288,15 +321,19 @@ export default function FocusPage() {
 
 
   async function handleStart() {
+    if (!selectedCategory) {
+      toast.error("Please select what you're working on first!");
+      return;
+    }
     start(preset.work, preset.break, 4);
-    if (audioSource === "ambient" && selectedSound) {
+    if (selectedSound) {
       setAudioEnabled(true);
       const success = await playAudio();
       if (!success) {
         toast.info("Click the volume icon to enable audio");
       }
     }
-    toast.success("Pomodoro started!");
+    toast.success("Focus session started!");
   }
 
   function handleReset() {
@@ -311,7 +348,7 @@ export default function FocusPage() {
 
   async function handleResume() {
     resume();
-    if (audioSource === "ambient" && selectedSound && audioEnabled) {
+    if (selectedSound && audioEnabled) {
       await playAudio();
     }
   }
@@ -322,11 +359,15 @@ export default function FocusPage() {
       <div className="fixed inset-0 z-50 overflow-hidden">
         {/* Animated Background */}
         <AnimatedBackground
-          imageUrl={videoUrl ? undefined : background}
-          videoUrl={videoUrl || undefined}
+          imageUrl={videoEmbedUrl ? undefined : background}
+          embedUrl={videoEmbedUrl || undefined}
           overlay={overlay}
+          videoMuted={videoMuted}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-black via-black to-black transition-opacity duration-300"
+          style={{ opacity: bgOpacity / 100 }}
+        />
 
         {/* Top Bar */}
         <div
@@ -337,27 +378,42 @@ export default function FocusPage() {
         >
           <div className="flex items-center gap-3">
             <div className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md",
-              isWork ? "bg-blue-500/20 border border-blue-400/30" : "bg-orange-500/20 border border-orange-400/30"
+              "flex items-center gap-2 px-4 py-2.5 rounded-full backdrop-blur-md shadow-lg",
+              isWork
+                ? "bg-gradient-to-r from-blue-600/80 to-cyan-600/80 border border-blue-400/50 shadow-blue-500/20"
+                : "bg-gradient-to-r from-orange-600/80 to-amber-600/80 border border-orange-400/50 shadow-orange-500/20"
             )}>
               {isWork ? (
-                <Brain className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <Brain className="h-5 w-5 text-white drop-shadow-sm" />
               ) : (
-                <Coffee className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                <Coffee className="h-5 w-5 text-white drop-shadow-sm" />
               )}
-              <span className={cn("font-semibold text-sm", isWork ? "text-blue-700 dark:text-blue-300" : "text-orange-700 dark:text-orange-300")}>
+              <span className="font-bold text-sm text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] tracking-wide">
                 {isWork ? "Focus Time" : "Break Time"}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {audioSource === "ambient" && selectedSound && (
+            {/* Video mute button - only for video backgrounds */}
+            {videoEmbedUrl && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setVideoMuted(!videoMuted)}
+                className="text-white/90 hover:text-white hover:bg-white/20 backdrop-blur-sm"
+                title={videoMuted ? "Unmute video" : "Mute video"}
+              >
+                {videoMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+              </Button>
+            )}
+            {/* Ambient sound button - only for static images with sound */}
+            {!videoEmbedUrl && selectedSound && (
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => isPlaying ? pauseAudio() : playAudio()}
-                className="text-white/80 hover:text-white hover:bg-white/20"
+                className="text-white/90 hover:text-white hover:bg-white/20 backdrop-blur-sm"
               >
                 {isPlaying ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
               </Button>
@@ -366,15 +422,15 @@ export default function FocusPage() {
               variant="ghost"
               size="icon"
               onClick={toggleFullscreen}
-              className="text-white/80 hover:text-white hover:bg-white/20"
+              className="text-white/90 hover:text-white hover:bg-white/20 backdrop-blur-sm"
             >
               {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
             </Button>
           </div>
         </div>
 
-        {/* Volume Slider */}
-        {audioSource === "ambient" && selectedSound && isPlaying && (
+        {/* Volume Slider - only for ambient sound */}
+        {!videoEmbedUrl && selectedSound && isPlaying && (
           <div
             className={cn(
               "absolute top-20 right-6 z-20 flex items-center gap-2 rounded-full bg-black/60 backdrop-blur-md px-4 py-2 border border-white/20 transition-all",
@@ -391,6 +447,28 @@ export default function FocusPage() {
             />
           </div>
         )}
+
+        {/* Background Brightness Control */}
+        <div
+          className={cn(
+            "absolute top-20 left-6 z-20 flex flex-col gap-1 rounded-xl bg-black/60 backdrop-blur-md px-3 py-2 border border-white/20 transition-all",
+            showControls ? "opacity-100" : "opacity-0"
+          )}
+        >
+          <span className="text-[10px] text-white/60 uppercase tracking-wider font-medium">Brightness</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-white/40">Dark</span>
+            <Slider
+              value={[bgOpacity]}
+              onValueChange={([v]) => setBgOpacity(v)}
+              max={90}
+              min={10}
+              step={5}
+              className="w-20"
+            />
+            <span className="text-xs text-white/40">Light</span>
+          </div>
+        </div>
 
         {/* Main Timer Content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full">
@@ -427,66 +505,40 @@ export default function FocusPage() {
         {/* Bottom Controls */}
         <div
           className={cn(
-            "absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4 transition-all duration-500",
+            "absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 transition-all duration-500",
             showControls ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           )}
         >
           {isRunning ? (
             <Button
               variant="outline"
-              size="lg"
+              size="sm"
               onClick={handlePause}
-              className="rounded-full px-8 bg-card/80 backdrop-blur-md border-border text-foreground hover:bg-muted hover:text-foreground"
+              className="h-10 px-5 rounded-full bg-white/10 backdrop-blur-xl border-2 border-white/40 text-white font-medium text-sm shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:bg-white/20 hover:border-white/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.25)] hover:scale-105 transition-all duration-300 gap-2"
             >
-              <Pause className="mr-2 h-5 w-5" />
+              <Pause className="h-4 w-4 fill-current" />
               Pause
             </Button>
           ) : (
             <Button
-              size="lg"
+              size="sm"
               onClick={handleResume}
-              className="rounded-full px-8 bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 shadow-lg shadow-blue-500/25"
+              className="h-10 px-5 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-medium text-sm shadow-[0_0_20px_rgba(59,130,246,0.5)] hover:shadow-[0_0_30px_rgba(59,130,246,0.7)] hover:scale-105 transition-all duration-300 border-0 gap-2"
             >
-              <Play className="mr-2 h-5 w-5" />
+              <Play className="h-4 w-4 fill-current" />
               Resume
             </Button>
           )}
           <Button
             variant="outline"
-            size="lg"
+            size="sm"
             onClick={handleReset}
-            className="rounded-full px-8 bg-red-500/20 backdrop-blur-md border-red-500/30 text-red-600 dark:text-red-300 hover:bg-red-500/30 hover:text-red-700 dark:hover:text-red-200"
+            className="h-10 px-5 rounded-full bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-xl border-2 border-red-400/50 text-white font-medium text-sm shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:from-red-500/30 hover:to-orange-500/30 hover:border-red-400/70 hover:shadow-[0_0_30px_rgba(239,68,68,0.4)] hover:scale-105 transition-all duration-300 gap-2"
           >
-            <RotateCcw className="mr-2 h-5 w-5" />
+            <RotateCcw className="h-4 w-4" />
             Stop
           </Button>
         </div>
-
-        {/* YouTube Embed */}
-        {embedUrl && (
-          <div
-            className={cn(
-              "absolute bottom-24 left-1/2 -translate-x-1/2 z-20 transition-all",
-              showControls ? "opacity-100" : "opacity-0"
-            )}
-          >
-            <div className="relative rounded-xl overflow-hidden shadow-2xl border border-border">
-              <iframe
-                src={embedUrl}
-                width="320"
-                height="180"
-                allow="autoplay; encrypted-media"
-                className="rounded-xl"
-              />
-              <button
-                onClick={() => setEmbedUrl("")}
-                className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </div>
-          </div>
-        )}
 
       </div>
     );
@@ -555,31 +607,76 @@ export default function FocusPage() {
             </div>
           </div>
 
-          {/* Background Selection */}
+          {/* Category Selection */}
           <div className="mb-8">
             <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-4">
-              <ImageIcon className="h-4 w-4 text-purple-400" />
-              Background
+              <Tag className="h-4 w-4 text-emerald-400" />
+              What are you working on?
+            </label>
+            {categories.length > 0 ? (
+              <div className="flex gap-2 flex-wrap">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={cn(
+                      "px-4 py-2 rounded-xl border-2 text-sm font-medium transition-all flex items-center gap-2",
+                      selectedCategory === cat.id
+                        ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
+                        : "border-border bg-card text-foreground/80 hover:border-foreground/30 hover:text-foreground"
+                    )}
+                  >
+                    {cat.color && (
+                      <span
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: cat.color }}
+                      />
+                    )}
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                No categories yet. {" "}
+                <button
+                  onClick={() => router.push("/categories")}
+                  className="text-blue-500 hover:underline"
+                >
+                  Create one
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Atmosphere */}
+          <div className="mb-8">
+            <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-4">
+              <Sparkles className="h-4 w-4 text-purple-400" />
+              Atmosphere
             </label>
 
-            {/* Video Backgrounds */}
+            {/* Video Scenes */}
             <div className="mb-4">
               <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
                 <Video className="h-3 w-3" />
-                Videos (Live)
+                Live Videos
               </p>
               <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                 {VIDEO_BACKGROUNDS.map((video) => (
                   <button
                     key={video.id}
                     onClick={() => {
-                      setVideoUrl(video.url);
+                      setVideoEmbedUrl(video.embedUrl);
                       setBackground("");
+                      setOverlay("none");
+                      setSelectedSound("");
+                      pauseAudio();
                     }}
                     className={cn(
                       "shrink-0 relative w-24 h-16 rounded-lg overflow-hidden border-2 transition-all",
-                      videoUrl === video.url
-                        ? "border-red-500 ring-2 ring-red-500/20"
+                      videoEmbedUrl === video.embedUrl
+                        ? "border-purple-500 ring-2 ring-purple-500/20"
                         : "border-border hover:border-foreground/30"
                     )}
                   >
@@ -599,20 +696,20 @@ export default function FocusPage() {
               </div>
             </div>
 
-            {/* Background Images */}
-            <div className="mb-4">
-              <p className="text-xs text-muted-foreground mb-2">Static Images</p>
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {/* Static Scenes */}
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">Static Scenes</p>
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide mb-3">
                 {BACKGROUND_IMAGES.filter((b) => b.src).map((bg) => (
                   <button
                     key={bg.id}
                     onClick={() => {
                       setBackground(bg.src);
-                      setVideoUrl("");
+                      setVideoEmbedUrl("");
                     }}
                     className={cn(
                       "shrink-0 relative w-24 h-16 rounded-lg overflow-hidden border-2 transition-all",
-                      background === bg.src && !videoUrl
+                      background === bg.src && !videoEmbedUrl
                         ? "border-purple-500 ring-2 ring-purple-500/20"
                         : "border-border hover:border-foreground/30"
                     )}
@@ -624,19 +721,14 @@ export default function FocusPage() {
                   </button>
                 ))}
               </div>
-            </div>
 
-            {/* Overlay Effects - Only for images */}
-            {!videoUrl && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">Effect (optional)</p>
-                <div className="flex gap-2 flex-wrap">
+              {/* Effects - Only for static */}
+              {!videoEmbedUrl && (
+                <div className="flex gap-2 flex-wrap mb-3">
                   {[
                     { id: "none", name: "None" },
                     { id: "aurora", name: "Aurora" },
                     { id: "particles", name: "Stars" },
-                    { id: "vignette", name: "Vignette" },
-                    { id: "gradient", name: "Color" },
                     { id: "rain", name: "Rain" },
                   ].map((fx) => (
                     <button
@@ -653,91 +745,58 @@ export default function FocusPage() {
                     </button>
                   ))}
                 </div>
-              </div>
-            )}
-          </div>
+              )}
 
-          {/* Audio Source */}
-          <div className="mb-8">
-            <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-4">
-              <Headphones className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
-              Background Sound
-            </label>
-            <div className="flex gap-2 mb-4">
-              <button
-                onClick={() => setAudioSource("ambient")}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all",
-                  audioSource === "ambient"
-                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
-                    : "border-border bg-card text-foreground/80 hover:border-foreground/30 hover:text-foreground"
-                )}
-              >
-                <Music className="h-4 w-4" />
-                Ambient
-              </button>
-              <button
-                onClick={() => setAudioSource("youtube")}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all",
-                  audioSource === "youtube"
-                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
-                    : "border-border bg-card text-foreground/80 hover:border-foreground/30 hover:text-foreground"
-                )}
-              >
-                <Youtube className="h-4 w-4" />
-                YouTube
-              </button>
-            </div>
-
-            {/* Ambient Sounds */}
-            {audioSource === "ambient" && (
-              <div className="space-y-3">
-                <div className="flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => {
-                      setSelectedSound("");
-                      pauseAudio();
-                    }}
-                    className={cn(
-                      "px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all",
-                      !selectedSound
-                        ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
-                        : "border-border bg-card text-foreground/80 hover:border-foreground/30"
-                    )}
-                  >
-                    None
-                  </button>
-                  {AMBIENT_SOUNDS.map((sound) => (
+              {/* Ambient Sound - Only for static images */}
+              {!videoEmbedUrl && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">Sound</p>
+                  <div className="flex gap-2 flex-wrap">
                     <button
-                      key={sound.name}
-                      onClick={() => setSelectedSound(sound.src)}
+                      onClick={() => {
+                        setSelectedSound("");
+                        pauseAudio();
+                      }}
                       className={cn(
-                        "px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all",
-                        selectedSound === sound.src
+                        "px-3 py-1.5 rounded-lg border-2 text-xs font-medium transition-all",
+                        !selectedSound
                           ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
                           : "border-border bg-card text-foreground/80 hover:border-foreground/30"
                       )}
                     >
-                      {sound.name}
+                      None
                     </button>
-                  ))}
-                </div>
-                {selectedSound && (
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={async () => {
-                        if (isPlaying) {
-                          pauseAudio();
-                        } else {
-                          const success = await playAudio();
-                          if (!success) {
-                            toast.error("Audio playback blocked. Try clicking again.");
+                    {AMBIENT_SOUNDS.map((sound) => (
+                      <button
+                        key={sound.name}
+                        onClick={() => setSelectedSound(sound.src)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg border-2 text-xs font-medium transition-all",
+                          selectedSound === sound.src
+                            ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
+                            : "border-border bg-card text-foreground/80 hover:border-foreground/30"
+                        )}
+                      >
+                        {sound.name}
+                      </button>
+                    ))}
+                  </div>
+                  {selectedSound && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          if (isPlaying) {
+                            pauseAudio();
+                          } else {
+                            const success = await playAudio();
+                            if (!success) {
+                              toast.error("Audio playback blocked. Try clicking again.");
+                            }
                           }
                         }
-                      }}
+                      }
                       className="gap-2 border-border bg-card text-foreground/80 hover:bg-muted hover:text-foreground"
                     >
                       {isPlaying ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -750,67 +809,17 @@ export default function FocusPage() {
                 )}
               </div>
             )}
-
-            {/* YouTube Input */}
-            {audioSource === "youtube" && (
-              <div className="space-y-3">
-                <div className="relative">
-                  <Input
-                    placeholder="Paste YouTube URL or search below..."
-                    value={youtubeUrl}
-                    onChange={(e) => setYoutubeUrl(e.target.value)}
-                    className="bg-muted border-border text-foreground placeholder:text-muted-foreground pr-10"
-                  />
-                  {youtubeUrl && (
-                    <button
-                      onClick={() => setYoutubeUrl("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-foreground"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-                <div className="relative">
-                  <Input
-                    placeholder="Search suggestions..."
-                    value={youtubeSearch}
-                    onChange={(e) => setYoutubeSearch(e.target.value)}
-                    className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
-                  />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {YOUTUBE_SUGGESTIONS.filter(
-                    (s) =>
-                      !youtubeSearch ||
-                      s.title.toLowerCase().includes(youtubeSearch.toLowerCase()) ||
-                      s.category.toLowerCase().includes(youtubeSearch.toLowerCase())
-                  ).slice(0, 6).map((suggestion) => (
-                    <button
-                      key={suggestion.url}
-                      onClick={() => setYoutubeUrl(suggestion.url)}
-                      className={cn(
-                        "px-3 py-1.5 rounded-lg text-xs border transition-all",
-                        youtubeUrl === suggestion.url
-                          ? "border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-300"
-                          : "border-border bg-muted text-muted-foreground hover:border-foreground/30 hover:text-foreground"
-                      )}
-                    >
-                      <span className="font-medium">{suggestion.title}</span>
-                      <span className="ml-2 text-foreground/30">{suggestion.category}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Start Button */}
           <Button
             onClick={handleStart}
-            className="w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5"
+            disabled={!selectedCategory}
+            className="w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           >
             <Play className="mr-2 h-5 w-5 fill-current" />
-            Start Focus Session
+            {selectedCategory ? "Start Focus Session" : "Select a category to start"}
           </Button>
         </Card>
 
