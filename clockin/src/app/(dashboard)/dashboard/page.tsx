@@ -17,6 +17,7 @@ import { Progress } from "@/components/ui/progress";
 import { EntryList } from "@/components/entries/entry-list";
 import { TimerWidget } from "@/components/dashboard/timer-widget";
 import { LoginBanner, LoginPrompt } from "@/components/auth/login-prompt";
+import { DreamCrystalMini } from "@/components/focus/dream-crystal-mini";
 import {
   Clock,
   Flame,
@@ -243,8 +244,8 @@ export default function DashboardPage() {
         {/* Timer Widget - Show when tracking */}
         {status !== "idle" && <TimerWidget />}
 
-        {/* Stats Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Stats Grid with 3D Crystal */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <StatCard
             icon={Clock}
             value={todayStats.hours}
@@ -275,6 +276,16 @@ export default function DashboardPage() {
             gradient="from-emerald-500 to-teal-500"
             delay={300}
           />
+          {/* 3D Crystal Card */}
+          <Card className="group relative overflow-hidden border border-border bg-card p-4 transition-all duration-500 hover:-translate-y-1 hover:border-border/80 hover:bg-secondary flex items-center justify-center min-h-[120px]"
+            style={{ animationDelay: '400ms' }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+            <div className="relative flex flex-col items-center gap-2">
+              <DreamCrystalMini progress={Math.min(todayStats.hours * 10, 100)} size="sm" animate />
+              <span className="text-xs font-medium text-muted-foreground">Daily Energy</span>
+            </div>
+          </Card>
         </div>
 
         {/* Main Content Grid */}

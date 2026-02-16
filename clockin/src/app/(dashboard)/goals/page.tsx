@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { LoginPrompt } from "@/components/auth/login-prompt";
+import { DreamCrystalMini } from "@/components/focus/dream-crystal-mini";
 import { Plus, Flame, Target, Trash2, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import type { Goal } from "@/types/gamification";
@@ -202,10 +203,9 @@ export default function GoalsPage() {
           </div>
         </div>
 
-        {/* Streak Cards */}
+        {/* Streak Cards with 3D Crystal */}
         {streak && (
-          <div className="grid grid-cols-2 gap-4"
-          >
+          <div className="grid grid-cols-3 gap-4">
             <StreakCard
               icon={Flame}
               value={streak.current_streak}
@@ -218,6 +218,19 @@ export default function GoalsPage() {
               label="Longest Streak"
               gradient="from-blue-500 to-cyan-500"
             />
+            {/* 3D Crystal Card */}
+            <Card className="group relative overflow-hidden border border-border bg-card p-4 text-center transition-all duration-500 hover:border-border/80 hover:bg-secondary flex flex-col items-center justify-center min-h-[140px]">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              <div className="relative flex flex-col items-center gap-2">
+                <DreamCrystalMini
+                  progress={Math.min((streak.current_streak / Math.max(streak.longest_streak, 1)) * 100, 100)}
+                  size="sm"
+                  color="#EC4899"
+                  animate
+                />
+                <span className="text-xs font-medium text-muted-foreground">Streak Power</span>
+              </div>
+            </Card>
           </div>
         )}
 
