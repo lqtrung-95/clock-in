@@ -19,6 +19,7 @@ import {
   Tags,
   Trophy,
   Sparkles,
+  Users,
 } from "lucide-react";
 
 const navItems = [
@@ -28,6 +29,7 @@ const navItems = [
   { href: "/stats", label: "Stats", icon: BarChart3 },
   { href: "/goals", label: "Goals", icon: Target },
   { href: "/achievements", label: "Achievements", icon: Trophy },
+  { href: "/social", label: "Social", icon: Users },
   { href: "/categories", label: "Categories", icon: Tags },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
