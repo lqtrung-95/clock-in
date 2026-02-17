@@ -177,12 +177,14 @@ export type Database = {
           id: string;
           user_id: string;
           badge_key: string;
+          badge_definition_key: string | null;
           earned_at: string;
         };
         Insert: {
           id?: string;
           user_id: string;
-          badge_key: string;
+          badge_key?: string;
+          badge_definition_key?: string;
         };
         Update: Record<string, never>;
       };
@@ -249,6 +251,153 @@ export type Database = {
           email_digest_enabled?: boolean;
         };
       };
+      user_stats: {
+        Row: {
+          user_id: string;
+          total_xp: number;
+          current_level: number;
+          total_focus_minutes: number;
+          weekly_focus_minutes: number;
+          monthly_focus_minutes: number;
+          current_streak: number;
+          longest_streak: number;
+          last_active_date: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          total_xp?: number;
+          current_level?: number;
+          total_focus_minutes?: number;
+          weekly_focus_minutes?: number;
+          monthly_focus_minutes?: number;
+          current_streak?: number;
+          longest_streak?: number;
+          last_active_date?: string | null;
+        };
+        Update: {
+          total_xp?: number;
+          current_level?: number;
+          total_focus_minutes?: number;
+          weekly_focus_minutes?: number;
+          monthly_focus_minutes?: number;
+          current_streak?: number;
+          longest_streak?: number;
+          last_active_date?: string | null;
+        };
+      };
+      crystal_customizations: {
+        Row: {
+          user_id: string;
+          unlocked_shapes: string[];
+          unlocked_colors: string[];
+          unlocked_themes: string[];
+          active_shape: string;
+          active_color: string;
+          active_theme: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          unlocked_shapes?: string[];
+          unlocked_colors?: string[];
+          unlocked_themes?: string[];
+          active_shape?: string;
+          active_color?: string;
+          active_theme?: string;
+        };
+        Update: {
+          unlocked_shapes?: string[];
+          unlocked_colors?: string[];
+          unlocked_themes?: string[];
+          active_shape?: string;
+          active_color?: string;
+          active_theme?: string;
+        };
+      };
+      badge_definitions: {
+        Row: {
+          key: string;
+          name: string;
+          description: string;
+          icon: string;
+          rarity: "common" | "rare" | "epic" | "legendary";
+          condition_type: string;
+          condition_value: number;
+          xp_reward: number;
+          created_at: string;
+        };
+        Insert: {
+          key: string;
+          name: string;
+          description: string;
+          icon: string;
+          rarity?: "common" | "rare" | "epic" | "legendary";
+          condition_type: string;
+          condition_value?: number;
+          xp_reward?: number;
+        };
+        Update: Record<string, never>;
+      };
+      weekly_challenges: {
+        Row: {
+          id: string;
+          challenge_key: string;
+          name: string;
+          description: string;
+          challenge_type: string;
+          target_value: number;
+          xp_reward: number;
+          week_start: string;
+          week_end: string;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          challenge_key: string;
+          name: string;
+          description: string;
+          challenge_type: string;
+          target_value: number;
+          xp_reward?: number;
+          week_start: string;
+          week_end: string;
+          is_active?: boolean;
+        };
+        Update: {
+          is_active?: boolean;
+        };
+      };
+      weekly_challenge_progress: {
+        Row: {
+          id: string;
+          user_id: string;
+          challenge_id: string;
+          progress_current: number;
+          progress_target: number;
+          status: "active" | "completed" | "expired";
+          completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          challenge_id: string;
+          progress_current?: number;
+          progress_target: number;
+          status?: "active" | "completed" | "expired";
+          completed_at?: string | null;
+        };
+        Update: {
+          progress_current?: number;
+          status?: "active" | "completed" | "expired";
+          completed_at?: string | null;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -259,6 +408,10 @@ export type Database = {
       theme_mode: "light" | "dark" | "system";
       pomodoro_preset: "25/5" | "50/10" | "90/20" | "custom";
       challenge_status: "active" | "completed" | "expired";
+      badge_rarity: "common" | "rare" | "epic" | "legendary";
+      crystal_shape: "icosahedron" | "dodecahedron" | "octahedron" | "tetrahedron" | "torus_knot";
+      crystal_color: "blue" | "purple" | "emerald" | "amber" | "rose" | "cyan" | "gold" | "obsidian";
+      crystal_theme: "default" | "ethereal" | "fiery" | "ocean" | "cosmic" | "forest";
     };
   };
 };

@@ -3,10 +3,10 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Cloud, TrendingUp, Target, Sparkles } from "lucide-react";
+import { Cloud, TrendingUp, Target, Sparkles, Trophy } from "lucide-react";
 
 interface LoginPromptProps {
-  feature: "sync" | "stats" | "goals" | "general";
+  feature: "sync" | "stats" | "goals" | "achievements" | "general";
   className?: string;
 }
 
@@ -33,6 +33,11 @@ export function LoginPrompt({ feature, className = "" }: LoginPromptProps) {
       icon: Sparkles,
       title: "Unlock Full Features",
       description: "Sign in to access all features including cloud sync, detailed stats, and goal tracking.",
+    },
+    achievements: {
+      icon: Trophy,
+      title: "Earn Achievements",
+      description: "Sign in to track your achievements, earn badges, and level up your focus game.",
     },
   };
 

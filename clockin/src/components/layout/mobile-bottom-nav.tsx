@@ -3,14 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, Play, Brain, List, BarChart3 } from "lucide-react";
+import { Home, Brain, BarChart3, Target, Trophy, Sparkles } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/track", label: "Track", icon: Play },
   { href: "/focus", label: "Focus", icon: Brain },
-  { href: "/history", label: "History", icon: List },
-  { href: "/stats", label: "Stats", icon: BarChart3 },
+  { href: "/achievements", label: "Rewards", icon: Trophy },
+  { href: "/goals", label: "Goals", icon: Target },
 ];
 
 export function MobileBottomNav() {

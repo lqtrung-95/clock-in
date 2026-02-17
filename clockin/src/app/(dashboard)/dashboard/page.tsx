@@ -10,6 +10,7 @@ import { categoryService } from "@/services/category-service";
 import { streakService } from "@/services/streak-service";
 import { goalService } from "@/services/goal-service";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { useGamification } from "@/hooks/use-gamification";
 import { guestStorage } from "@/lib/guest-storage";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,20 +19,22 @@ import { EntryList } from "@/components/entries/entry-list";
 import { TimerWidget } from "@/components/dashboard/timer-widget";
 import { LoginBanner, LoginPrompt } from "@/components/auth/login-prompt";
 import { DreamCrystalMini } from "@/components/focus/dream-crystal-mini";
+import { EvolvedCrystal } from "@/components/focus/evolved-crystal";
+import { XPProgressBar } from "@/components/gamification/xp-progress-bar";
 import {
   Clock,
   Flame,
   Target,
   TrendingUp,
   Calendar,
-  Plus,
   Brain,
   ChevronRight,
   Sparkles,
+  Trophy,
 } from "lucide-react";
 import { format, subDays, parseISO } from "date-fns";
 import type { TimeEntry, Category } from "@/types/timer";
-import type { Goal } from "@/types/gamification";
+import type { Goal, ChallengeProgress } from "@/types/gamification";
 
 interface GoalWithProgress extends Goal {
   progress: {
@@ -113,6 +116,18 @@ export default function DashboardPage() {
   const [goals, setGoals] = useState<GoalWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const { status } = useTimerStore();
+
+  // Gamification
+  const [userId, setUserId] = useState<string | null>(null);
+  const { userStats, levelInfo, challenges, crystalConfig } = useGamification(userId);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      supabase.auth.getUser().then(({ data }) => {
+        setUserId(data.user?.id || null);
+      });
+    }
+  }, [isAuthenticated, supabase]);
 
   async function loadData() {
     if (isAuthenticated) {
@@ -222,23 +237,13 @@ export default function DashboardPage() {
             </h1>
             <p className="text-muted-foreground">{format(new Date(), "EEEE, MMMM d")}</p>
           </div>
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => router.push("/focus")}
-              className="hidden border-border bg-card text-foreground hover:bg-secondary hover:text-foreground sm:flex"
-            >
-              <Brain className="mr-2 h-4 w-4 text-cyan-500 dark:text-cyan-400" />
-              Focus Mode
-            </Button>
-            <Button
-              onClick={() => router.push("/track")}
-              className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Track Time
-            </Button>
-          </div>
+          <Button
+            onClick={() => router.push("/focus")}
+            className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
+          >
+            <Brain className="mr-2 h-4 w-4" />
+            Focus Mode
+          </Button>
         </div>
 
         {/* Timer Widget - Show when tracking */}
@@ -277,13 +282,31 @@ export default function DashboardPage() {
             delay={300}
           />
           {/* 3D Crystal Card */}
-          <Card className="group relative overflow-hidden border border-border bg-card p-4 transition-all duration-500 hover:-translate-y-1 hover:border-border/80 hover:bg-secondary flex items-center justify-center min-h-[120px]"
+          <Card className="group relative overflow-hidden border border-border bg-card p-4 transition-all duration-500 hover:-translate-y-1 hover:border-border/80 hover:bg-secondary flex items-center justify-center min-h-[120px] cursor-pointer"
             style={{ animationDelay: '400ms' }}
+            onClick={() => router.push("/achievements")}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-            <div className="relative flex flex-col items-center gap-2">
-              <DreamCrystalMini progress={Math.min(todayStats.hours * 10, 100)} size="sm" animate />
-              <span className="text-xs font-medium text-muted-foreground">Daily Energy</span>
+            <div className="relative flex flex-col items-center gap-1">
+              {isAuthenticated && crystalConfig ? (
+                <>
+                  <EvolvedCrystal
+                    level={userStats?.current_level || 1}
+                    progress={levelInfo?.progressPercentage || 0}
+                    shape={crystalConfig.active_shape}
+                    color={crystalConfig.active_color}
+                    theme={crystalConfig.active_theme}
+                    size="sm"
+                    animate={false}
+                  />
+                  <span className="text-[10px] font-medium text-muted-foreground">Level {userStats?.current_level || 1}</span>
+                </>
+              ) : (
+                <>
+                  <DreamCrystalMini progress={Math.min(todayStats.hours * 10, 100)} size="sm" animate />
+                  <span className="text-xs font-medium text-muted-foreground">Daily Energy</span>
+                </>
+              )}
             </div>
           </Card>
         </div>
@@ -407,6 +430,51 @@ export default function DashboardPage() {
             </div>
           </GlassCard>
         </div>
+
+        {/* Weekly Challenges Preview */}
+        {isAuthenticated && challenges.length > 0 && (
+          <GlassCard className="p-6">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Weekly Challenges</h2>
+                <p className="text-sm text-muted-foreground">Complete to earn bonus XP</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push("/achievements")}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <Trophy className="mr-1 h-4 w-4" />
+                View All
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {challenges.slice(0, 3).map((challenge) => (
+                <Card key={challenge.id} className="border border-border bg-card/50 p-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground">
+                        {challenge.challenge?.name || "Challenge"}
+                      </span>
+                      <span className="text-xs text-cyan-500">+{challenge.challenge?.xp_reward || 0} XP</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-700"
+                        style={{ width: `${Math.min((challenge.progress_current / challenge.progress_target) * 100, 100)}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {challenge.progress_current} / {challenge.progress_target}
+                    </p>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </GlassCard>
+        )}
 
         {/* Recent Entries */}
         <GlassCard className="p-6">

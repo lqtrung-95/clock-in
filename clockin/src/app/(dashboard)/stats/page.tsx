@@ -4,9 +4,11 @@ import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { timeEntryService } from "@/services/time-entry-service";
 import { streakService } from "@/services/streak-service";
+import { getDailyFocusStats } from "@/services/stats-service";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { guestStorage } from "@/lib/guest-storage";
 import { Card } from "@/components/ui/card";
+import { CalendarHeatmap } from "@/components/stats/calendar-heatmap";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import {
@@ -20,9 +22,10 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { format, subDays, parseISO } from "date-fns";
-import { Clock, Flame, Calendar, BarChart3 } from "lucide-react";
+import { format, subDays, parseISO, startOfYear, endOfYear } from "date-fns";
+import { Clock, Flame, Calendar, BarChart3, Grid3X3 } from "lucide-react";
 import type { TimeEntry } from "@/types/timer";
+import type { DailyStats } from "@/services/stats-service";
 
 const COLORS = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ec4899", "#06b6d4"];
 
@@ -59,6 +62,7 @@ export default function AnalyticsPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [streak, setStreak] = useState<{ current_streak: number } | null>(null);
+  const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [days, setDays] = useState(7);
 
@@ -66,16 +70,40 @@ export default function AnalyticsPage() {
     if (isAuthenticated) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const [ents, streakData] = await Promise.all([
+
+      const endDate = format(new Date(), "yyyy-MM-dd");
+      const startDate = format(subDays(new Date(), 364), "yyyy-MM-dd");
+
+      const [ents, streakData, dailyStatsData] = await Promise.all([
         timeEntryService.getEntries(user.id, 30),
         streakService.getStreak(user.id),
+        getDailyFocusStats(user.id, startDate, endDate),
       ]);
       setEntries(ents);
       setStreak(streakData);
+      setDailyStats(dailyStatsData);
     } else {
       const ents = guestStorage.getEntries();
       setEntries(ents as unknown as TimeEntry[]);
       setStreak(null);
+      // Generate daily stats from guest entries
+      const statsMap = new Map<string, DailyStats>();
+      ents.forEach((entry) => {
+        if (!entry.duration_seconds) return;
+        const date = entry.started_at.split("T")[0];
+        const existing = statsMap.get(date);
+        if (existing) {
+          existing.total_seconds += entry.duration_seconds;
+          existing.session_count += 1;
+        } else {
+          statsMap.set(date, {
+            date,
+            total_seconds: entry.duration_seconds,
+            session_count: 1,
+          });
+        }
+      });
+      setDailyStats(Array.from(statsMap.values()));
     }
     setLoading(false);
   }
@@ -197,9 +225,12 @@ export default function AnalyticsPage() {
         </div>
 
         <Tabs defaultValue="daily" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2 border border-white/5 bg-white/5 p-1">
+          <TabsList className="grid w-full max-w-md grid-cols-3 border border-white/5 bg-white/5 p-1">
             <TabsTrigger value="daily" className="data-[state=active]:bg-white/10 data-[state=active]:text-foreground">
               Daily Hours
+            </TabsTrigger>
+            <TabsTrigger value="heatmap" className="data-[state=active]:bg-white/10 data-[state=active]:text-foreground">
+              Heatmap
             </TabsTrigger>
             <TabsTrigger value="category" className="data-[state=active]:bg-white/10 data-[state=active]:text-foreground">
               By Category
@@ -229,13 +260,26 @@ export default function AnalyticsPage() {
                     <XAxis dataKey="date" tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }} axisLine={{ stroke: "rgba(255,255,255,0.1)" }} tickLine={{ stroke: "rgba(255,255,255,0.1)" }} />
                     <YAxis tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }} axisLine={{ stroke: "rgba(255,255,255,0.1)" }} tickLine={{ stroke: "rgba(255,255,255,0.1)" }} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#000000", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }}
+                      contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", color: "hsl(var(--foreground))" }}
+                      itemStyle={{ color: "hsl(var(--foreground))" }}
                       formatter={(value) => [`${value} min`, "Time"]}
                     />
                     <Bar dataKey="minutes" fill="#3b82f6" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="heatmap" className="space-y-4 mt-6">
+            <Card className="border border-border bg-card p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Grid3X3 className="h-5 w-5 text-emerald-500" />
+                <h3 className="text-lg font-semibold text-foreground">
+                  Activity Heatmap
+                </h3>
+              </div>
+              <CalendarHeatmap data={dailyStats} />
             </Card>
           </TabsContent>
 
@@ -265,7 +309,8 @@ export default function AnalyticsPage() {
                         ))}
                       </Pie>
                       <Tooltip
-                        contentStyle={{ backgroundColor: "#000000", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }}
+                        contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", color: "hsl(var(--foreground))" }}
+                        itemStyle={{ color: "hsl(var(--foreground))" }}
                         formatter={(value) => [`${value}h`, "Hours"]}
                       />
                     </PieChart>

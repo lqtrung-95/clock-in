@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import {
   Home,
-  Play,
   Brain,
   List,
   BarChart3,
@@ -18,15 +17,17 @@ import {
   LogIn,
   Flame,
   Tags,
+  Trophy,
+  Sparkles,
 } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/track", label: "Track", icon: Play },
   { href: "/focus", label: "Focus", icon: Brain },
   { href: "/history", label: "History", icon: List },
   { href: "/stats", label: "Stats", icon: BarChart3 },
   { href: "/goals", label: "Goals", icon: Target },
+  { href: "/achievements", label: "Achievements", icon: Trophy },
   { href: "/categories", label: "Categories", icon: Tags },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

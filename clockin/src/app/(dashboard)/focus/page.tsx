@@ -6,6 +6,8 @@ import { usePomodoro } from "@/hooks/use-pomodoro";
 import { usePomodoroStore } from "@/stores/pomodoro-store";
 import { useCategoryStore } from "@/stores/category-store";
 import { timeEntryService } from "@/services/time-entry-service";
+import { trackFocusTime } from "@/services/gamification-service";
+import { useDreamGoal } from "@/hooks/use-dream-goal";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { createClient } from "@/lib/supabase/client";
 import { guestStorage } from "@/lib/guest-storage";
@@ -130,6 +132,8 @@ export default function FocusPage() {
   const { categories, setCategories } = useCategoryStore();
   const { isAuthenticated } = useAuthState();
   const supabase = createClient();
+  const [userId, setUserId] = useState<string | null>(null);
+  const { addProgress } = useDreamGoal(userId);
 
   // Audio refs for ambient sound
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -163,6 +167,17 @@ export default function FocusPage() {
     }
     loadCategories();
   }, [isAuthenticated]);
+
+  // Set userId for dream goal tracking
+  useEffect(() => {
+    if (isAuthenticated) {
+      supabase.auth.getUser().then(({ data }) => {
+        setUserId(data.user?.id || "guest");
+      });
+    } else {
+      setUserId("guest");
+    }
+  }, [isAuthenticated, supabase]);
 
   const preset = POMODORO_PRESETS[selectedPreset];
 
@@ -245,6 +260,17 @@ export default function FocusPage() {
           duration_seconds: workDuration,
           notes: `Focus session (${selectedPreset})`,
         });
+
+        // Track XP for the focus session
+        await trackFocusTime(user.id, Math.floor(workDuration / 60));
+
+        // Track dream goal progress
+        const hoursCompleted = workDuration / 3600;
+        const milestoneReached = await addProgress(hoursCompleted);
+        if (milestoneReached) {
+          toast.success("🎉 Milestone reached in your Dream Goal!");
+        }
+
         toast.success("Time tracked successfully!");
       } catch (error) {
         console.error("Failed to save time entry:", error);
@@ -260,6 +286,14 @@ export default function FocusPage() {
         notes: `Focus session (${selectedPreset})`,
         entry_type: "manual",
       });
+
+      // Track dream goal progress for guests
+      const hoursCompleted = workDuration / 3600;
+      const milestoneReached = await addProgress(hoursCompleted);
+      if (milestoneReached) {
+        toast.success("🎉 Milestone reached in your Dream Goal!");
+      }
+
       toast.success("Time saved locally!");
     }
   }, [selectedCategory, preset.work, selectedPreset, isAuthenticated]);

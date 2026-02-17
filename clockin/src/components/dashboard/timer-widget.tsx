@@ -94,7 +94,7 @@ export function TimerWidget() {
 
             <Button
               size="icon"
-              onClick={() => router.push("/track")}
+              onClick={() => router.push("/focus")}
               className="h-12 w-12 rounded-xl bg-gradient-to-r from-primary to-cyan-500 text-white shadow-lg shadow-primary/25"
             >
               <Square className="h-5 w-5 fill-current" />
