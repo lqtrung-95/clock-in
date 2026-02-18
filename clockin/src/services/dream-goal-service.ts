@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/client';
 import type { DreamGoal, DreamGoalTheme, DreamGoalProgress } from '@/types/dream-goal';
 import { MILESTONE_THRESHOLDS } from '@/types/dream-goal';
 
-const supabase = createClient();
 
 export function calculateProgress(
   currentHours: number,

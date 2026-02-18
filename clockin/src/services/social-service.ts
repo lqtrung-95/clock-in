@@ -11,7 +11,6 @@ import type {
   FriendSearchResult,
 } from "@/types/social";
 
-const supabase = createClient();
 
 // ============================================
 // FRIENDSHIP OPERATIONS

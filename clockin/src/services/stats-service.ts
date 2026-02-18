@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
 
-const supabase = createClient();
 
 export interface DailyStats {
   date: string;

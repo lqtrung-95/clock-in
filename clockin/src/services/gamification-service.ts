@@ -13,7 +13,6 @@ import type {
   CrystalCustomizations,
 } from "@/types/xp-system";
 
-const supabase = createClient();
 
 // XP Calculations
 export function calculateLevel(xp: number): number {
@@ -42,6 +41,7 @@ export function getLevelInfo(userStats: UserStats): LevelInfo {
 
 // User Stats Service
 export async function getUserStats(userId: string): Promise<UserStats | null> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("user_stats")
     .select("*")
