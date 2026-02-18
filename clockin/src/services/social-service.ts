@@ -163,13 +163,13 @@ export async function createFocusRoom(
   name: string,
   hostId: string,
   options: {
-    const supabase = createClient();
     description?: string;
     isPrivate?: boolean;
     accessCode?: string;
     maxParticipants?: number;
   } = {}
 ): Promise<FocusRoom> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("focus_rooms")
     .insert({
