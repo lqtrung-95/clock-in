@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useGamification } from "@/hooks/use-gamification";
 import { Card } from "@/components/ui/card";
@@ -10,25 +8,17 @@ import { XPProgressBar } from "@/components/gamification/xp-progress-bar";
 import { BadgeCard } from "@/components/gamification/badge-card";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import { EvolvedCrystal } from "@/components/focus/evolved-crystal";
-import { getAllBadgeDefinitions } from "@/services/gamification-service";
 import { Trophy, Target, Award, TrendingUp } from "lucide-react";
 import type { BadgeDefinition } from "@/types/gamification";
 
-export default function AchievementsPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuthState();
-  const [userId, setUserId] = useState<string | null>(null);
-  const { userStats, levelInfo, badges, crystalConfig, isLoading } = useGamification(userId);
-  const [allBadges, setAllBadges] = useState<BadgeDefinition[]>([]);
+interface AchievementsContentProps {
+  allBadges: BadgeDefinition[];
+  userId: string | null;
+}
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      const supabase = createClient();
-      supabase.auth.getUser().then(({ data }) => {
-        setUserId(data.user?.id || null);
-      });
-      getAllBadgeDefinitions().then(setAllBadges);
-    }
-  }, [isAuthenticated]);
+export default function AchievementsContent({ allBadges, userId: serverUserId }: AchievementsContentProps) {
+  const { isAuthenticated, isLoading: authLoading } = useAuthState();
+  const { userStats, levelInfo, badges, crystalConfig, isLoading } = useGamification(serverUserId);
 
   if (authLoading || isLoading) {
     return (
