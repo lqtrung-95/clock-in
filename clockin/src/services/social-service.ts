@@ -61,7 +61,6 @@ export async function sendFriendRequest(requesterId: string, addresseeId: string
   const { data, error } = await supabase
     .from("friendships")
     .insert({
-      const supabase = createClient();
       requester_id: requesterId,
       addressee_id: addresseeId,
       status: "pending",
