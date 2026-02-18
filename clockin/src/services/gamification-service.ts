@@ -61,6 +61,7 @@ export async function getUserStats(userId: string): Promise<UserStats | null> {
 }
 
 export async function createDefaultUserStats(userId: string): Promise<UserStats> {
+  const supabase = createClient();
   // Check if already exists first (race condition fix)
   const { data: existing } = await supabase
     .from("user_stats")
@@ -115,6 +116,7 @@ export async function createDefaultUserStats(userId: string): Promise<UserStats>
 }
 
 export async function addXP(userId: string, xpAmount: number): Promise<void> {
+  const supabase = createClient();
   const { data: stats } = await supabase
     .from("user_stats")
     .select("total_xp")
@@ -134,6 +136,7 @@ export async function addXP(userId: string, xpAmount: number): Promise<void> {
 export async function getCrystalCustomizations(
   userId: string
 ): Promise<CrystalCustomizations | null> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("crystal_customizations")
     .select("*")
@@ -154,6 +157,7 @@ export async function getCrystalCustomizations(
 export async function createDefaultCrystalCustomizations(
   userId: string
 ): Promise<CrystalCustomizations> {
+  const supabase = createClient();
   // Check if already exists first (race condition fix)
   const { data: existing } = await supabase
     .from("crystal_customizations")
@@ -202,6 +206,7 @@ export async function updateCrystalCustomization(
   userId: string,
   updates: Partial<CrystalCustomizations>
 ): Promise<void> {
+  const supabase = createClient();
   const { error } = await supabase
     .from("crystal_customizations")
     .update({
@@ -218,6 +223,7 @@ export async function updateCrystalCustomization(
 
 // Badge Service
 export async function getUserBadges(userId: string): Promise<UserBadge[]> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("user_badges")
     .select("*, badge_definition:badge_definition_key(*)")
@@ -233,6 +239,7 @@ export async function getUserBadges(userId: string): Promise<UserBadge[]> {
 }
 
 export async function getAllBadgeDefinitions(): Promise<BadgeDefinition[]> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("badge_definitions")
     .select("*")
@@ -251,6 +258,7 @@ export async function awardBadge(
   badgeKey: string,
   xpReward: number
 ): Promise<void> {
+  const supabase = createClient();
   const { error } = await supabase.from("user_badges").insert({
     user_id: userId,
     badge_definition_key: badgeKey,
@@ -272,6 +280,7 @@ export async function awardBadge(
 
 // Weekly Challenges Service
 export async function getActiveWeeklyChallenges(): Promise<WeeklyChallenge[]> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("weekly_challenges")
     .select("*")
@@ -289,6 +298,7 @@ export async function getActiveWeeklyChallenges(): Promise<WeeklyChallenge[]> {
 export async function getUserChallengeProgress(
   userId: string
 ): Promise<ChallengeProgress[]> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("weekly_challenge_progress")
     .select("*, challenge:challenge_id(*)")
@@ -304,6 +314,7 @@ export async function getUserChallengeProgress(
 }
 
 export async function initializeUserChallenges(userId: string): Promise<void> {
+  const supabase = createClient();
   // Get active challenges
   const challenges = await getActiveWeeklyChallenges();
 
@@ -326,6 +337,7 @@ export async function updateChallengeProgress(
   challengeId: string,
   progress: number
 ): Promise<void> {
+  const supabase = createClient();
   const { data: currentProgress } = await supabase
     .from("weekly_challenge_progress")
     .select("*")
@@ -374,6 +386,7 @@ export async function trackFocusTime(
   minutes: number,
   categoryId?: string
 ): Promise<void> {
+  const supabase = createClient();
   // Get current stats
   const { data: stats } = await supabase
     .from("user_stats")
