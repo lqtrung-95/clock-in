@@ -131,6 +131,7 @@ export default function DashboardPage() {
 
   async function loadData() {
     if (isAuthenticated) {
+      const supabase = createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
