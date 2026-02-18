@@ -17,6 +17,7 @@ import type {
 // ============================================
 
 export async function searchUsers(query: string, currentUserId: string): Promise<FriendSearchResult[]> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("profiles")
     .select("id, display_name, avatar_url")
@@ -55,6 +56,7 @@ export async function searchUsers(query: string, currentUserId: string): Promise
 }
 
 export async function sendFriendRequest(requesterId: string, addresseeId: string): Promise<Friendship> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("friendships")
     .insert({
@@ -70,6 +72,7 @@ export async function sendFriendRequest(requesterId: string, addresseeId: string
 }
 
 export async function acceptFriendRequest(friendshipId: string): Promise<Friendship> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("friendships")
     .update({ status: "accepted", updated_at: new Date().toISOString() } as never)

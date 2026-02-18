@@ -31,6 +31,7 @@ export function calculateProgress(
 }
 
 export async function getDreamGoal(userId: string): Promise<DreamGoal | null> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('dream_goals')
     .select('*')
@@ -51,6 +52,7 @@ export async function createDreamGoal(
   title: string = 'My Dream Goal',
   targetHours: number = 100
 ): Promise<DreamGoal> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('dream_goals')
     .insert({
@@ -74,6 +76,7 @@ export async function updateDreamGoal(
   goalId: string,
   updates: Partial<Pick<DreamGoal, 'theme' | 'title' | 'target_hours'>>
 ): Promise<DreamGoal> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('dream_goals')
     .update(updates as never)
@@ -97,6 +100,7 @@ export async function addProgress(
   new_milestone: number;
   milestone_just_reached: boolean;
 } | null> {
+  const supabase = createClient();
   const { data, error } = await supabase.rpc('add_dream_goal_progress', {
     p_user_id: userId,
     p_hours: hours,
@@ -136,6 +140,7 @@ export async function getOrCreateDreamGoal(
 }
 
 export async function resetDreamGoal(goalId: string): Promise<void> {
+  const supabase = createClient();
   const { error } = await supabase
     .from('dream_goals')
     .update({
@@ -154,6 +159,7 @@ export async function resetDreamGoal(goalId: string): Promise<void> {
 
 // Sync dream goal with existing time entries
 export async function syncDreamGoalWithHistory(userId: string): Promise<number> {
+  const supabase = createClient();
   // Calculate total hours from all time entries
   const { data: entries, error } = await supabase
     .from('time_entries')

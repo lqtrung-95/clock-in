@@ -12,6 +12,7 @@ export async function getDailyFocusStats(
   startDate: string,
   endDate: string
 ): Promise<DailyStats[]> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("time_entries")
     .select("started_at, duration_seconds")
