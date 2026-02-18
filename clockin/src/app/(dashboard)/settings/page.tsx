@@ -32,7 +32,6 @@ const defaultPrefs: Preferences = {
 };
 
 export default function SettingsPage() {
-  const supabase = createClient();
   const { theme, setTheme } = useTheme();
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
   const [loading, setLoading] = useState(true);
@@ -41,6 +40,7 @@ export default function SettingsPage() {
 
   async function loadPreferences() {
     if (isAuthenticated) {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data } = await supabase
@@ -82,6 +82,7 @@ export default function SettingsPage() {
   async function savePreferences() {
     setSaving(true);
     if (isAuthenticated) {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setSaving(false);

@@ -15,7 +15,6 @@ import { Trophy, Target, Award, TrendingUp } from "lucide-react";
 import type { BadgeDefinition } from "@/types/gamification";
 
 export default function AchievementsPage() {
-  const supabase = createClient();
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
   const [userId, setUserId] = useState<string | null>(null);
   const { userStats, levelInfo, badges, crystalConfig, isLoading } = useGamification(userId);
@@ -23,12 +22,13 @@ export default function AchievementsPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
+      const supabase = createClient();
       supabase.auth.getUser().then(({ data }) => {
         setUserId(data.user?.id || null);
       });
       getAllBadgeDefinitions().then(setAllBadges);
     }
-  }, [isAuthenticated, supabase]);
+  }, [isAuthenticated]);
 
   if (authLoading || isLoading) {
     return (

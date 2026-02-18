@@ -15,7 +15,6 @@ import { List, Plus } from "lucide-react";
 import type { TimeEntry, Category } from "@/types/timer";
 
 export default function HistoryPage() {
-  const supabase = createClient();
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);

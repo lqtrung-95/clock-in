@@ -16,7 +16,6 @@ import { Plus, Tags } from "lucide-react";
 import { toast } from "sonner";
 
 export default function CategoriesPage() {
-  const supabase = createClient();
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -26,6 +25,7 @@ export default function CategoriesPage() {
 
   async function loadCategories() {
     if (isAuthenticated) {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const cats = await categoryService.getCategories(user.id);
@@ -48,6 +48,7 @@ export default function CategoriesPage() {
     setFormLoading(true);
     try {
       if (isAuthenticated) {
+        const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
         await categoryService.createCategory(user.id, data);

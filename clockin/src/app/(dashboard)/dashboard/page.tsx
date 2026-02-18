@@ -105,7 +105,6 @@ function GlassCard({
 
 export default function DashboardPage() {
   const router = useRouter();
-  const supabase = createClient();
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -123,11 +122,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
+      const supabase = createClient();
       supabase.auth.getUser().then(({ data }) => {
         setUserId(data.user?.id || null);
       });
     }
-  }, [isAuthenticated, supabase]);
+  }, [isAuthenticated]);
 
   async function loadData() {
     if (isAuthenticated) {

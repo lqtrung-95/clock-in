@@ -17,7 +17,6 @@ import { format } from "date-fns";
 
 export default function DreamGoalPage() {
   const router = useRouter();
-  const supabase = createClient();
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
   const [userId, setUserId] = useState<string | null>(null);
   const { dreamGoal, progress, isLoading, changeTheme } = useDreamGoal(userId);
@@ -26,13 +25,14 @@ export default function DreamGoalPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
+      const supabase = createClient();
       supabase.auth.getUser().then(({ data }) => {
         setUserId(data.user?.id || "guest");
       });
     } else {
       setUserId("guest");
     }
-  }, [isAuthenticated, supabase]);
+  }, [isAuthenticated]);
 
   if (authLoading || isLoading) {
     return (

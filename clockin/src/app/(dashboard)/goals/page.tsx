@@ -74,7 +74,6 @@ function StreakCard({
 }
 
 export default function GoalsPage() {
-  const supabase = createClient();
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
   const [goals, setGoals] = useState<GoalWithProgress[]>([]);
   const [streak, setStreak] = useState<{ current_streak: number; longest_streak: number } | null>(null);
@@ -104,6 +103,7 @@ export default function GoalsPage() {
       return;
     }
 
+    const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -135,11 +135,12 @@ export default function GoalsPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
+      const supabase = createClient();
       supabase.auth.getUser().then(({ data }) => {
         setUserId(data.user?.id || null);
       });
     }
-  }, [isAuthenticated, supabase]);
+  }, [isAuthenticated]);
 
   // Sync dream goal with history on first load
   useEffect(() => {
@@ -154,6 +155,7 @@ export default function GoalsPage() {
     e.preventDefault();
     setSaving(true);
     try {
+      const supabase = createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();

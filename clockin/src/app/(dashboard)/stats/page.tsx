@@ -58,7 +58,6 @@ function StatCard({
 }
 
 export default function AnalyticsPage() {
-  const supabase = createClient();
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [streak, setStreak] = useState<{ current_streak: number } | null>(null);
@@ -68,6 +67,7 @@ export default function AnalyticsPage() {
 
   async function loadData() {
     if (isAuthenticated) {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 

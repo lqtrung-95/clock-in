@@ -131,7 +131,6 @@ export default function FocusPage() {
   // Category and auth
   const { categories, setCategories } = useCategoryStore();
   const { isAuthenticated } = useAuthState();
-  const supabase = createClient();
   const [userId, setUserId] = useState<string | null>(null);
   const { addProgress } = useDreamGoal(userId);
 
@@ -150,6 +149,7 @@ export default function FocusPage() {
   useEffect(() => {
     async function loadCategories() {
       if (isAuthenticated) {
+        const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data } = await supabase
@@ -171,13 +171,14 @@ export default function FocusPage() {
   // Set userId for dream goal tracking
   useEffect(() => {
     if (isAuthenticated) {
+      const supabase = createClient();
       supabase.auth.getUser().then(({ data }) => {
         setUserId(data.user?.id || "guest");
       });
     } else {
       setUserId("guest");
     }
-  }, [isAuthenticated, supabase]);
+  }, [isAuthenticated]);
 
   const preset = POMODORO_PRESETS[selectedPreset];
 
