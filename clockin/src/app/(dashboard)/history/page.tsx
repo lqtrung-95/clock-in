@@ -22,6 +22,7 @@ export default function HistoryPage() {
 
   async function loadData() {
     if (isAuthenticated) {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const [cats, ents] = await Promise.all([

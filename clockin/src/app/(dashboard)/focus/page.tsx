@@ -249,6 +249,7 @@ export default function FocusPage() {
     const startedAt = new Date(Date.now() - workDuration * 1000);
 
     if (isAuthenticated) {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
