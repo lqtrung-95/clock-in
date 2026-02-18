@@ -1,11 +1,8 @@
-import dynamic from "next/dynamic";
+// This page must be dynamic to avoid env var issues during static generation
+export const dynamic = 'force-dynamic';
 
-// Dynamically import with SSR disabled to avoid env var issues during build
-const OnboardingContent = dynamic(
-  () => import("./onboarding-content"),
-  { ssr: false }
-);
+import { OnboardingWrapper } from "./onboarding-wrapper";
 
 export default function OnboardingPage() {
-  return <OnboardingContent />;
+  return <OnboardingWrapper />;
 }
