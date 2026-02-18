@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,11 +9,14 @@ import { toast } from "sonner";
 import { PRESET_CATEGORIES } from "@/data/preset-categories";
 import { Check } from "lucide-react";
 
+// Force dynamic rendering to avoid prerender env var issues
+export const dynamic = "force-dynamic";
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   function toggleCategory(name: string) {
     const next = new Set(selected);
