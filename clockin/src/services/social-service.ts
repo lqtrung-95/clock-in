@@ -337,11 +337,11 @@ export async function shareAchievement(
   userId: string,
   badgeId: string,
   options: {
-    const supabase = createClient();
     message?: string;
     platform?: string;
   } = {}
 ): Promise<SharedAchievement> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("shared_achievements")
     .insert({
