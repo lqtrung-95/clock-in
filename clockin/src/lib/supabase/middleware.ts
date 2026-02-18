@@ -34,9 +34,21 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/signup") ||
     request.nextUrl.pathname.startsWith("/onboarding");
   const isCallbackPage = request.nextUrl.pathname.startsWith("/callback");
+  // Dashboard routes that support guest mode
+  const isDashboardRoute =
+    request.nextUrl.pathname.startsWith("/dashboard") ||
+    request.nextUrl.pathname.startsWith("/stats") ||
+    request.nextUrl.pathname.startsWith("/focus") ||
+    request.nextUrl.pathname.startsWith("/history") ||
+    request.nextUrl.pathname.startsWith("/categories") ||
+    request.nextUrl.pathname.startsWith("/achievements") ||
+    request.nextUrl.pathname.startsWith("/goals") ||
+    request.nextUrl.pathname.startsWith("/dream") ||
+    request.nextUrl.pathname.startsWith("/settings");
+
   const isPublicPage =
     request.nextUrl.pathname === "/" ||
-    request.nextUrl.pathname.startsWith("/dashboard") ||
+    isDashboardRoute ||
     isAuthPage ||
     isCallbackPage;
 
