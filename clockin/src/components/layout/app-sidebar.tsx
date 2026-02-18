@@ -37,16 +37,16 @@ const navItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const supabase = createClient();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
     async function checkAuth() {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       setIsAuthenticated(!!user);
     }
     checkAuth();
-  }, [supabase]);
+  }, []);
 
   async function handleSignOut() {
     await supabase.auth.signOut();

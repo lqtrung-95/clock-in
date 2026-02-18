@@ -12,8 +12,6 @@ import type {
   FriendSearchResult,
 } from "@/types/social";
 
-const supabase = createClient();
-
 // ============================================
 // FRIENDS HOOK
 // ============================================
@@ -159,6 +157,7 @@ export function useFocusRooms() {
   }, []);
 
   useEffect(() => {
+    const supabase = createClient();
     loadRooms();
 
     // Subscribe to realtime updates
@@ -213,6 +212,7 @@ export function useFocusRoomParticipants(roomId: string | undefined) {
   }, [roomId]);
 
   useEffect(() => {
+    const supabase = createClient();
     loadParticipants();
 
     if (!roomId) return;
@@ -253,6 +253,7 @@ export function useFocusRoomMessages(roomId: string | undefined) {
   const loadMessages = useCallback(async () => {
     if (!roomId) return;
     setLoading(true);
+    const supabase = createClient();
     try {
       const { data, error } = await supabase
         .from("focus_room_messages")
@@ -274,6 +275,8 @@ export function useFocusRoomMessages(roomId: string | undefined) {
     loadMessages();
 
     if (!roomId) return;
+
+    const supabase = createClient();
 
     // Subscribe to new messages
     const subscription = supabase
@@ -318,6 +321,7 @@ export function useFocusStatus(roomId: string | undefined, userId: string | unde
 
     // Get initial status
     const loadStatus = async () => {
+      const supabase = createClient();
       const { data } = await supabase
         .from("focus_room_participants")
         .select("is_focused, focus_started_at, total_focus_seconds")
@@ -339,6 +343,8 @@ export function useFocusStatus(roomId: string | undefined, userId: string | unde
     };
 
     loadStatus();
+
+    const supabase = createClient();
 
     // Subscribe to own status changes
     const subscription = supabase
