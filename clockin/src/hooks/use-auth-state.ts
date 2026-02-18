@@ -7,9 +7,10 @@ export function useAuthState() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
+    const supabase = createClient();
+
     async function checkAuth() {
       const { data: { user } } = await supabase.auth.getUser();
       setIsAuthenticated(!!user);
@@ -25,7 +26,7 @@ export function useAuthState() {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  }, []);
 
   return { isAuthenticated, userId, isLoading };
 }

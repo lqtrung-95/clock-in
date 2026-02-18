@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useGamification } from "@/hooks/use-gamification";
 import { Card } from "@/components/ui/card";
@@ -8,19 +9,31 @@ import { XPProgressBar } from "@/components/gamification/xp-progress-bar";
 import { BadgeCard } from "@/components/gamification/badge-card";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import { EvolvedCrystal } from "@/components/focus/evolved-crystal";
+import { getAllBadgeDefinitions } from "@/services/gamification-service";
 import { Trophy, Target, Award, TrendingUp } from "lucide-react";
 import type { BadgeDefinition } from "@/types/gamification";
 
-interface AchievementsContentProps {
-  allBadges: BadgeDefinition[];
-  userId: string | null;
-}
+export default function AchievementsContent() {
+  const { isAuthenticated, isLoading: authLoading, userId } = useAuthState();
+  const { userStats, levelInfo, badges, crystalConfig, isLoading } = useGamification(userId);
+  const [allBadges, setAllBadges] = useState<BadgeDefinition[]>([]);
+  const [badgesLoading, setBadgesLoading] = useState(true);
 
-export default function AchievementsContent({ allBadges, userId: serverUserId }: AchievementsContentProps) {
-  const { isAuthenticated, isLoading: authLoading } = useAuthState();
-  const { userStats, levelInfo, badges, crystalConfig, isLoading } = useGamification(serverUserId);
+  useEffect(() => {
+    async function loadBadges() {
+      try {
+        const badges = await getAllBadgeDefinitions();
+        setAllBadges(badges);
+      } catch (error) {
+        console.error("Error loading badges:", error);
+      } finally {
+        setBadgesLoading(false);
+      }
+    }
+    loadBadges();
+  }, []);
 
-  if (authLoading || isLoading) {
+  if (authLoading || isLoading || badgesLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
