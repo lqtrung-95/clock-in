@@ -44,7 +44,9 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/achievements") ||
     request.nextUrl.pathname.startsWith("/goals") ||
     request.nextUrl.pathname.startsWith("/dream") ||
-    request.nextUrl.pathname.startsWith("/settings");
+    request.nextUrl.pathname.startsWith("/settings") ||
+    request.nextUrl.pathname.startsWith("/social") ||
+    request.nextUrl.pathname.startsWith("/focus-room");
 
   const isPublicPage =
     request.nextUrl.pathname === "/" ||

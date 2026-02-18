@@ -35,13 +35,14 @@ export function useGamification(userId: string | null) {
 
   // Initialize gamification data
   useEffect(() => {
-    if (!userId || isInitialized) return;
+    if (isInitialized) return;
 
     async function initialize() {
       setIsLoading(true);
 
       if (!userId) {
         setIsLoading(false);
+        setIsInitialized(true);
         return;
       }
 
