@@ -39,6 +39,7 @@ export async function searchUsers(query: string, currentUserId: string): Promise
     .eq("status", "pending") as { data: Friendship[] | null };
 
   return (data || []).map((user) => {
+    const supabase = createClient();
     const friendship = friendships?.find(
       (f) =>
         (f.requester_id === currentUserId && f.addressee_id === user.id) ||
@@ -60,6 +61,7 @@ export async function sendFriendRequest(requesterId: string, addresseeId: string
   const { data, error } = await supabase
     .from("friendships")
     .insert({
+      const supabase = createClient();
       requester_id: requesterId,
       addressee_id: addresseeId,
       status: "pending",
@@ -85,6 +87,7 @@ export async function acceptFriendRequest(friendshipId: string): Promise<Friends
 }
 
 export async function declineFriendRequest(friendshipId: string): Promise<void> {
+  const supabase = createClient();
   const { error } = await supabase
     .from("friendships")
     .update({ status: "declined", updated_at: new Date().toISOString() } as never)
@@ -94,11 +97,13 @@ export async function declineFriendRequest(friendshipId: string): Promise<void> 
 }
 
 export async function removeFriend(friendshipId: string): Promise<void> {
+  const supabase = createClient();
   const { error } = await supabase.from("friendships").delete().eq("id", friendshipId);
   if (error) throw error;
 }
 
 export async function getFriends(userId: string): Promise<Friendship[]> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("friendships")
     .select("*")
@@ -110,6 +115,7 @@ export async function getFriends(userId: string): Promise<Friendship[]> {
 }
 
 export async function getPendingRequests(userId: string): Promise<Friendship[]> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("friendships")
     .select("*")
@@ -128,6 +134,7 @@ export async function getFriendsLeaderboard(
   userId: string,
   period: "weekly" | "monthly" = "weekly"
 ): Promise<LeaderboardEntry[]> {
+  const supabase = createClient();
   const { data, error } = await supabase.rpc("get_friends_leaderboard", {
     p_user_id: userId,
     p_period: period,
@@ -157,6 +164,7 @@ export async function createFocusRoom(
   name: string,
   hostId: string,
   options: {
+    const supabase = createClient();
     description?: string;
     isPrivate?: boolean;
     accessCode?: string;
@@ -187,6 +195,7 @@ export async function createFocusRoom(
 }
 
 export async function getActiveFocusRooms(): Promise<FocusRoom[]> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("focus_rooms")
     .select("*, participants:focus_room_participants(count)")
@@ -203,6 +212,7 @@ export async function getActiveFocusRooms(): Promise<FocusRoom[]> {
 }
 
 export async function getFocusRoom(roomId: string): Promise<FocusRoom | null> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("focus_rooms")
     .select("*, participants:focus_room_participants(*)")
@@ -214,6 +224,7 @@ export async function getFocusRoom(roomId: string): Promise<FocusRoom | null> {
 }
 
 export async function joinFocusRoom(roomId: string, userId: string): Promise<FocusRoomParticipant> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("focus_room_participants")
     .upsert(
@@ -233,6 +244,7 @@ export async function joinFocusRoom(roomId: string, userId: string): Promise<Foc
 }
 
 export async function leaveFocusRoom(roomId: string, userId: string): Promise<void> {
+  const supabase = createClient();
   const { error } = await supabase
     .from("focus_room_participants")
     .update({ left_at: new Date().toISOString() } as never)
@@ -247,6 +259,7 @@ export async function updateFocusStatus(
   userId: string,
   isFocused: boolean
 ): Promise<void> {
+  const supabase = createClient();
   const updates: Record<string, unknown> = {
     is_focused: isFocused,
   };
@@ -286,6 +299,7 @@ export async function sendRoomMessage(
   message: string,
   messageType: FocusRoomMessage["message_type"] = "chat"
 ): Promise<FocusRoomMessage> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("focus_room_messages")
     .insert({
@@ -302,6 +316,7 @@ export async function sendRoomMessage(
 }
 
 export async function endFocusRoom(roomId: string, hostId: string): Promise<void> {
+  const supabase = createClient();
   const { error } = await supabase
     .from("focus_rooms")
     .update({
@@ -322,6 +337,7 @@ export async function shareAchievement(
   userId: string,
   badgeId: string,
   options: {
+    const supabase = createClient();
     message?: string;
     platform?: string;
   } = {}
@@ -346,6 +362,7 @@ export async function createProgressShareCard(
   cardType: ProgressShareCard["card_type"],
   stats: ProgressShareCard["stats"]
 ): Promise<ProgressShareCard> {
+  const supabase = createClient();
   const titles: Record<string, string> = {
     daily: "Daily Focus Report",
     weekly: "Weekly Progress",
@@ -370,6 +387,7 @@ export async function createProgressShareCard(
 }
 
 export async function incrementShareCount(cardId: string): Promise<void> {
+  const supabase = createClient();
   const { error } = await supabase.rpc("increment_share_count", { card_id: cardId } as never);
   if (error) throw error;
 }
