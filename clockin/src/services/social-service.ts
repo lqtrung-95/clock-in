@@ -233,7 +233,31 @@ export async function getFocusRoom(roomId: string): Promise<FocusRoom | null> {
     .single() as { data: FocusRoom | null; error: Error | null };
 
   if (error) throw error;
-  return data;
+  if (!data) return null;
+
+  // Fetch participant profiles separately
+  const participantIds = data.participants?.map((p) => p.user_id) || [];
+  let userProfiles: Record<string, { display_name: string; avatar_url?: string }> = {};
+
+  if (participantIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, display_name, avatar_url")
+      .in("user_id", participantIds) as { data: { user_id: string; display_name: string; avatar_url?: string }[] | null };
+
+    userProfiles = (profiles || []).reduce((acc, p) => ({ ...acc, [p.user_id]: p }), {});
+  }
+
+  // Attach user data to participants
+  const participantsWithUser = (data.participants || []).map((p) => ({
+    ...p,
+    user: userProfiles[p.user_id] || { display_name: "Unknown", avatar_url: undefined },
+  }));
+
+  return {
+    ...data,
+    participants: participantsWithUser,
+  };
 }
 
 export async function joinFocusRoom(roomId: string, userId: string): Promise<FocusRoomParticipant> {

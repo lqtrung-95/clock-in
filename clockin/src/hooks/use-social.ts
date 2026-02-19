@@ -268,7 +268,26 @@ export function useFocusRoomMessages(roomId: string | undefined) {
         .limit(100) as { data: FocusRoomMessage[] | null; error: Error | null };
 
       if (error) throw error;
-      setMessages(data || []);
+
+      // Fetch user profiles for messages
+      const userIds = [...new Set((data || []).map((m) => m.user_id).filter(Boolean))];
+      let userProfiles: Record<string, { display_name: string; avatar_url?: string }> = {};
+
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, display_name, avatar_url")
+          .in("user_id", userIds) as { data: { user_id: string; display_name: string; avatar_url?: string }[] | null };
+        userProfiles = (profiles || []).reduce((acc, p) => ({ ...acc, [p.user_id]: p }), {});
+      }
+
+      // Attach user data to messages
+      const messagesWithUser = (data || []).map((m) => ({
+        ...m,
+        user: userProfiles[m.user_id] || { display_name: "Unknown", avatar_url: undefined },
+      }));
+
+      setMessages(messagesWithUser);
     } catch (error) {
       console.error("Error loading messages:", error);
     } finally {

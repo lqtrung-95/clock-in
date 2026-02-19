@@ -62,6 +62,13 @@ function ParticipantCard({
     >
       <div className="relative">
         <Avatar className="h-10 w-10">
+          {participant.user?.avatar_url && (
+            <img
+              src={participant.user.avatar_url}
+              alt={participant.user.display_name}
+              className="h-full w-full object-cover rounded-full"
+            />
+          )}
           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm">
             {participant.user?.display_name?.charAt(0).toUpperCase() || "?"}
           </AvatarFallback>
