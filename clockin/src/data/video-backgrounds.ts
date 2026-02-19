@@ -6,7 +6,7 @@ export interface VideoBackground {
   category: "nature" | "urban" | "abstract" | "ambient";
 }
 
-// YouTube video backgrounds - reliable, free, looped
+// YouTube ambient videos - looping background scenes
 export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
     id: "lofi-girl",
@@ -32,8 +32,8 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
     id: "ocean-waves",
     name: "Ocean Waves",
-    embedUrl: "https://www.youtube.com/embed/1ZYbU82GVz4?autoplay=1&mute=1&loop=1&playlist=1ZYbU82GVz4&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/1ZYbU82GVz4/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/V-_O7wxRljo?autoplay=1&mute=1&loop=1&playlist=V-_O7wxRljo&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/V-_O7wxRljo/mqdefault.jpg",
     category: "nature",
   },
   {
@@ -46,8 +46,8 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
     id: "snow-falling",
     name: "Snow Falling",
-    embedUrl: "https://www.youtube.com/embed/7HaJArMDKgI?autoplay=1&mute=1&loop=1&playlist=7HaJArMDKgI&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/7HaJArMDKgI/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/8iZW8Z7TUsA?autoplay=1&mute=1&loop=1&playlist=8iZW8Z7TUsA&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/8iZW8Z7TUsA/mqdefault.jpg",
     category: "nature",
   },
   {
@@ -58,10 +58,10 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
     category: "ambient",
   },
   {
-    id: "starry-night",
-    name: "Starry Night",
+    id: "tokyo-night",
+    name: "Tokyo Night",
     embedUrl: "https://www.youtube.com/embed/5qap5aO4i9A?autoplay=1&mute=1&loop=1&playlist=5qap5aO4i9A&controls=0&rel=0&modestbranding=1",
     thumbnail: "https://img.youtube.com/vi/5qap5aO4i9A/mqdefault.jpg",
-    category: "abstract",
+    category: "urban",
   },
 ];

@@ -707,7 +707,7 @@ export default function FocusPage() {
             <div className="mb-4">
               <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
                 <Video className="h-3 w-3" />
-                Live Videos
+                Ambient Scenes
               </p>
               <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                 {VIDEO_BACKGROUNDS.map((video) => (
