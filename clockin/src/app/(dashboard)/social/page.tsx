@@ -8,7 +8,8 @@ import { FocusRooms } from "@/components/social/focus-rooms";
 import { ShareCard } from "@/components/social/share-card";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { LoginPrompt } from "@/components/auth/login-prompt";
-import { Users, Trophy, MessageSquare, Share2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, Trophy, MessageSquare, Share2, RefreshCw } from "lucide-react";
 
 export default function SocialPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
@@ -126,12 +127,17 @@ export default function SocialPage() {
             <h1 className="text-2xl font-bold">Social</h1>
             <p className="text-muted-foreground">Connect with friends and focus together</p>
           </div>
-          <ShareCard
-            userName={userName}
-            userAvatar={userAvatar}
-            stats={stats}
-            period="weekly"
-          />
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={loadUserData}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <ShareCard
+              userName={userName}
+              userAvatar={userAvatar}
+              stats={stats}
+              period="weekly"
+            />
+          </div>
         </div>
 
         {/* Grid Layout */}
