@@ -16,32 +16,28 @@ async function syncProfileFromAuth(user: { id: string; user_metadata?: { display
 
   if (!displayName && !avatarUrl) return;
 
-  // Check if profile exists
+  // Check if profile exists - only create on first sign-in, don't overwrite
   const { data: existingProfile } = await supabase
     .from("profiles")
     .select("id")
     .eq("id", user.id)
     .single();
 
-  const profileData = {
+  if (existingProfile) {
+    // Profile already exists - don't overwrite, user may have customized it in Settings
+    return;
+  }
+
+  // Create new profile for first-time sign-in
+  await supabase.from("profiles").insert({
     id: user.id,
     user_id: user.id,
     ...(displayName && { display_name: displayName }),
     ...(avatarUrl && { avatar_url: avatarUrl }),
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     updated_at: new Date().toISOString(),
-  };
-
-  if (existingProfile) {
-    // Update existing profile
-    await supabase.from("profiles").update(profileData).eq("id", user.id);
-  } else {
-    // Create new profile
-    await supabase.from("profiles").insert({
-      ...profileData,
-      created_at: new Date().toISOString(),
-    } as never);
-  }
+    created_at: new Date().toISOString(),
+  } as never);
 }
 
 export function useAuthState() {
