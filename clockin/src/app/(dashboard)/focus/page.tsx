@@ -809,15 +809,9 @@ export default function FocusPage() {
                 ))}
                 {/* Custom Videos */}
                 {customVideos.map((video) => (
-                  <button
+                  /* Wrapper div — keeps select button and delete button as siblings (no nested buttons) */
+                  <div
                     key={video.id}
-                    onClick={() => {
-                      setVideoEmbedUrl(video.embedUrl);
-                      setBackground("");
-                      setOverlay("none");
-                      setSelectedSound("");
-                      pauseAudio();
-                    }}
                     className={cn(
                       "shrink-0 relative w-24 h-16 rounded-lg overflow-hidden border-2 transition-all",
                       videoEmbedUrl === video.embedUrl
@@ -825,30 +819,40 @@ export default function FocusPage() {
                         : "border-border hover:border-foreground/30"
                     )}
                   >
-                    <img src={video.thumbnail} alt={video.name} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                      <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
-                        <svg className="w-3 h-3 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
+                    {/* Select button covers the full card */}
+                    <button
+                      onClick={() => {
+                        setVideoEmbedUrl(video.embedUrl);
+                        setBackground("");
+                        setOverlay("none");
+                        setSelectedSound("");
+                        pauseAudio();
+                      }}
+                      className="absolute inset-0 w-full h-full"
+                    >
+                      <img src={video.thumbnail} alt={video.name} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                        <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                          <svg className="w-3 h-3 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
                       </div>
-                    </div>
-                    <span className="absolute bottom-1 left-1 right-1 text-[10px] font-medium text-white bg-black/60 px-1 rounded truncate">
-                      {video.name}
-                    </span>
-                    {/* Delete button */}
-                    <div
+                      <span className="absolute bottom-1 left-1 right-1 text-[10px] font-medium text-white bg-black/60 px-1 rounded truncate">
+                        {video.name}
+                      </span>
+                    </button>
+                    {/* Delete button — sibling, not child of select button */}
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteCustomVideo(video.id);
                       }}
-                      className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-500/80 hover:bg-red-600 flex items-center justify-center cursor-pointer"
-                      role="button"
-                      tabIndex={0}
+                      className="absolute top-0.5 right-0.5 z-10 w-4 h-4 rounded-full bg-red-500/80 hover:bg-red-600 flex items-center justify-center"
                     >
                       <Trash2 className="w-2.5 h-2.5 text-white" />
-                    </div>
-                  </button>
+                    </button>
+                  </div>
                 ))}
                 {/* Add Video Button */}
                 <button

@@ -29,8 +29,8 @@ import { LoginPrompt } from "@/components/auth/login-prompt";
 import { DreamCrystalMini } from "@/components/focus/dream-crystal-mini";
 import { Plus, Flame, Target, Trash2, Trophy, Sparkles, Mountain } from "lucide-react";
 import { useDreamGoal } from "@/hooks/use-dream-goal";
-import { DreamGoalCanvas } from "@/components/dream-goal/dream-goal-canvas";
-import { ThemeSelector } from "@/components/dream-goal/theme-selector";
+import { DreamGoalProgressRing } from "@/components/dream-goal/dream-goal-progress-ring";
+import { MountainProgressView } from "@/components/dream-goal/mountain-progress-view";
 import { syncDreamGoalWithHistory } from "@/services/dream-goal-service";
 import { toast } from "sonner";
 import type { Goal } from "@/types/gamification";
@@ -85,7 +85,7 @@ export default function GoalsPage() {
   const [categoryId, setCategoryId] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const { dreamGoal, progress, isLoading: dreamGoalLoading, changeTheme } = useDreamGoal(userId);
+  const { dreamGoal, progress, isLoading: dreamGoalLoading } = useDreamGoal(userId);
   const [showDreamGoal, setShowDreamGoal] = useState(false);
 
   // Sync dream goal with history on first load
@@ -277,24 +277,23 @@ export default function GoalsPage() {
                 <Mountain className="h-5 w-5 text-purple-500" />
                 <h2 className="text-lg font-semibold text-foreground">Dream Goal</h2>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {progress?.percentage.toFixed(1)}% · {dreamGoal.current_hours.toFixed(1)}h / {dreamGoal.target_hours}h
-                </span>
-                <ThemeSelector currentTheme={dreamGoal.theme} onThemeChange={changeTheme} />
-              </div>
+              <span className="text-sm text-muted-foreground">
+                {progress?.percentage.toFixed(1)}% · {dreamGoal.current_hours.toFixed(1)}h / {dreamGoal.target_hours}h
+              </span>
             </div>
+            {/* Progress ring — card-native, no dark background */}
             <div
-              className="relative h-64 cursor-pointer"
+              className="relative cursor-pointer"
               onClick={() => setShowDreamGoal(true)}
             >
-              <DreamGoalCanvas
-                theme={dreamGoal.theme}
+              <DreamGoalProgressRing
                 progress={progress?.percentage || 0}
-                isActive={true}
+                currentHours={dreamGoal.current_hours}
+                targetHours={dreamGoal.target_hours}
+                title={dreamGoal.title}
               />
-              <div className="absolute bottom-2 right-2 text-xs text-white/60 bg-black/40 px-2 py-1 rounded">
-                Click to expand
+              <div className="absolute bottom-3 right-3 text-xs text-muted-foreground/60 bg-muted/40 px-2 py-1 rounded-md">
+                Click to explore
               </div>
             </div>
           </Card>
@@ -302,22 +301,13 @@ export default function GoalsPage() {
 
         {/* Full Screen Dream Goal Dialog */}
         {showDreamGoal && dreamGoal && (
-          <div className="fixed inset-0 z-50 bg-background">
-            <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-foreground">{dreamGoal.title}</h2>
-              <button
-                onClick={() => setShowDreamGoal(false)}
-                className="px-4 py-2 bg-background/80 rounded-lg text-foreground hover:bg-background"
-              >
-                Close
-              </button>
-            </div>
-            <DreamGoalCanvas
-              theme={dreamGoal.theme}
-              progress={progress?.percentage || 0}
-              isActive={true}
-            />
-          </div>
+          <MountainProgressView
+            progress={progress?.percentage || 0}
+            currentHours={dreamGoal.current_hours}
+            targetHours={dreamGoal.target_hours}
+            title={dreamGoal.title}
+            onClose={() => setShowDreamGoal(false)}
+          />
         )}
 
         {/* Goals Section */}

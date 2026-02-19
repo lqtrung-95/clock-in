@@ -160,18 +160,41 @@ export default function SettingsPage() {
         },
       });
 
-      // Update profiles table for social features (upsert creates if not exists)
-      const { error: profileError } = await supabase
+      // Update profiles table for social features
+      // Check if profile exists first
+      const { data: existingProfile } = await supabase
         .from("profiles")
-        .upsert({
-          id: user.id,
-          user_id: user.id,
-          display_name: displayName.trim(),
-          avatar_url: avatarUrl,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        } as never, { onConflict: "id" });
+        .select("id")
+        .eq("id", user.id)
+        .single();
+
+      const profileData = {
+        id: user.id,
+        user_id: user.id,
+        display_name: displayName.trim(),
+        avatar_url: avatarUrl,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        updated_at: new Date().toISOString(),
+      };
+
+      let profileError;
+      if (existingProfile) {
+        // Update existing profile
+        const { error } = await supabase
+          .from("profiles")
+          .update(profileData)
+          .eq("id", user.id);
+        profileError = error;
+      } else {
+        // Insert new profile with created_at
+        const { error } = await supabase
+          .from("profiles")
+          .insert({
+            ...profileData,
+            created_at: new Date().toISOString(),
+          } as never);
+        profileError = error;
+      }
 
       if (authError || profileError) {
         toast.error(authError?.message || profileError?.message || "Failed to update");
