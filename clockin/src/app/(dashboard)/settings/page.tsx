@@ -188,7 +188,7 @@ export default function SettingsPage() {
           const { error: updateError } = await supabase
             .from("profiles")
             .update(profileData)
-            .eq("id", user.id);
+            .eq("user_id", user.id);
           console.log("Update error:", updateError);
           profileError = updateError;
         } else {
