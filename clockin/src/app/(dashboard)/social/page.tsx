@@ -30,15 +30,22 @@ export default function SocialPage() {
       setUserId(user.id);
 
       // Load profile from database (not auth metadata) to get custom changes
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("display_name, avatar_url")
         .eq("user_id", user.id)
         .single();
 
+      console.log("Profile from DB:", profile, "Error:", profileError);
+      console.log("Auth metadata:", user.user_metadata);
+
       // Use profile data if available, fallback to auth metadata
-      setUserName(profile?.display_name || user.user_metadata?.display_name || "User");
-      setUserAvatar(profile?.avatar_url || user.user_metadata?.avatar_url || "");
+      const finalName = profile?.display_name || user.user_metadata?.display_name || "User";
+      const finalAvatar = profile?.avatar_url || user.user_metadata?.avatar_url || "";
+      console.log("Setting name:", finalName, "avatar:", finalAvatar);
+
+      setUserName(finalName);
+      setUserAvatar(finalAvatar);
 
       // Load stats
       const { data: entries } = await supabase

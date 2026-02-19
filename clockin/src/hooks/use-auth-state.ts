@@ -17,19 +17,22 @@ async function syncProfileFromAuth(user: { id: string; user_metadata?: { display
   if (!displayName && !avatarUrl) return;
 
   // Try to create profile - if duplicate key, profile already exists
-  const { error: insertError } = await supabase.from("profiles").insert({
-    id: user.id,
-    user_id: user.id,
-    ...(displayName && { display_name: displayName }),
-    ...(avatarUrl && { avatar_url: avatarUrl }),
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    updated_at: new Date().toISOString(),
-    created_at: new Date().toISOString(),
-  } as never);
-
-  // If duplicate key error (23505), profile already exists - that's fine
-  if (insertError && insertError.code !== "23505") {
-    console.error("Error creating profile:", insertError);
+  try {
+    await supabase.from("profiles").insert({
+      id: user.id,
+      user_id: user.id,
+      ...(displayName && { display_name: displayName }),
+      ...(avatarUrl && { avatar_url: avatarUrl }),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      updated_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    } as never);
+  } catch (error) {
+    // Silently ignore duplicate key errors (profile already exists)
+    const err = error as { code?: string; message?: string };
+    if (err?.code !== "23505" && !err?.message?.includes("duplicate key")) {
+      console.error("Error creating profile:", error);
+    }
   }
 }
 
