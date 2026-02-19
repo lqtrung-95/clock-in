@@ -207,20 +207,20 @@ export async function getActiveFocusRooms(): Promise<FocusRoom[]> {
   // Get unique host IDs
   const hostIds = [...new Set((data || []).map(r => r.host_id))];
 
-  // Fetch host profiles separately
-  let hostProfiles: Record<string, { id: string; display_name: string; avatar_url?: string }> = {};
+  // Fetch host profiles separately (join on user_id, not id)
+  let hostProfiles: Record<string, { user_id: string; display_name: string; avatar_url?: string }> = {};
   if (hostIds.length > 0) {
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, display_name, avatar_url")
-      .in("id", hostIds) as { data: { id: string; display_name: string; avatar_url?: string }[] | null };
-    hostProfiles = (profiles || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
+      .select("user_id, display_name, avatar_url")
+      .in("user_id", hostIds) as { data: { user_id: string; display_name: string; avatar_url?: string }[] | null };
+    hostProfiles = (profiles || []).reduce((acc, p) => ({ ...acc, [p.user_id]: p }), {});
   }
 
   return (data || []).map((room) => ({
     ...room,
     participant_count: room.participants?.[0]?.count || 0,
-    host: hostProfiles[room.host_id] || { id: room.host_id, display_name: "Unknown", avatar_url: undefined },
+    host: hostProfiles[room.host_id] || { user_id: room.host_id, display_name: "Unknown", avatar_url: undefined },
   }));
 }
 
