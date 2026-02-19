@@ -161,13 +161,6 @@ export default function SettingsPage() {
       });
 
       // Update profiles table for social features
-      // Check if profile exists first
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", user.id)
-        .single();
-
       const profileData = {
         id: user.id,
         user_id: user.id,
@@ -178,22 +171,27 @@ export default function SettingsPage() {
       };
 
       let profileError;
-      if (existingProfile) {
-        // Update existing profile
-        const { error } = await supabase
-          .from("profiles")
-          .update(profileData)
-          .eq("id", user.id);
-        profileError = error;
-      } else {
-        // Insert new profile with created_at
-        const { error } = await supabase
+
+      // Try update first - will succeed even if row doesn't exist (just returns count 0)
+      const { data: updatedProfiles, error: updateError } = await supabase
+        .from("profiles")
+        .update(profileData)
+        .eq("id", user.id)
+        .select();
+
+      if (updateError) {
+        profileError = updateError;
+      } else if (!updatedProfiles || updatedProfiles.length === 0) {
+        // No rows updated - profile doesn't exist, insert it
+        const { error: insertError } = await supabase
           .from("profiles")
           .insert({
             ...profileData,
             created_at: new Date().toISOString(),
           } as never);
-        profileError = error;
+        profileError = insertError;
+      } else {
+        profileError = null;
       }
 
       if (authError || profileError) {
