@@ -197,21 +197,30 @@ export async function getActiveFocusRooms(): Promise<FocusRoom[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("focus_rooms")
-    .select(`
-      *,
-      participants:focus_room_participants(count),
-      host:profiles!focus_rooms_host_id_fkey(id, display_name, avatar_url)
-    `)
+    .select("*, participants:focus_room_participants(count)")
     .eq("is_active", true)
     .eq("is_private", false)
-    .order("created_at", { ascending: false }) as { data: (FocusRoom & { participants: [{ count: number }]; host: { id: string; display_name: string; avatar_url?: string } })[] | null; error: Error | null };
+    .order("created_at", { ascending: false }) as { data: (FocusRoom & { participants: [{ count: number }] })[] | null; error: Error | null };
 
   if (error) throw error;
+
+  // Get unique host IDs
+  const hostIds = [...new Set((data || []).map(r => r.host_id))];
+
+  // Fetch host profiles separately
+  let hostProfiles: Record<string, { display_name: string; avatar_url?: string }> = {};
+  if (hostIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, display_name, avatar_url")
+      .in("id", hostIds) as { data: { id: string; display_name: string; avatar_url?: string }[] | null };
+    hostProfiles = (profiles || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
+  }
 
   return (data || []).map((room) => ({
     ...room,
     participant_count: room.participants?.[0]?.count || 0,
-    host: room.host,
+    host: hostProfiles[room.host_id] || { display_name: "Unknown", avatar_url: undefined },
   }));
 }
 
