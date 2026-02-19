@@ -31,10 +31,10 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
     category: "ambient",
   },
   {
-    id: "ocean-waves",
-    name: "Ocean Waves",
-    embedUrl: "https://www.youtube.com/embed/b0jqP3BGqNc?autoplay=1&mute=1&loop=1&playlist=b0jqP3BGqNc&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/b0jqP3BGqNc/mqdefault.jpg",
+    id: "thunderstorm",
+    name: "Thunderstorm",
+    embedUrl: "https://www.youtube.com/embed/nDq6TstdEi8?autoplay=1&mute=1&loop=1&playlist=nDq6TstdEi8&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/nDq6TstdEi8/mqdefault.jpg",
     category: "nature",
   },
   {
@@ -45,11 +45,11 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
     category: "nature",
   },
   {
-    id: "snow-falling",
-    name: "Snow Falling",
-    embedUrl: "https://www.youtube.com/embed/nsXPhR4hyaE?autoplay=1&mute=1&loop=1&playlist=nsXPhR4hyaE&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/nsXPhR4hyaE/mqdefault.jpg",
-    category: "nature",
+    id: "jazz-cafe",
+    name: "Jazz Cafe",
+    embedUrl: "https://www.youtube.com/embed/qH3fETPsqXU?autoplay=1&mute=1&loop=1&playlist=qH3fETPsqXU&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/qH3fETPsqXU/mqdefault.jpg",
+    category: "ambient",
   },
   {
     id: "coffee-shop",
