@@ -8,8 +8,7 @@ import { FocusRooms } from "@/components/social/focus-rooms";
 import { ShareCard } from "@/components/social/share-card";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { LoginPrompt } from "@/components/auth/login-prompt";
-import { Button } from "@/components/ui/button";
-import { Users, Trophy, MessageSquare, Share2, RefreshCw } from "lucide-react";
+import { Users, Trophy, MessageSquare, Share2 } from "lucide-react";
 
 export default function SocialPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
@@ -31,22 +30,15 @@ export default function SocialPage() {
       setUserId(user.id);
 
       // Load profile from database (not auth metadata) to get custom changes
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from("profiles")
         .select("display_name, avatar_url")
         .eq("user_id", user.id)
         .single();
 
-      console.log("Profile from DB:", profile, "Error:", profileError);
-      console.log("Auth metadata:", user.user_metadata);
-
       // Use profile data if available, fallback to auth metadata
-      const finalName = profile?.display_name || user.user_metadata?.display_name || "User";
-      const finalAvatar = profile?.avatar_url || user.user_metadata?.avatar_url || "";
-      console.log("Setting name:", finalName, "avatar:", finalAvatar);
-
-      setUserName(finalName);
-      setUserAvatar(finalAvatar);
+      setUserName(profile?.display_name || user.user_metadata?.display_name || "User");
+      setUserAvatar(profile?.avatar_url || user.user_metadata?.avatar_url || "");
 
       // Load stats
       const { data: entries } = await supabase
@@ -127,17 +119,12 @@ export default function SocialPage() {
             <h1 className="text-2xl font-bold">Social</h1>
             <p className="text-muted-foreground">Connect with friends and focus together</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={loadUserData}>
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-            <ShareCard
-              userName={userName}
-              userAvatar={userAvatar}
-              stats={stats}
-              period="weekly"
-            />
-          </div>
+          <ShareCard
+            userName={userName}
+            userAvatar={userAvatar}
+            stats={stats}
+            period="weekly"
+          />
         </div>
 
         {/* Grid Layout */}

@@ -181,21 +181,17 @@ export default function SettingsPage() {
         } as never);
 
       if (insertError) {
-        console.log("Insert error:", insertError);
         // If duplicate key error, try update instead
         if (insertError.message?.includes("duplicate key") || insertError.code === "23505") {
-          console.log("Trying update with user.id:", user.id);
           const { error: updateError } = await supabase
             .from("profiles")
             .update(profileData)
             .eq("user_id", user.id);
-          console.log("Update error:", updateError);
           profileError = updateError;
         } else {
           profileError = insertError;
         }
       } else {
-        console.log("Insert succeeded - new profile created");
         profileError = null;
       }
 
