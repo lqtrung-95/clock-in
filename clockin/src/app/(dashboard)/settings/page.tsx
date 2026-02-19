@@ -172,24 +172,25 @@ export default function SettingsPage() {
 
       let profileError;
 
-      // Try update first - will succeed even if row doesn't exist (just returns count 0)
-      const { data: updatedProfiles, error: updateError } = await supabase
+      // Try insert first, if duplicate key error, then update
+      const { error: insertError } = await supabase
         .from("profiles")
-        .update(profileData)
-        .eq("id", user.id)
-        .select();
+        .insert({
+          ...profileData,
+          created_at: new Date().toISOString(),
+        } as never);
 
-      if (updateError) {
-        profileError = updateError;
-      } else if (!updatedProfiles || updatedProfiles.length === 0) {
-        // No rows updated - profile doesn't exist, insert it
-        const { error: insertError } = await supabase
-          .from("profiles")
-          .insert({
-            ...profileData,
-            created_at: new Date().toISOString(),
-          } as never);
-        profileError = insertError;
+      if (insertError) {
+        // If duplicate key error, try update instead
+        if (insertError.message?.includes("duplicate key") || insertError.code === "23505") {
+          const { error: updateError } = await supabase
+            .from("profiles")
+            .update(profileData)
+            .eq("id", user.id);
+          profileError = updateError;
+        } else {
+          profileError = insertError;
+        }
       } else {
         profileError = null;
       }
