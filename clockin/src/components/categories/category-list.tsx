@@ -8,6 +8,7 @@ import { Archive, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { categoryService } from "@/services/category-service";
 import { guestStorage } from "@/lib/guest-storage";
+import { CategoryIcon, getIconName } from "./icon-picker";
 
 interface CategoryListProps {
   categories: Category[];
@@ -102,16 +103,11 @@ function CategoryCard({
     <Card className="p-4 border border-border bg-white/[0.02]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 items-center justify-center rounded-full text-white font-medium"
-            style={{ backgroundColor: category.color }}
-          >
-            {category.name[0]}
-          </div>
+          <CategoryIcon icon={category.icon} color={category.color} size="md" />
           <div>
             <p className="font-medium text-foreground">{category.name}</p>
             <p className="text-xs text-muted-foreground capitalize">
-              {category.icon}
+              {getIconName(category.icon)}
             </p>
           </div>
         </div>

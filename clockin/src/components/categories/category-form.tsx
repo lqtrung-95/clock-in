@@ -13,6 +13,7 @@ import {
 import type { Category } from "@/types/timer";
 import { CATEGORY_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { IconPicker, getIconName } from "./icon-picker";
 
 interface CategoryFormProps {
   category?: Category | null;
@@ -90,11 +91,7 @@ export function CategoryForm({
 
           <div className="space-y-2">
             <Label>Icon</Label>
-            <Input
-              value={icon}
-              onChange={(e) => setIcon(e.target.value)}
-              placeholder="Icon name (e.g., clock, briefcase)"
-            />
+            <IconPicker value={icon} onChange={setIcon} color={color} />
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
