@@ -33,8 +33,8 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
     id: "ocean-waves",
     name: "Ocean Waves",
-    embedUrl: "https://www.youtube.com/embed/6v2L2H8O4lI?autoplay=1&mute=1&loop=1&playlist=6v2L2H8O4lI&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/6v2L2H8O4lI/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/b0jqP3BGqNc?autoplay=1&mute=1&loop=1&playlist=b0jqP3BGqNc&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/b0jqP3BGqNc/mqdefault.jpg",
     category: "nature",
   },
   {
@@ -47,8 +47,8 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
     id: "snow-falling",
     name: "Snow Falling",
-    embedUrl: "https://www.youtube.com/embed/bzCdo29gPQc?autoplay=1&mute=1&loop=1&playlist=bzCdo29gPQc&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/bzCdo29gPQc/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/nsXPhR4hyaE?autoplay=1&mute=1&loop=1&playlist=nsXPhR4hyaE&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/nsXPhR4hyaE/mqdefault.jpg",
     category: "nature",
   },
   {
