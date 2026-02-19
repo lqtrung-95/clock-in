@@ -20,6 +20,7 @@ export default function SocialPage() {
     focusScore: 0,
   });
   const [userName, setUserName] = useState("User");
+  const [userAvatar, setUserAvatar] = useState<string>("");
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -31,6 +32,7 @@ export default function SocialPage() {
       if (user) {
         setUserId(user.id);
         setUserName(user.user_metadata?.display_name || "User");
+        setUserAvatar(user.user_metadata?.avatar_url || "");
 
         // Load stats
         const { data: entries } = await supabase
@@ -100,6 +102,7 @@ export default function SocialPage() {
           </div>
           <ShareCard
             userName={userName}
+            userAvatar={userAvatar}
             stats={stats}
             period="weekly"
           />

@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 
 interface ShareCardProps {
   userName: string;
+  userAvatar?: string;
   stats: {
     totalHours: number;
     sessions: number;
@@ -33,10 +34,12 @@ const periodLabels = {
 
 function ProgressCardPreview({
   userName,
+  userAvatar,
   stats,
   period,
 }: {
   userName: string;
+  userAvatar?: string;
   stats: ShareCardProps["stats"];
   period: string;
 }) {
@@ -50,9 +53,13 @@ function ProgressCardPreview({
           <h2 className="text-2xl font-bold">{userName}</h2>
           <p className="text-purple-300">{periodLabels[period as keyof typeof periodLabels]} Focus Report</p>
         </div>
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-2xl">
-          ⏱️
-        </div>
+        {userAvatar ? (
+          <img src={userAvatar} alt="" className="w-12 h-12 rounded-xl" />
+        ) : (
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-2xl">
+            ⏱️
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">
@@ -93,7 +100,7 @@ function ProgressCardPreview({
   );
 }
 
-export function ShareCard({ userName, stats, period }: ShareCardProps) {
+export function ShareCard({ userName, userAvatar, stats, period }: ShareCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
@@ -156,7 +163,7 @@ export function ShareCard({ userName, stats, period }: ShareCardProps) {
           {/* Card Preview */}
           <div className="overflow-x-auto pb-4">
             <div ref={cardRef} className="inline-block">
-              <ProgressCardPreview userName={userName} stats={stats} period={period} />
+              <ProgressCardPreview userName={userName} userAvatar={userAvatar} stats={stats} period={period} />
             </div>
           </div>
 

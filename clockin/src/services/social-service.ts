@@ -197,16 +197,21 @@ export async function getActiveFocusRooms(): Promise<FocusRoom[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("focus_rooms")
-    .select("*, participants:focus_room_participants(count)")
+    .select(`
+      *,
+      participants:focus_room_participants(count),
+      host:profiles!focus_rooms_host_id_fkey(id, display_name, avatar_url)
+    `)
     .eq("is_active", true)
     .eq("is_private", false)
-    .order("created_at", { ascending: false }) as { data: (FocusRoom & { participants: [{ count: number }] })[] | null; error: Error | null };
+    .order("created_at", { ascending: false }) as { data: (FocusRoom & { participants: [{ count: number }]; host: { id: string; display_name: string; avatar_url?: string } })[] | null; error: Error | null };
 
   if (error) throw error;
 
   return (data || []).map((room) => ({
     ...room,
     participant_count: room.participants?.[0]?.count || 0,
+    host: room.host,
   }));
 }
 
