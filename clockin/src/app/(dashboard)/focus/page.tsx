@@ -837,15 +837,17 @@ export default function FocusPage() {
                       {video.name}
                     </span>
                     {/* Delete button */}
-                    <button
+                    <div
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteCustomVideo(video.id);
                       }}
-                      className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-500/80 hover:bg-red-600 flex items-center justify-center"
+                      className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-500/80 hover:bg-red-600 flex items-center justify-center cursor-pointer"
+                      role="button"
+                      tabIndex={0}
                     >
                       <Trash2 className="w-2.5 h-2.5 text-white" />
-                    </button>
+                    </div>
                   </button>
                 ))}
                 {/* Add Video Button */}
