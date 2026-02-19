@@ -31,10 +31,10 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
     category: "ambient",
   },
   {
-    id: "autumn-leaves",
-    name: "Autumn Leaves",
-    embedUrl: "https://www.youtube.com/embed/BlIyy9N-9lU?autoplay=1&mute=1&loop=1&playlist=BlIyy9N-9lU&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/BlIyy9N-9lU/mqdefault.jpg",
+    id: "mountain-lake",
+    name: "Mountain Lake",
+    embedUrl: "https://www.youtube.com/embed/xNN7iTA57jM?autoplay=1&mute=1&loop=1&playlist=xNN7iTA57jM&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/xNN7iTA57jM/mqdefault.jpg",
     category: "nature",
   },
   {
