@@ -21,7 +21,7 @@ import { BACKGROUND_IMAGES } from "@/data/background-images";
 import { VIDEO_BACKGROUNDS } from "@/data/video-backgrounds";
 import { AnimatedBackground } from "@/components/focus/animated-background";
 import { DreamCrystal } from "@/components/focus/dream-crystal";
-import { Video } from "lucide-react";
+import { Video, Plus, Trash2 } from "lucide-react";
 import {
   Play,
   Pause,
@@ -128,6 +128,12 @@ export default function FocusPage() {
   const [videoMuted, setVideoMuted] = useState(false);
   const [bgOpacity, setBgOpacity] = useState(50); // 0-100, default 50%
 
+  // Custom videos
+  const [customVideos, setCustomVideos] = useState<{ id: string; name: string; embedUrl: string; thumbnail: string }[]>([]);
+  const [showAddVideoDialog, setShowAddVideoDialog] = useState(false);
+  const [newVideoUrl, setNewVideoUrl] = useState("");
+  const [newVideoTitle, setNewVideoTitle] = useState("");
+
   // Category and auth
   const { categories, setCategories } = useCategoryStore();
   const { isAuthenticated } = useAuthState();
@@ -144,6 +150,19 @@ export default function FocusPage() {
     reset();
   }, []);
   const [audioEnabled, setAudioEnabled] = useState(false);
+
+  // Load custom videos from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("customFocusVideos");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setCustomVideos(parsed);
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }, []);
 
   // Load categories
   useEffect(() => {
@@ -388,6 +407,54 @@ export default function FocusPage() {
     if (selectedSound && audioEnabled) {
       await playAudio();
     }
+  }
+
+  // Helper to extract YouTube video ID from various URL formats
+  function extractYouTubeId(url: string): string | null {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+      /youtube\.com\/watch\?.*v=([^&\s]+)/,
+    ];
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  }
+
+  function handleAddCustomVideo() {
+    const videoId = extractYouTubeId(newVideoUrl);
+    if (!videoId) {
+      toast.error("Invalid YouTube URL");
+      return;
+    }
+    if (!newVideoTitle.trim()) {
+      toast.error("Please enter a title");
+      return;
+    }
+    const newVideo = {
+      id: `custom-${Date.now()}`,
+      name: newVideoTitle.trim(),
+      embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1`,
+      thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+    };
+    const updated = [...customVideos, newVideo];
+    setCustomVideos(updated);
+    localStorage.setItem("customFocusVideos", JSON.stringify(updated));
+    setNewVideoUrl("");
+    setNewVideoTitle("");
+    setShowAddVideoDialog(false);
+    toast.success("Video added");
+  }
+
+  function handleDeleteCustomVideo(id: string) {
+    const updated = customVideos.filter((v) => v.id !== id);
+    setCustomVideos(updated);
+    localStorage.setItem("customFocusVideos", JSON.stringify(updated));
+    if (videoEmbedUrl && customVideos.find((v) => v.id === id)?.embedUrl === videoEmbedUrl) {
+      setVideoEmbedUrl("");
+    }
+    toast.success("Video removed");
   }
 
   // Active session view
@@ -740,6 +807,55 @@ export default function FocusPage() {
                     </span>
                   </button>
                 ))}
+                {/* Custom Videos */}
+                {customVideos.map((video) => (
+                  <button
+                    key={video.id}
+                    onClick={() => {
+                      setVideoEmbedUrl(video.embedUrl);
+                      setBackground("");
+                      setOverlay("none");
+                      setSelectedSound("");
+                      pauseAudio();
+                    }}
+                    className={cn(
+                      "shrink-0 relative w-24 h-16 rounded-lg overflow-hidden border-2 transition-all",
+                      videoEmbedUrl === video.embedUrl
+                        ? "border-purple-500 ring-2 ring-purple-500/20"
+                        : "border-border hover:border-foreground/30"
+                    )}
+                  >
+                    <img src={video.thumbnail} alt={video.name} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                      <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <span className="absolute bottom-1 left-1 right-1 text-[10px] font-medium text-white bg-black/60 px-1 rounded truncate">
+                      {video.name}
+                    </span>
+                    {/* Delete button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCustomVideo(video.id);
+                      }}
+                      className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-500/80 hover:bg-red-600 flex items-center justify-center"
+                    >
+                      <Trash2 className="w-2.5 h-2.5 text-white" />
+                    </button>
+                  </button>
+                ))}
+                {/* Add Video Button */}
+                <button
+                  onClick={() => setShowAddVideoDialog(true)}
+                  className="shrink-0 relative w-24 h-16 rounded-lg overflow-hidden border-2 border-dashed border-border hover:border-purple-500/50 hover:bg-purple-500/5 transition-all flex flex-col items-center justify-center gap-1"
+                >
+                  <Plus className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-[10px] font-medium text-muted-foreground">Add Video</span>
+                </button>
               </div>
             </div>
 
@@ -869,6 +985,43 @@ export default function FocusPage() {
             {selectedCategory ? "Start Focus Session" : "Select a category to start"}
           </Button>
         </Card>
+
+        {/* Add Custom Video Dialog */}
+        <Dialog open={showAddVideoDialog} onOpenChange={setShowAddVideoDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add Custom Video</DialogTitle>
+              <DialogDescription>
+                Paste a YouTube URL and give it a name.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">YouTube URL</label>
+                <Input
+                  placeholder="https://youtube.com/watch?v=..."
+                  value={newVideoUrl}
+                  onChange={(e) => setNewVideoUrl(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Title</label>
+                <Input
+                  placeholder="My Video"
+                  value={newVideoTitle}
+                  onChange={(e) => setNewVideoTitle(e.target.value)}
+                  maxLength={20}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowAddVideoDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddCustomVideo}>Add Video</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Tips */}
         <div className="mt-8 grid sm:grid-cols-3 gap-4">
