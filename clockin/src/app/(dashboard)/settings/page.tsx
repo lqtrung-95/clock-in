@@ -15,9 +15,11 @@ import {
 } from "@/components/ui/select";
 import { LoginBanner, LoginPrompt } from "@/components/auth/login-prompt";
 import { toast } from "sonner";
-import { Moon, Sun, Monitor, Settings2, Bell, Timer, Palette } from "lucide-react";
+import { Moon, Sun, Monitor, Settings2, Bell, Timer, Palette, User, Camera } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const GUEST_PREFS_KEY = "clockin-guest-preferences";
 
@@ -38,6 +40,22 @@ export default function SettingsPage() {
   const [preferences, setPreferences] = useState<Preferences>(defaultPrefs);
   const [saving, setSaving] = useState(false);
 
+  // Profile state
+  const [displayName, setDisplayName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  // Avatar options
+  const avatarOptions = [
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=Zack",
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=Bella",
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo",
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=Molly",
+  ];
+
   async function loadPreferences() {
     if (isAuthenticated) {
       const supabase = createClient();
@@ -55,6 +73,9 @@ export default function SettingsPage() {
             pomodoro_preset: prefs.pomodoro_preset ?? "25/5",
           });
         }
+        // Load profile
+        setDisplayName(user.user_metadata?.display_name || "");
+        setAvatarUrl(user.user_metadata?.avatar_url || "");
       }
     } else {
       // Load from localStorage for guests
@@ -68,9 +89,20 @@ export default function SettingsPage() {
             // ignore parse error
           }
         }
+        const guestProfile = localStorage.getItem("clockin-guest-profile");
+        if (guestProfile) {
+          try {
+            const parsed = JSON.parse(guestProfile);
+            setDisplayName(parsed.display_name || "");
+            setAvatarUrl(parsed.avatar_url || "");
+          } catch {
+            // ignore
+          }
+        }
       }
     }
     setLoading(false);
+    setProfileLoading(false);
   }
 
   useEffect(() => {
@@ -110,7 +142,35 @@ export default function SettingsPage() {
     setSaving(false);
   }
 
-  if (loading || authLoading) {
+  async function saveProfile() {
+    setSavingProfile(true);
+    if (isAuthenticated) {
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          display_name: displayName.trim(),
+          avatar_url: avatarUrl,
+        },
+      });
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Profile updated");
+      }
+    } else {
+      // Save to localStorage for guests
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "clockin-guest-profile",
+          JSON.stringify({ display_name: displayName.trim(), avatar_url: avatarUrl })
+        );
+        toast.success("Profile saved locally");
+      }
+    }
+    setSavingProfile(false);
+  }
+
+  if (loading || authLoading || profileLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
@@ -135,6 +195,66 @@ export default function SettingsPage() {
         </div>
 
         <Card className="border border-border bg-card p-6 space-y-8">
+          {/* Profile */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-cyan-400" />
+              <h2 className="text-lg font-semibold text-foreground">Profile</h2>
+            </div>
+            <div className="space-y-4">
+              {/* Avatar Selection */}
+              <div className="space-y-2">
+                <Label className="text-foreground">Avatar</Label>
+                <div className="flex gap-2 flex-wrap">
+                  {avatarOptions.map((url) => (
+                    <button
+                      key={url}
+                      onClick={() => setAvatarUrl(url)}
+                      className={`relative rounded-full p-1 transition-all ${
+                        avatarUrl === url
+                          ? "ring-2 ring-blue-500 ring-offset-2"
+                          : "hover:opacity-80"
+                      }`}
+                    >
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={url} alt="Avatar option" />
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white">
+                          <Camera className="h-5 w-5" />
+                        </AvatarFallback>
+                      </Avatar>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Display Name */}
+              <div className="space-y-2">
+                <Label htmlFor="displayName" className="text-foreground">
+                  Display Name
+                </Label>
+                <Input
+                  id="displayName"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Enter your name"
+                  maxLength={30}
+                  className="border-border bg-card"
+                />
+              </div>
+              {/* Save Profile Button */}
+              <Button
+                onClick={saveProfile}
+                disabled={savingProfile || !displayName.trim()}
+                variant="outline"
+                className="w-full"
+              >
+                {savingProfile ? "Saving..." : "Update Profile"}
+              </Button>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-border" />
+
           {/* Appearance */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
