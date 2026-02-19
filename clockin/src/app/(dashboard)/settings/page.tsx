@@ -146,14 +146,32 @@ export default function SettingsPage() {
     setSavingProfile(true);
     if (isAuthenticated) {
       const supabase = createClient();
-      const { error } = await supabase.auth.updateUser({
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setSavingProfile(false);
+        return;
+      }
+
+      // Update auth user metadata
+      const { error: authError } = await supabase.auth.updateUser({
         data: {
           display_name: displayName.trim(),
           avatar_url: avatarUrl,
         },
       });
-      if (error) {
-        toast.error(error.message);
+
+      // Update profiles table for social features
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          display_name: displayName.trim(),
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString(),
+        } as never)
+        .eq("id", user.id);
+
+      if (authError || profileError) {
+        toast.error(authError?.message || profileError?.message || "Failed to update");
       } else {
         toast.success("Profile updated");
       }
