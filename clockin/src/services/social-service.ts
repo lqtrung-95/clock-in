@@ -253,6 +253,36 @@ export async function leaveFocusRoom(roomId: string, userId: string): Promise<vo
   if (error) throw error;
 }
 
+export async function deleteFocusRoom(roomId: string, userId: string): Promise<void> {
+  const supabase = createClient();
+
+  // Verify user is the host
+  const { data: room } = await supabase
+    .from("focus_rooms")
+    .select("host_id")
+    .eq("id", roomId)
+    .single() as { data: { host_id: string } | null };
+
+  if (!room || room.host_id !== userId) {
+    throw new Error("Only the room creator can delete this room");
+  }
+
+  // Delete room (participants will be cascade deleted if set up, otherwise delete manually)
+  const { error: participantsError } = await supabase
+    .from("focus_room_participants")
+    .delete()
+    .eq("room_id", roomId);
+
+  if (participantsError) throw participantsError;
+
+  const { error } = await supabase
+    .from("focus_rooms")
+    .delete()
+    .eq("id", roomId);
+
+  if (error) throw error;
+}
+
 export async function updateFocusStatus(
   roomId: string,
   userId: string,

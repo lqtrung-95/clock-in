@@ -187,7 +187,12 @@ export function useFocusRooms() {
     return room;
   };
 
-  return { rooms, loading, refresh: loadRooms, createRoom };
+  const deleteRoom = async (roomId: string, userId: string) => {
+    await socialService.deleteFocusRoom(roomId, userId);
+    await loadRooms();
+  };
+
+  return { rooms, loading, refresh: loadRooms, createRoom, deleteRoom };
 }
 
 // ============================================

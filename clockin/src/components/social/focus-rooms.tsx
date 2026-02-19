@@ -15,7 +15,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useFocusRooms } from "@/hooks/use-social";
-import { Users, Plus, Lock, Globe, ArrowRight } from "lucide-react";
+import { Users, Plus, Lock, Globe, ArrowRight, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface FocusRoomsProps {
   userId: string;
@@ -24,6 +25,8 @@ interface FocusRoomsProps {
 function RoomCard({
   room,
   onJoin,
+  currentUserId,
+  onDelete,
 }: {
   room: {
     id: string;
@@ -39,8 +42,11 @@ function RoomCard({
     };
   };
   onJoin: (id: string) => void;
+  currentUserId: string;
+  onDelete: (id: string) => void;
 }) {
   const isFull = (room.participant_count || 0) >= room.max_participants;
+  const isHost = room.host?.id === currentUserId;
 
   return (
     <Card className="p-4 hover:border-primary/50 transition-colors">
@@ -79,15 +85,26 @@ function RoomCard({
           </div>
         </div>
 
-        <Button
-          size="sm"
-          onClick={() => onJoin(room.id)}
-          disabled={isFull}
-          className="ml-4"
-        >
-          {isFull ? "Full" : "Join"}
-          <ArrowRight className="h-4 w-4 ml-1" />
-        </Button>
+        <div className="flex items-center gap-2 ml-4">
+          {isHost && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(room.id)}
+              className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+          <Button
+            size="sm"
+            onClick={() => onJoin(room.id)}
+            disabled={isFull}
+          >
+            {isFull ? "Full" : "Join"}
+            <ArrowRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
       </div>
     </Card>
   );
@@ -178,10 +195,20 @@ function CreateRoomDialog({
 
 export function FocusRooms({ userId }: FocusRoomsProps) {
   const router = useRouter();
-  const { rooms, loading } = useFocusRooms();
+  const { rooms, loading, deleteRoom } = useFocusRooms();
 
   const handleJoin = (roomId: string) => {
     router.push(`/focus-room/${roomId}`);
+  };
+
+  const handleDelete = async (roomId: string) => {
+    if (!confirm("Are you sure you want to delete this room?")) return;
+    try {
+      await deleteRoom(roomId, userId);
+      toast.success("Room deleted");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete room");
+    }
   };
 
   if (loading) {
@@ -216,7 +243,13 @@ export function FocusRooms({ userId }: FocusRoomsProps) {
           </div>
         ) : (
           rooms.map((room) => (
-            <RoomCard key={room.id} room={room} onJoin={handleJoin} />
+            <RoomCard
+              key={room.id}
+              room={room}
+              onJoin={handleJoin}
+              currentUserId={userId}
+              onDelete={handleDelete}
+            />
           ))
         )}
       </div>
