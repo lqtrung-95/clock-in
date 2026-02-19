@@ -7,6 +7,7 @@ export interface VideoBackground {
 }
 
 // YouTube ambient videos - looping background scenes
+// Note: These are popular ambient videos that are typically available long-term
 export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
     id: "lofi-girl",
@@ -18,8 +19,8 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
     id: "rain-window",
     name: "Rain on Window",
-    embedUrl: "https://www.youtube.com/embed/8plwv25NYRo?autoplay=1&mute=1&loop=1&playlist=8plwv25NYRo&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/8plwv25NYRo/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/mPZkdNFkNps?autoplay=1&mute=1&loop=1&playlist=mPZkdNFkNps&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/mPZkdNFkNps/mqdefault.jpg",
     category: "nature",
   },
   {
@@ -32,8 +33,8 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
     id: "ocean-waves",
     name: "Ocean Waves",
-    embedUrl: "https://www.youtube.com/embed/V-_O7wxRljo?autoplay=1&mute=1&loop=1&playlist=V-_O7wxRljo&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/V-_O7wxRljo/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/DV1hQSt6hig?autoplay=1&mute=1&loop=1&playlist=DV1hQSt6hig&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/DV1hQSt6hig/mqdefault.jpg",
     category: "nature",
   },
   {
@@ -46,22 +47,22 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
     id: "snow-falling",
     name: "Snow Falling",
-    embedUrl: "https://www.youtube.com/embed/8iZW8Z7TUsA?autoplay=1&mute=1&loop=1&playlist=8iZW8Z7TUsA&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/8iZW8Z7TUsA/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/9zZUbIO9j6E?autoplay=1&mute=1&loop=1&playlist=9zZUbIO9j6E&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/9zZUbIO9j6E/mqdefault.jpg",
     category: "nature",
   },
   {
     id: "coffee-shop",
     name: "Coffee Shop",
-    embedUrl: "https://www.youtube.com/embed/7NOSDKb0HlU?autoplay=1&mute=1&loop=1&playlist=7NOSDKb0HlU&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/7NOSDKb0HlU/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/1fueZCTYkpA?autoplay=1&mute=1&loop=1&playlist=1fueZCTYkpA&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/1fueZCTYkpA/mqdefault.jpg",
     category: "ambient",
   },
   {
     id: "tokyo-night",
     name: "Tokyo Night",
-    embedUrl: "https://www.youtube.com/embed/5qap5aO4i9A?autoplay=1&mute=1&loop=1&playlist=5qap5aO4i9A&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/5qap5aO4i9A/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/0EOBXbV8N0k?autoplay=1&mute=1&loop=1&playlist=0EOBXbV8N0k&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/0EOBXbV8N0k/mqdefault.jpg",
     category: "urban",
   },
 ];
