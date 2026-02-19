@@ -208,7 +208,7 @@ export async function getActiveFocusRooms(): Promise<FocusRoom[]> {
   const hostIds = [...new Set((data || []).map(r => r.host_id))];
 
   // Fetch host profiles separately
-  let hostProfiles: Record<string, { display_name: string; avatar_url?: string }> = {};
+  let hostProfiles: Record<string, { id: string; display_name: string; avatar_url?: string }> = {};
   if (hostIds.length > 0) {
     const { data: profiles } = await supabase
       .from("profiles")
@@ -220,7 +220,7 @@ export async function getActiveFocusRooms(): Promise<FocusRoom[]> {
   return (data || []).map((room) => ({
     ...room,
     participant_count: room.participants?.[0]?.count || 0,
-    host: hostProfiles[room.host_id] || { display_name: "Unknown", avatar_url: undefined },
+    host: hostProfiles[room.host_id] || { id: room.host_id, display_name: "Unknown", avatar_url: undefined },
   }));
 }
 
