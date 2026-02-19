@@ -31,10 +31,10 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
     category: "ambient",
   },
   {
-    id: "northern-lights",
-    name: "Northern Lights",
-    embedUrl: "https://www.youtube.com/embed/4yQI1p5QZPU?autoplay=1&mute=1&loop=1&playlist=4yQI1p5QZPU&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/4yQI1p5QZPU/mqdefault.jpg",
+    id: "autumn-leaves",
+    name: "Autumn Leaves",
+    embedUrl: "https://www.youtube.com/embed/BlIyy9N-9lU?autoplay=1&mute=1&loop=1&playlist=BlIyy9N-9lU&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/BlIyy9N-9lU/mqdefault.jpg",
     category: "nature",
   },
   {
