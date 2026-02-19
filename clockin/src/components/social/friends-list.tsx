@@ -174,8 +174,8 @@ export function FriendsList({ userId }: FriendsListProps) {
 
   if (loading) {
     return (
-      <Card className="p-6">
-        <div className="flex items-center justify-center py-8">
+      <Card className="p-6 h-full">
+        <div className="flex items-center justify-center py-8 h-full">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       </Card>
@@ -183,8 +183,8 @@ export function FriendsList({ userId }: FriendsListProps) {
   }
 
   return (
-    <Card className="p-6">
-      <Tabs defaultValue="friends">
+    <Card className="p-6 h-full">
+      <Tabs defaultValue="friends" className="h-full flex flex-col">
         <TabsList className="grid w-full grid-cols-2 mb-4">
           <TabsTrigger value="friends">
             Friends ({friends.length})

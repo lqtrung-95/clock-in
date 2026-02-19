@@ -125,8 +125,8 @@ export function Leaderboard({ userId }: LeaderboardProps) {
 
   if (loading) {
     return (
-      <Card className="p-6">
-        <div className="flex items-center justify-center py-12">
+      <Card className="p-6 h-full">
+        <div className="flex items-center justify-center py-12 h-full">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       </Card>
@@ -134,7 +134,7 @@ export function Leaderboard({ userId }: LeaderboardProps) {
   }
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 h-full">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-semibold">Friend Leaderboard</h3>
