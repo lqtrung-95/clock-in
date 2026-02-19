@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,31 @@ export default function OnboardingContent() {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  // Check if user already has categories - if so, redirect to dashboard
+  useEffect(() => {
+    async function checkExistingCategories() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+      const { data: categories } = await supabase
+        .from("categories")
+        .select("id")
+        .eq("user_id", user.id)
+        .limit(1);
+      if (categories && categories.length > 0) {
+        // User already has categories, skip onboarding
+        router.push("/dashboard");
+      } else {
+        setChecking(false);
+      }
+    }
+    checkExistingCategories();
+  }, [router]);
 
   function toggleCategory(name: string) {
     const next = new Set(selected);
@@ -56,6 +81,14 @@ export default function OnboardingContent() {
     } else {
       router.push("/dashboard");
     }
+  }
+
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+      </div>
+    );
   }
 
   return (
