@@ -33,8 +33,8 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
     id: "ocean-waves",
     name: "Ocean Waves",
-    embedUrl: "https://www.youtube.com/embed/DV1hQSt6hig?autoplay=1&mute=1&loop=1&playlist=DV1hQSt6hig&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/DV1hQSt6hig/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/6v2L2H8O4lI?autoplay=1&mute=1&loop=1&playlist=6v2L2H8O4lI&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/6v2L2H8O4lI/mqdefault.jpg",
     category: "nature",
   },
   {
@@ -47,8 +47,8 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
     id: "snow-falling",
     name: "Snow Falling",
-    embedUrl: "https://www.youtube.com/embed/9zZUbIO9j6E?autoplay=1&mute=1&loop=1&playlist=9zZUbIO9j6E&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/9zZUbIO9j6E/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/bzCdo29gPQc?autoplay=1&mute=1&loop=1&playlist=bzCdo29gPQc&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/bzCdo29gPQc/mqdefault.jpg",
     category: "nature",
   },
   {
@@ -61,8 +61,8 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
     id: "tokyo-night",
     name: "Tokyo Night",
-    embedUrl: "https://www.youtube.com/embed/0EOBXbV8N0k?autoplay=1&mute=1&loop=1&playlist=0EOBXbV8N0k&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/0EOBXbV8N0k/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/eZe4Q_58UTU?autoplay=1&mute=1&loop=1&playlist=eZe4Q_58UTU&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/eZe4Q_58UTU/mqdefault.jpg",
     category: "urban",
   },
 ];
