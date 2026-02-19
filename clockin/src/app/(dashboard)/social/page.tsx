@@ -22,52 +22,62 @@ export default function SocialPage() {
   const [userName, setUserName] = useState("User");
   const [userAvatar, setUserAvatar] = useState<string>("");
 
+  const loadUserData = async () => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      setUserId(user.id);
+
+      // Load profile from database (not auth metadata) to get custom changes
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url")
+        .eq("user_id", user.id)
+        .single();
+
+      // Use profile data if available, fallback to auth metadata
+      setUserName(profile?.display_name || user.user_metadata?.display_name || "User");
+      setUserAvatar(profile?.avatar_url || user.user_metadata?.avatar_url || "");
+
+      // Load stats
+      const { data: entries } = await supabase
+        .from("time_entries")
+        .select("duration_seconds")
+        .eq("user_id", user.id)
+        .gte("started_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) as { data: { duration_seconds: number }[] | null };
+
+      const { data: streakData } = await supabase
+        .from("streaks")
+        .select("current_streak")
+        .eq("user_id", user.id)
+        .single() as { data: { current_streak: number } | null };
+
+      const totalSeconds = entries?.reduce((sum, e) => sum + (e.duration_seconds || 0), 0) || 0;
+
+      setStats({
+        totalHours: totalSeconds / 3600,
+        sessions: entries?.length || 0,
+        streak: streakData?.current_streak || 0,
+        focusScore: Math.min(100, Math.round((totalSeconds / 3600) * 10)),
+      });
+    }
+  };
+
   useEffect(() => {
     if (!isAuthenticated) return;
+    loadUserData();
+  }, [isAuthenticated]);
 
-    const loadUserData = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (user) {
-        setUserId(user.id);
-
-        // Load profile from database (not auth metadata) to get custom changes
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("display_name, avatar_url")
-          .eq("user_id", user.id)
-          .single();
-
-        // Use profile data if available, fallback to auth metadata
-        setUserName(profile?.display_name || user.user_metadata?.display_name || "User");
-        setUserAvatar(profile?.avatar_url || user.user_metadata?.avatar_url || "");
-
-        // Load stats
-        const { data: entries } = await supabase
-          .from("time_entries")
-          .select("duration_seconds")
-          .eq("user_id", user.id)
-          .gte("started_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) as { data: { duration_seconds: number }[] | null };
-
-        const { data: streakData } = await supabase
-          .from("streaks")
-          .select("current_streak")
-          .eq("user_id", user.id)
-          .single() as { data: { current_streak: number } | null };
-
-        const totalSeconds = entries?.reduce((sum, e) => sum + (e.duration_seconds || 0), 0) || 0;
-
-        setStats({
-          totalHours: totalSeconds / 3600,
-          sessions: entries?.length || 0,
-          streak: streakData?.current_streak || 0,
-          focusScore: Math.min(100, Math.round((totalSeconds / 3600) * 10)),
-        });
+  // Refresh data when window gains focus (e.g., after navigating from Settings)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (isAuthenticated) {
+        loadUserData();
       }
     };
-
-    loadUserData();
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
   }, [isAuthenticated]);
 
   if (authLoading) {
