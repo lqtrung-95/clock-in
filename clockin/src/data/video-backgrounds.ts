@@ -31,10 +31,10 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
     category: "ambient",
   },
   {
-    id: "thunderstorm",
-    name: "Thunderstorm",
-    embedUrl: "https://www.youtube.com/embed/nDq6TstdEi8?autoplay=1&mute=1&loop=1&playlist=nDq6TstdEi8&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/nDq6TstdEi8/mqdefault.jpg",
+    id: "waterfall",
+    name: "Waterfall",
+    embedUrl: "https://www.youtube.com/embed/9oEcLLr4V9w?autoplay=1&mute=1&loop=1&playlist=9oEcLLr4V9w&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/9oEcLLr4V9w/mqdefault.jpg",
     category: "nature",
   },
   {
