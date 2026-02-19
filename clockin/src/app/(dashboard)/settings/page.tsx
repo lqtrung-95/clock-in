@@ -160,15 +160,18 @@ export default function SettingsPage() {
         },
       });
 
-      // Update profiles table for social features
+      // Update profiles table for social features (upsert creates if not exists)
       const { error: profileError } = await supabase
         .from("profiles")
-        .update({
+        .upsert({
+          id: user.id,
+          user_id: user.id,
           display_name: displayName.trim(),
           avatar_url: avatarUrl,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        } as never)
-        .eq("id", user.id);
+        } as never, { onConflict: "id" });
 
       if (authError || profileError) {
         toast.error(authError?.message || profileError?.message || "Failed to update");
