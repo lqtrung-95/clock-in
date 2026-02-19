@@ -69,12 +69,15 @@ function RoomCard({
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Avatar className="h-6 w-6">
+                {room.host?.avatar_url && (
+                  <img src={room.host.avatar_url} alt={room.host.display_name} className="h-full w-full object-cover" />
+                )}
                 <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xs">
                   {room.host?.display_name?.charAt(0).toUpperCase() || "?"}
                 </AvatarFallback>
               </Avatar>
               <span className="text-xs text-muted-foreground">
-                {room.host?.display_name}
+                {room.host?.display_name || "Unknown"}
               </span>
             </div>
 

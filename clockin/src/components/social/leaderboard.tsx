@@ -75,6 +75,9 @@ function LeaderboardEntry({
       <RankBadge rank={entry.rank} />
 
       <Avatar className="h-10 w-10">
+        {entry.avatar_url && (
+          <img src={entry.avatar_url} alt={entry.display_name} className="h-full w-full object-cover" />
+        )}
         <AvatarFallback
           className={cn(
             "text-white text-sm",
