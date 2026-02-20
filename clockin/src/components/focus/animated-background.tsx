@@ -263,14 +263,22 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
     );
   };
 
-  // After iframe loads, sync mute state.
-  // URL always starts with mute=1 for iOS compat — unMute if user wants sound.
-  // Delay 800ms: YouTube JS API on iOS needs longer to initialise than desktop.
+  // iOS jolt: rapid play→pause→play sequence after load.
+  // iOS Safari won't autoplay iframes — but responds to this postMessage sequence
+  // when triggered shortly after user interaction (e.g. selecting a scene).
   const handleIframeLoad = () => {
+    // Step 1: initial play attempt + mute sync
     setTimeout(() => {
+      postCommand('playVideo');
       if (!muted) postCommand('unMute');
-      if (!isRunning) postCommand('pauseVideo');
     }, 800);
+    // Step 2: pause (the "jolt")
+    setTimeout(() => postCommand('pauseVideo'), 1000);
+    // Step 3: resume — iOS now actually starts playing
+    setTimeout(() => {
+      postCommand('playVideo');
+      if (!isRunning) postCommand('pauseVideo');
+    }, 1200);
   };
 
   // User-triggered changes — player is already running, fire directly
