@@ -139,7 +139,7 @@ export default function GoalsPage() {
     if (!dreamGoalSynced && userId && userId !== 'guest' && !dreamGoalLoading && dreamGoal && dreamGoal.current_hours === 0) {
       setDreamGoalSynced(true);
       syncDreamGoalWithHistory(userId)
-        .then(() => refreshDreamGoal())
+        .then(() => { refreshDreamGoal(); })
         .catch((err) => console.error('Failed to sync dream goal history:', err));
     }
   }, [userId, dreamGoalLoading, dreamGoal, dreamGoalSynced, refreshDreamGoal]);
