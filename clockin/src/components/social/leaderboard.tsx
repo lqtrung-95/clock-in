@@ -75,9 +75,17 @@ function LeaderboardEntry({
       <RankBadge rank={entry.rank} />
 
       <Avatar className="h-10 w-10">
-        {entry.avatar_url && (
-          <img src={entry.avatar_url} alt={entry.display_name} className="h-full w-full object-cover rounded-full" />
-        )}
+        {entry.avatar_url ? (
+          <img
+            src={entry.avatar_url}
+            alt={entry.display_name}
+            className="h-full w-full object-cover rounded-full"
+            onError={(e) => {
+              console.error("Leaderboard avatar load error:", entry.avatar_url);
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        ) : null}
         <AvatarFallback
           className={cn(
             "text-white text-sm",

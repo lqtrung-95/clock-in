@@ -92,13 +92,17 @@ function ParticipantCard({
     >
       <div className="relative">
         <Avatar className="h-10 w-10 ring-2 ring-white/20">
-          {participant.user?.avatar_url && (
+          {participant.user?.avatar_url ? (
             <img
               src={participant.user.avatar_url}
               alt={participant.user.display_name}
               className="h-full w-full object-cover rounded-full"
+              onError={(e) => {
+                console.error("Avatar load error:", participant.user?.avatar_url);
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
             />
-          )}
+          ) : null}
           <AvatarFallback className="bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white text-sm">
             {participant.user?.display_name?.charAt(0).toUpperCase() || "?"}
           </AvatarFallback>
