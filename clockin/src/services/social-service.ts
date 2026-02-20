@@ -11,6 +11,24 @@ import type {
   FriendSearchResult,
 } from "@/types/social";
 
+// Helper to get public avatar URL
+function getAvatarUrl(avatarUrl: string | undefined | null): string | undefined {
+  if (!avatarUrl) return undefined;
+
+  // If it's already a full URL, return it
+  if (avatarUrl.startsWith("http")) {
+    return avatarUrl;
+  }
+
+  // If it's a storage path, construct the public URL
+  const supabase = createClient();
+  const { data: { publicUrl } } = supabase.storage
+    .from("avatars")
+    .getPublicUrl(avatarUrl);
+
+  return publicUrl;
+}
+
 
 // ============================================
 // FRIENDSHIP OPERATIONS
@@ -49,7 +67,7 @@ export async function searchUsers(query: string, currentUserId: string): Promise
     return {
       id: user.id,
       display_name: user.display_name,
-      avatar_url: user.avatar_url,
+      avatar_url: getAvatarUrl(user.avatar_url),
       friendship_status: friendship ? "pending" : "none",
       is_requester: friendship?.requester_id === currentUserId,
     };
@@ -151,6 +169,7 @@ export async function getFriendsLeaderboard(
 
   return uniqueData.map((entry: LeaderboardEntry) => ({
     ...entry,
+    avatar_url: getAvatarUrl(entry.avatar_url),
     is_current_user: entry.friend_id === userId,
   }));
 }
@@ -255,7 +274,7 @@ export async function getFocusRoom(roomId: string): Promise<FocusRoom | null> {
     user: userProfiles[p.user_id] ? {
       id: p.user_id,
       display_name: userProfiles[p.user_id].display_name,
-      avatar_url: userProfiles[p.user_id].avatar_url,
+      avatar_url: getAvatarUrl(userProfiles[p.user_id].avatar_url),
     } : { id: p.user_id, display_name: "Unknown", avatar_url: undefined },
   }));
 

@@ -12,6 +12,24 @@ import type {
   FriendSearchResult,
 } from "@/types/social";
 
+// Helper to get public avatar URL
+function getAvatarUrl(avatarUrl: string | undefined | null): string | undefined {
+  if (!avatarUrl) return undefined;
+
+  // If it's already a full URL, return it
+  if (avatarUrl.startsWith("http")) {
+    return avatarUrl;
+  }
+
+  // If it's a storage path, construct the public URL
+  const supabase = createClient();
+  const { data: { publicUrl } } = supabase.storage
+    .from("avatars")
+    .getPublicUrl(avatarUrl);
+
+  return publicUrl;
+}
+
 // ============================================
 // FRIENDS HOOK
 // ============================================
@@ -287,7 +305,7 @@ export function useFocusRoomMessages(roomId: string | undefined) {
         user: userProfiles[m.user_id] ? {
           id: m.user_id,
           display_name: userProfiles[m.user_id].display_name,
-          avatar_url: userProfiles[m.user_id].avatar_url,
+          avatar_url: getAvatarUrl(userProfiles[m.user_id].avatar_url),
         } : { id: m.user_id, display_name: "Unknown", avatar_url: undefined },
       }));
 
@@ -330,7 +348,7 @@ export function useFocusRoomMessages(roomId: string | undefined) {
             user: profile ? {
               id: profile.user_id,
               display_name: profile.display_name,
-              avatar_url: profile.avatar_url,
+              avatar_url: getAvatarUrl(profile.avatar_url),
             } : { id: newMessage.user_id, display_name: "Unknown", avatar_url: undefined },
           }]);
         }
