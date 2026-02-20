@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/select";
 import { LoginBanner, LoginPrompt } from "@/components/auth/login-prompt";
 import { toast } from "sonner";
-import { Moon, Sun, Monitor, Settings2, Bell, Timer, Palette, User, Camera, Upload, Trash2 } from "lucide-react";
+import { Moon, Sun, Monitor, Settings2, Bell, Timer, Palette, User, Camera, Upload, Trash2, Tag, ChevronRight, Trophy } from "lucide-react";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { Input } from "@/components/ui/input";
@@ -648,6 +649,36 @@ export default function SettingsPage() {
                 </p>
               </div>
             )}
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-border" />
+
+          {/* Quick Links */}
+          <div className="space-y-3">
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">More</h2>
+            <div className="space-y-1">
+              <Link
+                href="/categories"
+                className="flex items-center justify-between rounded-xl border border-border bg-white/[0.02] px-4 py-3 transition-colors hover:bg-white/[0.05]"
+              >
+                <div className="flex items-center gap-3">
+                  <Tag className="h-4 w-4 text-cyan-400" />
+                  <span className="text-sm font-medium text-foreground">Categories</span>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </Link>
+              <Link
+                href="/achievements"
+                className="flex items-center justify-between rounded-xl border border-border bg-white/[0.02] px-4 py-3 transition-colors hover:bg-white/[0.05]"
+              >
+                <div className="flex items-center gap-3">
+                  <Trophy className="h-4 w-4 text-cyan-400" />
+                  <span className="text-sm font-medium text-foreground">Achievements</span>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </Link>
+            </div>
           </div>
 
           {/* Save Button */}

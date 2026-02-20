@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, Brain, BarChart3, Target, Trophy, Users } from "lucide-react";
+import { Home, Brain, Target, Settings, Users } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/focus", label: "Focus", icon: Brain },
   { href: "/social", label: "Social", icon: Users },
-  { href: "/achievements", label: "Rewards", icon: Trophy },
   { href: "/goals", label: "Goals", icon: Target },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function MobileBottomNav() {
@@ -27,41 +27,23 @@ export function MobileBottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "group relative flex flex-1 flex-col items-center justify-center gap-1 text-[10px] font-medium transition-all duration-300",
-                isActive
-                  ? "text-foreground"
-                  : "text-muted-foreground/70 hover:text-foreground/80"
-              )}
-            >
-              {/* Active Background */}
-              {isActive && (
-                <div className="absolute inset-x-2 inset-y-1 rounded-xl bg-gradient-to-b from-blue-500/20 to-cyan-500/10 border border-blue-500/20" />
-              )}
-
-              {/* Icon Container */}
-              <span className={cn(
-                "relative z-10 flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-300",
+                "relative flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[10px] font-medium transition-colors duration-200",
                 isActive
                   ? "text-cyan-400"
-                  : ""
-              )}>
-                <Icon className={cn(
-                  "h-[18px] w-[18px] transition-transform duration-300",
-                  isActive && "scale-110"
-                )} />
-              </span>
+                  : "text-muted-foreground/60 hover:text-foreground/80"
+              )}
+            >
+              <Icon className={cn(
+                "h-[18px] w-[18px] transition-transform duration-200",
+                isActive && "scale-110"
+              )} />
 
-              {/* Label */}
-              <span className={cn(
-                "relative z-10 transition-all duration-300",
-                isActive && "font-semibold"
-              )}>
+              <span className={cn(isActive && "font-semibold")}>
                 {item.label}
               </span>
 
-              {/* Active Glow Dot */}
               {isActive && (
-                <div className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                <div className="absolute bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.8)]" />
               )}
             </Link>
           );

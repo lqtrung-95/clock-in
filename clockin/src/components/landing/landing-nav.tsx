@@ -15,7 +15,7 @@ export function LandingNav() {
 
       <div className="flex items-center gap-3">
         <Link
-          href="/auth/login"
+          href="/login"
           className="text-sm text-white/60 hover:text-white transition-colors font-medium px-4 py-2"
         >
           Sign in

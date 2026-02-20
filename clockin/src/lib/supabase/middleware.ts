@@ -62,7 +62,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && isAuthPage && !request.nextUrl.pathname.startsWith("/onboarding")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 
