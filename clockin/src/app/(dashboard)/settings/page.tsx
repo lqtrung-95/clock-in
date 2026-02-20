@@ -25,7 +25,7 @@ const GUEST_PREFS_KEY = "clockin-guest-preferences";
 
 interface Preferences {
   email_digest_enabled: boolean;
-  pomodoro_preset: "25/5" | "50/10" | "90/20" | "custom";
+  pomodoro_preset: "25/5" | "50/10" | "90/20";
 }
 
 const defaultPrefs: Preferences = {
@@ -611,7 +611,6 @@ export default function SettingsPage() {
                   <SelectItem value="25/5" className="text-foreground">25m work / 5m break</SelectItem>
                   <SelectItem value="50/10" className="text-foreground">50m work / 10m break</SelectItem>
                   <SelectItem value="90/20" className="text-foreground">90m work / 20m break</SelectItem>
-                  <SelectItem value="custom" className="text-foreground">Custom</SelectItem>
                 </SelectContent>
               </Select>
             </div>

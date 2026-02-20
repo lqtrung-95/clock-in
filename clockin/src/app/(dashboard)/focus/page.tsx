@@ -149,6 +149,24 @@ export default function FocusPage() {
   useEffect(() => {
     reset();
   }, []);
+
+  // Load saved pomodoro preset from user preferences
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      const { data: prefs } = await supabase
+        .from("user_preferences")
+        .select("pomodoro_preset")
+        .eq("user_id", data.user.id)
+        .single();
+      const preset = prefs?.pomodoro_preset as keyof typeof POMODORO_PRESETS | undefined;
+      if (preset && preset in POMODORO_PRESETS) {
+        setSelectedPreset(preset);
+      }
+    });
+  }, [isAuthenticated]);
   const [audioEnabled, setAudioEnabled] = useState(false);
 
   // Load custom videos from localStorage
