@@ -94,29 +94,29 @@
 /* Dark Theme */
 .dark {
   --radius: 0.75rem;
-  /* OLED Dark Base - True black for power savings */
-  --background: #000000;
-  --foreground: #F8FAFC;
-  /* Cards with subtle elevation */
-  --card: #0A0A0A;
-  --card-foreground: #F8FAFC;
-  --popover: #0A0A0A;
-  --popover-foreground: #F8FAFC;
+  /* Deep blue-black base — matches landing page */
+  --background: #060614;
+  --foreground: #F0F4FF;
+  /* Glassmorphic cards with blue tint */
+  --card: #0b0c1e;
+  --card-foreground: #F0F4FF;
+  --popover: #0d0e22;
+  --popover-foreground: #F0F4FF;
   /* Primary Blue */
   --primary: #3B82F6;
   --primary-foreground: #FFFFFF;
-  /* Secondary - subtle gray */
-  --secondary: #111111;
+  /* Secondary - deep blue-tinted surface */
+  --secondary: #0f1025;
   --secondary-foreground: #CBD5E1;
-  --muted: #161616;
+  --muted: #0f1025;
   --muted-foreground: #64748B;
-  /* Accent Orange */
-  --accent: #F97316;
+  /* Accent */
+  --accent: #06B6D4;
   --accent-foreground: #FFFFFF;
   --destructive: #EF4444;
-  /* Borders - subtle in dark */
-  --border: #1E1E1E;
-  --input: #1E1E1E;
+  /* Borders - glassmorphic white/5 */
+  --border: rgba(255, 255, 255, 0.07);
+  --input: rgba(255, 255, 255, 0.07);
   --ring: #3B82F6;
   /* Chart colors */
   --chart-1: #3B82F6;
@@ -124,14 +124,14 @@
   --chart-3: #10B981;
   --chart-4: #F97316;
   --chart-5: #EC4899;
-  /* Sidebar */
-  --sidebar: #000000;
-  --sidebar-foreground: #F8FAFC;
+  /* Sidebar - same deep base */
+  --sidebar: #060614;
+  --sidebar-foreground: #F0F4FF;
   --sidebar-primary: #3B82F6;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #111111;
-  --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: #1E1E1E;
+  --sidebar-accent: rgba(59, 130, 246, 0.08);
+  --sidebar-accent-foreground: #F0F4FF;
+  --sidebar-border: rgba(255, 255, 255, 0.05);
   --sidebar-ring: #3B82F6;
 }
 
@@ -141,6 +141,13 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+  }
+  /* Subtle grid pattern for dark mode — matches landing page aesthetic */
+  .dark body {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+    background-size: 64px 64px;
   }
   /* Scrollbar styling */
   ::-webkit-scrollbar {
