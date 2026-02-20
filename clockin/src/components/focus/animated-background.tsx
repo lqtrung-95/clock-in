@@ -249,23 +249,16 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
     );
   };
 
-  // On initial player load, apply mute/play state once the YouTube API is ready.
-  // Commands fired before onReady are silently dropped, so we re-apply here.
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(typeof event.data === 'string' ? event.data : '{}');
-        if (data.event === 'onReady') {
-          postCommand(muted ? 'mute' : 'unMute');
-          if (!isRunning) postCommand('pauseVideo');
-        }
-      } catch { /* ignore non-JSON messages */ }
-    };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [muted, isRunning]);
+  // Apply initial mute/play state after iframe loads.
+  // YouTube's JS API needs ~500ms after iframe load to accept postMessage commands.
+  const handleIframeLoad = () => {
+    setTimeout(() => {
+      postCommand(muted ? 'mute' : 'unMute');
+      if (!isRunning) postCommand('pauseVideo');
+    }, 500);
+  };
 
-  // Always fire directly for user-triggered changes (player is ready by this point)
+  // User-triggered changes — player is already running, fire directly
   useEffect(() => {
     postCommand(muted ? 'mute' : 'unMute');
   }, [muted]);
@@ -279,6 +272,7 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
       <iframe
         ref={iframeRef}
         src={url}
+        onLoad={handleIframeLoad}
         className="absolute inset-0 h-full w-full"
         style={{
           position: 'absolute',
