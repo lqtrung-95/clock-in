@@ -237,10 +237,24 @@ function BaseImage({ url }: { url: string }) {
 function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUrl: string; muted?: boolean; isRunning?: boolean }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Ensure enablejsapi=1 is in the URL so postMessage commands work
+  // Build URL with required params for iOS autoplay:
+  // - autoplay=1: start playing immediately
+  // - playsinline=1: prevent iOS fullscreen takeover
+  // - mute=1: iOS requires muted for autoplay (user can unmute via our button)
+  // - enablejsapi=1: allows postMessage control commands
   const url = useMemo(() => {
-    if (embedUrl.includes('enablejsapi')) return embedUrl;
-    return embedUrl.includes('?') ? `${embedUrl}&enablejsapi=1` : `${embedUrl}?enablejsapi=1`;
+    try {
+      const u = new URL(embedUrl.startsWith('//') ? `https:${embedUrl}` : embedUrl);
+      u.searchParams.set('autoplay', '1');
+      u.searchParams.set('playsinline', '1');
+      u.searchParams.set('mute', '1');
+      u.searchParams.set('enablejsapi', '1');
+      return u.toString();
+    } catch {
+      // Fallback for malformed URLs
+      const sep = embedUrl.includes('?') ? '&' : '?';
+      return `${embedUrl}${sep}autoplay=1&playsinline=1&mute=1&enablejsapi=1`;
+    }
   }, [embedUrl]);
 
   const postCommand = (func: string) => {
@@ -249,13 +263,14 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
     );
   };
 
-  // Apply initial mute/play state after iframe loads.
-  // YouTube's JS API needs ~500ms after iframe load to accept postMessage commands.
+  // After iframe loads, sync mute state.
+  // URL always starts with mute=1 for iOS compat — unMute if user wants sound.
+  // Delay 800ms: YouTube JS API on iOS needs longer to initialise than desktop.
   const handleIframeLoad = () => {
     setTimeout(() => {
-      postCommand(muted ? 'mute' : 'unMute');
+      if (!muted) postCommand('unMute');
       if (!isRunning) postCommand('pauseVideo');
-    }, 500);
+    }, 800);
   };
 
   // User-triggered changes — player is already running, fire directly
@@ -282,7 +297,7 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
           height: 'calc(100vh + 120px)',
           pointerEvents: 'none',
         }}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
       />
     </div>
