@@ -43,6 +43,7 @@ export default function SettingsPage() {
   // Profile state
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [customAvatarUrl, setCustomAvatarUrl] = useState(""); // Track custom avatar separately
   const [profileLoading, setProfileLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -98,7 +99,7 @@ export default function SettingsPage() {
 
   // Delete custom avatar
   const handleDeleteAvatar = async () => {
-    if (!avatarUrl || avatarOptions.includes(avatarUrl)) return;
+    if (!customAvatarUrl) return;
 
     try {
       const supabase = createClient();
@@ -106,13 +107,14 @@ export default function SettingsPage() {
       if (!user) return;
 
       // Extract file path from URL
-      const url = new URL(avatarUrl);
+      const url = new URL(customAvatarUrl);
       const pathMatch = url.pathname.match(/\/avatars\/(.+)/);
       if (pathMatch) {
         await supabase.storage.from("avatars").remove([pathMatch[1]]);
       }
 
-      // Reset to first preset
+      // Clear custom avatar and reset to first preset
+      setCustomAvatarUrl("");
       setAvatarUrl(avatarOptions[0]);
       toast.success("Avatar deleted");
     } catch (error) {
@@ -169,6 +171,7 @@ export default function SettingsPage() {
         .getPublicUrl(fileName);
 
       setAvatarUrl(publicUrl);
+      setCustomAvatarUrl(publicUrl); // Track as custom avatar
       toast.success("Avatar uploaded");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to upload avatar");
@@ -208,7 +211,12 @@ export default function SettingsPage() {
         }
         // Load profile
         setDisplayName(user.user_metadata?.display_name || "");
-        setAvatarUrl(user.user_metadata?.avatar_url || "");
+        const loadedAvatarUrl = user.user_metadata?.avatar_url || "";
+        setAvatarUrl(loadedAvatarUrl);
+        // Track custom avatar separately if it's not a preset
+        if (loadedAvatarUrl && !avatarOptions.includes(loadedAvatarUrl)) {
+          setCustomAvatarUrl(loadedAvatarUrl);
+        }
       }
     } else {
       // Load from localStorage for guests
@@ -414,17 +422,31 @@ export default function SettingsPage() {
                       </Avatar>
                     </button>
                   ))}
-                  {/* Custom avatar thumbnail (selectable) */}
-                  {avatarUrl && !avatarOptions.includes(avatarUrl) && (
-                    <button
-                      onClick={() => setAvatarUrl(avatarUrl)}
-                      className="relative rounded-full p-1 transition-all ring-2 ring-blue-500 ring-offset-2"
-                    >
-                      <Avatar className="h-11 w-11">
-                        <AvatarImage src={avatarUrl} alt="Custom avatar" />
-                        <AvatarFallback className="bg-muted">?</AvatarFallback>
-                      </Avatar>
-                    </button>
+                  {/* Custom avatar thumbnail with delete button */}
+                  {customAvatarUrl && (
+                    <div className="relative">
+                      <button
+                        onClick={() => setAvatarUrl(customAvatarUrl)}
+                        className={`relative rounded-full p-1 transition-all ${
+                          avatarUrl === customAvatarUrl
+                            ? "ring-2 ring-blue-500 ring-offset-2"
+                            : ""
+                        }`}
+                      >
+                        <Avatar className="h-11 w-11">
+                          <AvatarImage src={customAvatarUrl} alt="Custom avatar" />
+                          <AvatarFallback className="bg-muted">?</AvatarFallback>
+                        </Avatar>
+                      </button>
+                      {/* Delete button on top-right of custom avatar */}
+                      <button
+                        onClick={handleDeleteAvatar}
+                        className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 z-10"
+                        title="Remove custom avatar"
+                      >
+                        ×
+                      </button>
+                    </div>
                   )}
                   {/* Upload button */}
                   <label className="relative rounded-full p-1 transition-all cursor-pointer hover:opacity-80 inline-flex">
@@ -443,16 +465,6 @@ export default function SettingsPage() {
                       )}
                     </div>
                   </label>
-                  {/* Delete button - only when custom avatar exists */}
-                  {avatarUrl && !avatarOptions.includes(avatarUrl) && (
-                    <button
-                      onClick={handleDeleteAvatar}
-                      className="h-8 w-8 rounded-full bg-red-500 text-white flex items-center justify-center text-sm hover:bg-red-600"
-                      title="Remove custom avatar"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
                 </div>
               </div>
               {/* Display Name */}
