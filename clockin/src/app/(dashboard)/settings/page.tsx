@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { LoginBanner, LoginPrompt } from "@/components/auth/login-prompt";
 import { toast } from "sonner";
-import { Moon, Sun, Monitor, Settings2, Bell, Timer, Palette, User, Camera } from "lucide-react";
+import { Moon, Sun, Monitor, Settings2, Bell, Timer, Palette, User, Camera, Upload } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { Input } from "@/components/ui/input";
@@ -45,6 +45,112 @@ export default function SettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [profileLoading, setProfileLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  // Compress image before upload
+  const compressImage = (file: File, maxWidth = 200, maxHeight = 200, quality = 0.8): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          // Calculate new dimensions
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error("Canvas to Blob failed"));
+            },
+            "image/jpeg",
+            quality
+          );
+        };
+        img.onerror = reject;
+      };
+      reader.onerror = reject;
+    });
+  };
+
+  // Handle custom avatar upload
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB before compression)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File too large. Maximum size is 5MB");
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Compress image
+      const compressedBlob = await compressImage(file);
+
+      // Check compressed size (max 500KB after compression)
+      if (compressedBlob.size > 500 * 1024) {
+        toast.error("Compressed image still too large. Try a smaller image.");
+        return;
+      }
+
+      // Upload to Supabase Storage
+      const fileName = `${user.id}/${Date.now()}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, compressedBlob, {
+          contentType: "image/jpeg",
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      setAvatarUrl(publicUrl);
+      toast.success("Avatar uploaded");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to upload avatar");
+    } finally {
+      setUploadingAvatar(false);
+      // Reset input
+      e.target.value = "";
+    }
+  };
 
   // Avatar options
   const avatarOptions = [
@@ -248,7 +354,7 @@ export default function SettingsPage() {
               {/* Avatar Selection */}
               <div className="space-y-2">
                 <Label className="text-foreground">Avatar</Label>
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 flex-wrap items-center">
                   {avatarOptions.map((url) => (
                     <button
                       key={url}
@@ -267,7 +373,33 @@ export default function SettingsPage() {
                       </Avatar>
                     </button>
                   ))}
+                  {/* Custom Upload */}
+                  <label className="relative rounded-full p-1 transition-all cursor-pointer hover:opacity-80">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      disabled={uploadingAvatar}
+                      className="hidden"
+                    />
+                    <Avatar className="h-12 w-12 border-2 border-dashed border-muted-foreground/50">
+                      {avatarUrl && !avatarOptions.includes(avatarUrl) ? (
+                        <AvatarImage src={avatarUrl} alt="Custom avatar" />
+                      ) : (
+                        <AvatarFallback className="bg-muted">
+                          {uploadingAvatar ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                          ) : (
+                            <Upload className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                  </label>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Max 5MB, will be compressed to 200x200px
+                </p>
               </div>
               {/* Display Name */}
               <div className="space-y-2">
