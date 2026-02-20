@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Play } from "lucide-react";
 
 interface AnimatedBackgroundProps {
   imageUrl?: string;
@@ -237,8 +236,7 @@ function BaseImage({ url }: { url: string }) {
 // YouTube Background Component - uses postMessage to control playback/mute without re-mounting
 function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUrl: string; muted?: boolean; isRunning?: boolean }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  // iOS requires a user gesture to play/unmute — show a tap overlay on iOS
-  const [showTapOverlay, setShowTapOverlay] = useState(false);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
   const isIOS = useMemo(() =>
     typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent)
   , []);
@@ -269,12 +267,10 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
     );
   };
 
-  // On iOS: show tap overlay so user gesture can unlock play + sound.
-  // On desktop: sync mute/pause state via postMessage after 800ms.
+  // On desktop: sync state after 800ms. On iOS: wait for first user touch.
   const handleIframeLoad = () => {
-    if (isIOS) {
-      setShowTapOverlay(true);
-    } else {
+    setIframeLoaded(true);
+    if (!isIOS) {
       setTimeout(() => {
         if (!muted) postCommand('unMute');
         if (!isRunning) postCommand('pauseVideo');
@@ -282,12 +278,19 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
     }
   };
 
-  // Called when user taps the iOS overlay — fires within user gesture context
-  const handleIOSTap = () => {
-    postCommand('playVideo');
-    if (!muted) postCommand('unMute');
-    setShowTapOverlay(false);
-  };
+  // iOS trick: hijack the user's FIRST touch anywhere on the page to unlock
+  // video playback. touchstart IS a trusted user gesture — iOS allows media
+  // play/unMute when postMessage is sent synchronously inside it.
+  // The user's natural tap (timer, mute btn, etc.) triggers this invisibly.
+  useEffect(() => {
+    if (!isIOS || !iframeLoaded) return;
+    const unlock = () => {
+      postCommand('playVideo');
+      if (!muted) postCommand('unMute');
+    };
+    document.addEventListener('touchstart', unlock, { once: true, passive: true });
+    return () => document.removeEventListener('touchstart', unlock);
+  }, [isIOS, iframeLoaded, muted]);
 
   // User-triggered changes — player is already running, fire directly
   useEffect(() => {
@@ -300,24 +303,6 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
 
   return (
     <div className="absolute inset-0">
-      {/* iOS tap-to-play overlay — sits above everything, full-screen */}
-      {showTapOverlay && (
-        <button
-          onClick={handleIOSTap}
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4"
-          style={{ background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(2px)' }}
-        >
-          {/* Pulsing play button */}
-          <div className="relative flex h-20 w-20 items-center justify-center">
-            <div className="absolute inset-0 animate-ping rounded-full bg-white/20" />
-            <div className="relative flex h-20 w-20 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md">
-              <Play className="h-9 w-9 translate-x-0.5 text-white" fill="white" />
-            </div>
-          </div>
-          <span className="text-sm font-medium text-white/80 tracking-wide">Tap to play</span>
-        </button>
-      )}
-
       <iframe
         ref={iframeRef}
         src={url}
