@@ -161,7 +161,7 @@ export default function FocusPage() {
         .select("pomodoro_preset")
         .eq("user_id", data.user.id)
         .single();
-      const preset = prefs?.pomodoro_preset as keyof typeof POMODORO_PRESETS | undefined;
+      const preset = (prefs as { pomodoro_preset?: string } | null)?.pomodoro_preset as keyof typeof POMODORO_PRESETS | undefined;
       if (preset && preset in POMODORO_PRESETS) {
         setSelectedPreset(preset);
       }
