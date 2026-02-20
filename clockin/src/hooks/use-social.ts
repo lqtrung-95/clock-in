@@ -284,7 +284,11 @@ export function useFocusRoomMessages(roomId: string | undefined) {
       // Attach user data to messages
       const messagesWithUser = (data || []).map((m) => ({
         ...m,
-        user: userProfiles[m.user_id] || { display_name: "Unknown", avatar_url: undefined },
+        user: userProfiles[m.user_id] ? {
+          id: m.user_id,
+          display_name: userProfiles[m.user_id].display_name,
+          avatar_url: userProfiles[m.user_id].avatar_url,
+        } : { id: m.user_id, display_name: "Unknown", avatar_url: undefined },
       }));
 
       setMessages(messagesWithUser);
@@ -313,8 +317,22 @@ export function useFocusRoomMessages(roomId: string | undefined) {
           table: "focus_room_messages",
           filter: `room_id=eq.${roomId}`,
         },
-        (payload) => {
-          setMessages((prev) => [...prev, payload.new as FocusRoomMessage]);
+        async (payload) => {
+          const newMessage = payload.new as FocusRoomMessage;
+          // Fetch user profile for the new message
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("user_id, display_name, avatar_url")
+            .eq("user_id", newMessage.user_id)
+            .single() as { data: { user_id: string; display_name: string; avatar_url?: string } | null };
+          setMessages((prev) => [...prev, {
+            ...newMessage,
+            user: profile ? {
+              id: profile.user_id,
+              display_name: profile.display_name,
+              avatar_url: profile.avatar_url,
+            } : { id: newMessage.user_id, display_name: "Unknown", avatar_url: undefined },
+          }]);
         }
       )
       .subscribe();

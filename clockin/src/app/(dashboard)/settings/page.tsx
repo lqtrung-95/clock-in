@@ -145,6 +145,19 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Delete existing custom avatar(s) to enforce 1-avatar limit
+      if (customAvatarUrl) {
+        try {
+          const url = new URL(customAvatarUrl);
+          const pathMatch = url.pathname.match(/\/avatars\/(.+)/);
+          if (pathMatch) {
+            await supabase.storage.from("avatars").remove([pathMatch[1]]);
+          }
+        } catch {
+          // Ignore delete errors, continue with upload
+        }
+      }
+
       // Compress image (creates 200x200 square crop from center)
       const compressedBlob = await compressImage(file);
 
@@ -213,9 +226,17 @@ export default function SettingsPage() {
         setDisplayName(user.user_metadata?.display_name || "");
         const loadedAvatarUrl = user.user_metadata?.avatar_url || "";
         setAvatarUrl(loadedAvatarUrl);
-        // Track custom avatar separately if it's not a preset
-        if (loadedAvatarUrl && !avatarOptions.includes(loadedAvatarUrl)) {
-          setCustomAvatarUrl(loadedAvatarUrl);
+
+        // Check for custom avatar in storage (even if not currently selected)
+        const { data: storageData } = await supabase.storage
+          .from("avatars")
+          .list(user.id, { limit: 1, sortBy: { column: "created_at", order: "desc" } });
+
+        if (storageData && storageData.length > 0) {
+          const { data: { publicUrl } } = supabase.storage
+            .from("avatars")
+            .getPublicUrl(`${user.id}/${storageData[0].name}`);
+          setCustomAvatarUrl(publicUrl);
         }
       }
     } else {
@@ -326,7 +347,7 @@ export default function SettingsPage() {
         if (insertError.message?.includes("duplicate key") || insertError.code === "23505") {
           const { error: updateError } = await supabase
             .from("profiles")
-            .update(profileData)
+            .update(profileData as never)
             .eq("user_id", user.id);
           profileError = updateError;
         } else {

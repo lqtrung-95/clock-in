@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,7 +13,6 @@ import {
   useFocusStatus,
 } from "@/hooks/use-social";
 import * as socialService from "@/services/social-service";
-import type { FocusRoomParticipant } from "@/types/social";
 import {
   Users,
   Send,
@@ -23,9 +21,41 @@ import {
   Clock,
   ArrowLeft,
   Crown,
+  Share2,
+  PanelLeft,
+  PanelRight,
+  LogIn,
+  MessageSquare,
+  Settings2,
+  Image as ImageIcon,
+  Volume2,
+  VolumeX,
+  X,
+  Timer,
+  Maximize,
+  Minimize,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils";
+import { AnimatedBackground } from "@/components/focus/animated-background";
+import { VIDEO_BACKGROUNDS } from "@/data/video-backgrounds";
+import { Card } from "@/components/ui/card";
+
+const POMODORO_PRESETS = [
+  { name: "25m", minutes: 25, label: "25 min" },
+  { name: "50m", minutes: 50, label: "50 min" },
+  { name: "90m", minutes: 90, label: "90 min" },
+];
+
+const OVERLAYS = [
+  { value: "none", label: "None" },
+  { value: "aurora", label: "Aurora" },
+  { value: "particles", label: "Particles" },
+  { value: "vignette", label: "Vignette" },
+  { value: "gradient", label: "Gradient" },
+  { value: "rain", label: "Rain" },
+] as const;
 
 function formatTime(seconds: number): string {
   const hrs = Math.floor(seconds / 3600);
@@ -54,14 +84,14 @@ function ParticipantCard({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 p-3 rounded-lg border",
+        "flex items-center gap-3 p-3 rounded-xl transition-all duration-300",
         participant.is_focused
-          ? "border-green-500/50 bg-green-500/10"
-          : "border-border bg-card"
+          ? "bg-green-500/20 border border-green-500/30"
+          : "bg-white/5 border border-white/10 hover:bg-white/10"
       )}
     >
       <div className="relative">
-        <Avatar className="h-10 w-10">
+        <Avatar className="h-10 w-10 ring-2 ring-white/20">
           {participant.user?.avatar_url && (
             <img
               src={participant.user.avatar_url}
@@ -69,23 +99,26 @@ function ParticipantCard({
               className="h-full w-full object-cover rounded-full"
             />
           )}
-          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm">
+          <AvatarFallback className="bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white text-sm">
             {participant.user?.display_name?.charAt(0).toUpperCase() || "?"}
           </AvatarFallback>
         </Avatar>
         {isHost && (
-          <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-0.5">
-            <Crown className="h-3 w-3 text-white" />
+          <div className="absolute -top-1 -right-1 bg-amber-500 rounded-full p-0.5 ring-2 ring-black">
+            <Crown className="h-2.5 w-2.5 text-white" />
           </div>
+        )}
+        {participant.is_focused && (
+          <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full ring-2 ring-black" />
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate">
+        <p className="font-medium text-sm text-white/90 truncate">
           {participant.user?.display_name || "Unknown"}
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-white/50">
           {participant.is_focused ? (
-            <span className="text-green-500 flex items-center gap-1">
+            <span className="text-green-400 flex items-center gap-1">
               <Play className="h-3 w-3" /> Focusing
             </span>
           ) : (
@@ -100,11 +133,49 @@ function ParticipantCard({
   );
 }
 
+function GuestPrompt({ roomId }: { roomId: string }) {
+  const router = useRouter();
+
+  return (
+    <div className="flex h-[calc(100vh-4rem)] items-center justify-center p-4 bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+      <div className="max-w-md w-full p-8 text-center space-y-6 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl">
+        <div className="flex justify-center">
+          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/30">
+            <MessageSquare className="h-8 w-8 text-white" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold text-white">Join Focus Room</h2>
+          <p className="text-white/60">
+            Sign in to join this focus room and focus together with others
+          </p>
+        </div>
+        <div className="space-y-3">
+          <Button
+            className="w-full bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white border-0"
+            onClick={() => router.push(`/login?redirect=/focus-room/${roomId}`)}
+          >
+            <LogIn className="h-4 w-4 mr-2" />
+            Sign In to Join
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full bg-transparent border-white/20 text-white/80 hover:bg-white/10 hover:text-white"
+            onClick={() => router.push("/social")}
+          >
+            Back to Social
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FocusRoomPage() {
   const params = useParams();
   const router = useRouter();
   const roomId = params.id as string;
-  const { userId: currentUserId } = useAuthState();
+  const { userId: currentUserId, isAuthenticated } = useAuthState();
 
   const { participants, loading: participantsLoading } =
     useFocusRoomParticipants(roomId);
@@ -116,17 +187,45 @@ export default function FocusRoomPage() {
 
   const [messageInput, setMessageInput] = useState("");
   const [isHost, setIsHost] = useState(false);
+  const [showParticipants, setShowParticipants] = useState(true);
+  const [showChat, setShowChat] = useState(true);
+
+  const [selectedDuration, setSelectedDuration] = useState(25);
+  const [showSettings, setShowSettings] = useState(false);
+
+  const [selectedVideo, setSelectedVideo] = useState(VIDEO_BACKGROUNDS[0]);
+  const [selectedOverlay, setSelectedOverlay] = useState<typeof OVERLAYS[number]["value"]>("aurora");
+  const [videoMuted, setVideoMuted] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      console.error("Fullscreen error:", error);
+    }
+  };
 
   useEffect(() => {
     if (!currentUserId) return;
 
-    // Check if user is host and join room
     const init = async () => {
       try {
         const room = await socialService.getFocusRoom(roomId);
         if (room) {
           setIsHost(room.host_id === currentUserId);
-          // Join if not already
           await socialService.joinFocusRoom(roomId, currentUserId);
         }
       } catch (error) {
@@ -136,7 +235,6 @@ export default function FocusRoomPage() {
 
     init();
 
-    // Leave room on unmount
     return () => {
       if (currentUserId) {
         socialService.leaveFocusRoom(roomId, currentUserId);
@@ -159,143 +257,411 @@ export default function FocusRoomPage() {
     router.push("/social");
   };
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Room link copied!");
+    } catch {
+      toast.error("Failed to copy link");
+    }
+  };
+
+  const totalSeconds = selectedDuration * 60;
+  const remainingSeconds = Math.max(0, totalSeconds - focusTime);
+  const progress = Math.min(100, (focusTime / totalSeconds) * 100);
+
+  if (!isAuthenticated) {
+    return <GuestPrompt roomId={roomId} />;
+  }
+
   if (!currentUserId) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <p>Please sign in to join focus rooms</p>
+      <div className="flex h-screen items-center justify-center bg-slate-950">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col">
+    <div className={cn(
+      "flex flex-col relative overflow-hidden bg-slate-950 h-screen",
+      isFullscreen ? "h-screen fixed inset-0 z-50" : ""
+    )}>
+      {/* Background Atmosphere */}
+      <AnimatedBackground
+        embedUrl={selectedVideo?.embedUrl}
+        overlay={selectedOverlay}
+        videoMuted={videoMuted}
+        className="z-0"
+      />
+
+      {/* Dark Overlay for better contrast */}
+      <div className="absolute inset-0 bg-black/40 z-0" />
+
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
+      <header className="flex items-center justify-between px-6 py-4 z-10">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={handleLeave}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLeave}
+            className="bg-black/40 border-white/20 text-white hover:text-white hover:bg-white/20 hover:border-white/40"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Leave
+            Leave Room
           </Button>
-          <div>
-            <h1 className="font-semibold">Focus Room</h1>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Users className="h-3 w-3" />
+          <div className="px-4 py-2 rounded-xl bg-black/40 border border-white/10">
+            <h1 className="font-bold text-white text-lg tracking-tight">Focus Room</h1>
+            <p className="text-sm text-white/70 flex items-center gap-1.5 font-medium">
+              <Users className="h-4 w-4 text-violet-400" />
               {participants.length} participants
             </p>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShare}
+            className="bg-transparent border-white/20 text-white/80 hover:bg-white/10 hover:text-white"
+          >
+            <Share2 className="h-4 w-4 mr-2" />
+            Share
+          </Button>
         </div>
 
-        {/* Focus Toggle */}
-        <Button
-          size="lg"
-          onClick={toggleFocus}
-          className={cn(
-            "gap-2",
-            isFocused
-              ? "bg-red-500 hover:bg-red-600"
-              : "bg-green-500 hover:bg-green-600"
-          )}
-        >
-          {isFocused ? (
-            <>
-              <Square className="h-5 w-5" />
-              Stop Focus
-            </>
-          ) : (
-            <>
-              <Play className="h-5 w-5" />
-              Start Focus
-            </>
-          )}
-        </Button>
-      </div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleFullscreen}
+            className="bg-transparent border-white/20 text-white/80 hover:bg-white/10 hover:text-white"
+          >
+            {isFullscreen ? <Minimize className="h-4 w-4 mr-2" /> : <Maximize className="h-4 w-4 mr-2" />}
+            {isFullscreen ? "Exit" : "Fullscreen"}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowSettings(!showSettings)}
+            className={cn(
+              "bg-transparent border-white/20 text-white/80 hover:bg-white/10 hover:text-white transition-all",
+              showSettings && "bg-white/20 text-white"
+            )}
+          >
+            <Settings2 className="h-4 w-4 mr-2" />
+            Settings
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={toggleFocus}
+            className={cn(
+              "gap-2 px-6 transition-all duration-300",
+              isFocused
+                ? "bg-rose-500/90 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30"
+                : "bg-emerald-500/90 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30"
+            )}
+          >
+            {isFocused ? (
+              <>
+                <Square className="h-4 w-4" />
+                Stop
+              </>
+            ) : (
+              <>
+                <Play className="h-4 w-4" />
+                Start Focus
+              </>
+            )}
+          </Button>
+        </div>
+      </header>
+
+      {/* Settings Panel */}
+      {showSettings && (
+        <div className="mx-6 mb-4 p-5 rounded-2xl bg-black/60 backdrop-blur-2xl border border-white/10 z-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Session Duration */}
+            <div className="space-y-3">
+              <label className="text-xs font-medium text-white/50 uppercase tracking-wider">
+                Session Duration
+              </label>
+              <div className="flex gap-2">
+                {POMODORO_PRESETS.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => setSelectedDuration(preset.minutes)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                      selectedDuration === preset.minutes
+                        ? "bg-violet-500 text-white shadow-lg shadow-violet-500/30"
+                        : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+                    )}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Atmosphere */}
+            <div className="space-y-3">
+              <label className="text-xs font-medium text-white/50 uppercase tracking-wider">
+                Atmosphere
+              </label>
+              <div className="flex gap-2 flex-wrap">
+                {VIDEO_BACKGROUNDS.slice(0, 4).map((video) => (
+                  <button
+                    key={video.id}
+                    onClick={() => setSelectedVideo(video)}
+                    className={cn(
+                      "px-3 py-2 rounded-lg text-sm transition-all duration-200",
+                      selectedVideo?.id === video.id
+                        ? "bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/30"
+                        : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+                    )}
+                  >
+                    {video.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Effects */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-white/50 uppercase tracking-wider">
+                  Overlay
+                </label>
+                <button
+                  onClick={() => setVideoMuted(!videoMuted)}
+                  className="text-white/50 hover:text-white transition-colors"
+                >
+                  {videoMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                </button>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {OVERLAYS.slice(0, 4).map((overlay) => (
+                  <button
+                    key={overlay.value}
+                    onClick={() => setSelectedOverlay(overlay.value)}
+                    className={cn(
+                      "px-3 py-2 rounded-lg text-sm transition-all duration-200",
+                      selectedOverlay === overlay.value
+                        ? "bg-cyan-500 text-white shadow-lg shadow-cyan-500/30"
+                        : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+                    )}
+                  >
+                    {overlay.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden z-10 px-6 pb-0 gap-6">
         {/* Participants Sidebar */}
-        <div className="w-64 border-r p-4 hidden md:block">
-          <h3 className="font-medium mb-4 flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Participants
-          </h3>
-          <ScrollArea className="h-[calc(100%-2rem)]">
-            <div className="space-y-2">
-              {participants.map((participant) => (
-                <ParticipantCard
-                  key={participant.user_id}
-                  participant={participant}
-                  isHost={participant.user_id === currentUserId && isHost}
-                />
-              ))}
+        {showParticipants && (
+          <div className="w-72 flex flex-col">
+            <div className="flex items-center justify-between mb-4 p-3 rounded-xl bg-black/40 border border-white/10">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-violet-400" />
+                <h3 className="text-sm font-semibold text-white">
+                  Participants
+                </h3>
+                <span className="px-2 py-0.5 rounded-full bg-white/10 text-xs font-medium text-white/80">
+                  {participants.length}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/20 hover:border-white/30"
+                onClick={() => setShowParticipants(false)}
+              >
+                <PanelLeft className="h-4 w-4" />
+              </Button>
             </div>
-          </ScrollArea>
-        </div>
+            <ScrollArea className="flex-1 pr-2">
+              <div className="space-y-2">
+                {participants.map((participant) => (
+                  <ParticipantCard
+                    key={participant.user_id}
+                    participant={participant}
+                    isHost={participant.user_id === currentUserId && isHost}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+        )}
 
         {/* Center - Focus Timer */}
-        <div className="flex-1 flex items-center justify-center p-8">
-          <Card className="p-12 text-center">
-            <div
-              className={cn(
-                "w-32 h-32 rounded-full flex items-center justify-center mx-auto mb-6",
-                isFocused
-                  ? "bg-green-500/20 animate-pulse"
-                  : "bg-muted"
-              )}
+        <div className="flex-1 flex flex-col items-center justify-center relative">
+          {/* Toggle buttons */}
+          {!showParticipants && (
+            <button
+              onClick={() => setShowParticipants(true)}
+              className="absolute left-0 top-1/2 -translate-y-1/2 pl-3 pr-4 py-4 rounded-r-xl bg-black/60 backdrop-blur-xl border border-l-0 border-white/20 text-white/70 hover:text-white hover:bg-black/80 hover:border-white/40 transition-all shadow-lg shadow-black/30 flex items-center gap-2"
             >
-              {isFocused ? (
-                <Play className="h-12 w-12 text-green-500" />
-              ) : (
-                <Clock className="h-12 w-12 text-muted-foreground" />
-              )}
+              <Users className="h-4 w-4" />
+              <span className="text-xs font-medium">{participants.length}</span>
+              <PanelLeft className="h-4 w-4" />
+            </button>
+          )}
+          {!showChat && (
+            <button
+              onClick={() => setShowChat(true)}
+              className="absolute right-0 top-1/2 -translate-y-1/2 pl-4 pr-3 py-4 rounded-l-xl bg-black/60 backdrop-blur-xl border border-r-0 border-white/20 text-white/70 hover:text-white hover:bg-black/80 hover:border-white/40 transition-all shadow-lg shadow-black/30 flex items-center gap-2"
+            >
+              <PanelRight className="h-4 w-4" />
+              <span className="text-xs font-medium">Chat</span>
+              <MessageSquare className="h-4 w-4" />
+            </button>
+          )}
+
+          {/* Timer Card */}
+          <div className="relative">
+            {/* Glow effect */}
+            <div className={cn(
+              "absolute inset-0 rounded-full blur-3xl transition-all duration-1000",
+              isFocused ? "bg-emerald-500/20" : "bg-violet-500/20"
+            )} />
+
+            <div className="relative w-80 h-80 rounded-full bg-black/40 backdrop-blur-3xl border border-white/10 flex flex-col items-center justify-center">
+              {/* Progress Ring */}
+              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="46"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  className="text-white/5"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="46"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeDasharray={`${progress * 2.89} 289`}
+                  className={cn(
+                    "transition-all duration-1000",
+                    isFocused ? "text-emerald-400" : "text-violet-400"
+                  )}
+                />
+              </svg>
+
+              {/* Inner content */}
+              <div className="text-center z-10">
+                <div className={cn(
+                  "w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center transition-all duration-500",
+                  isFocused
+                    ? "bg-emerald-500/20 text-emerald-400 shadow-lg shadow-emerald-500/20"
+                    : "bg-white/5 text-white/40"
+                )}>
+                  {isFocused ? <Play className="h-8 w-8 fill-current" /> : <Timer className="h-8 w-8" />}
+                </div>
+
+                <div className="text-6xl font-mono font-light tracking-wider text-white mb-2">
+                  {formatTime(remainingSeconds)}
+                </div>
+
+                <p className="text-white/40 text-sm">
+                  {isFocused ? "Stay focused" : `${selectedDuration} minute session`}
+                </p>
+              </div>
             </div>
-            <div className="text-5xl font-bold font-mono mb-2">
-              {formatTime(focusTime)}
-            </div>
-            <p className="text-muted-foreground">
-              {isFocused ? "Stay focused!" : "Ready to focus?"}
-            </p>
-          </Card>
+          </div>
+
+          {/* Quick stats */}
+          <div className="mt-8 flex items-center gap-6 text-white/40 text-sm">
+            <span className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              {selectedDuration} min
+            </span>
+            <span className="flex items-center gap-2">
+              <ImageIcon className="h-4 w-4" />
+              {selectedVideo?.name}
+            </span>
+            <span className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              {participants.filter(p => p.is_focused).length} focusing
+            </span>
+          </div>
         </div>
 
         {/* Chat Sidebar */}
-        <div className="w-80 border-l flex flex-col">
-          <div className="p-3 border-b">
-            <h3 className="font-medium">Room Chat</h3>
-          </div>
-
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-3">
-              {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "text-sm",
-                    msg.message_type === "system" && "text-center text-xs text-muted-foreground"
-                  )}
-                >
-                  {msg.message_type !== "system" && (
-                    <span className="font-medium text-muted-foreground">
-                      {msg.user?.display_name}:
-                    </span>
-                  )}{" "}
-                  {msg.message}
-                </div>
-              ))}
+        {showChat && (
+          <div className="w-80 flex flex-col">
+            <div className="flex items-center justify-between mb-4 p-3 rounded-xl bg-black/40 border border-white/10">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-fuchsia-400" />
+                <h3 className="text-sm font-semibold text-white">
+                  Room Chat
+                </h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/20 hover:border-white/30"
+                onClick={() => setShowChat(false)}
+              >
+                <PanelRight className="h-4 w-4" />
+              </Button>
             </div>
-          </ScrollArea>
 
-          <form onSubmit={handleSendMessage} className="p-3 border-t flex gap-2">
-            <Input
-              placeholder="Send a message..."
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              className="flex-1"
-            />
-            <Button type="submit" size="icon" disabled={!messageInput.trim()}>
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
-        </div>
+            <div className="flex-1 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 overflow-hidden flex flex-col">
+              <ScrollArea className="flex-1 p-4">
+                <div className="space-y-3">
+                  {messages.map((msg, index) => (
+                    <div
+                      key={index}
+                      className={cn(
+                        "text-sm",
+                        msg.message_type === "system"
+                          ? "text-center text-xs text-white/30 py-2"
+                          : "text-white/80"
+                      )}
+                    >
+                      {msg.message_type !== "system" && (
+                        <span className="text-violet-400 font-medium">
+                          {msg.user?.display_name}:
+                        </span>
+                      )}{" "}
+                      {msg.message}
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+
+              <form onSubmit={handleSendMessage} className="p-3 border-t border-white/10 flex gap-2">
+                <Input
+                  placeholder="Send a message..."
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-violet-500/50"
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  disabled={!messageInput.trim()}
+                  className="bg-violet-500 hover:bg-violet-600 text-white disabled:opacity-50"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

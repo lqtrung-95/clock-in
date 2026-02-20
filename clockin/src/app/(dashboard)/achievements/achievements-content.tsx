@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useGamification } from "@/hooks/use-gamification";
+import { getLevelInfo } from "@/services/gamification-service";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { XPProgressBar } from "@/components/gamification/xp-progress-bar";
@@ -15,7 +16,9 @@ import type { BadgeDefinition } from "@/types/gamification";
 
 export default function AchievementsContent() {
   const { isAuthenticated, isLoading: authLoading, userId } = useAuthState();
-  const { userStats, levelInfo, badges, crystalConfig, isLoading } = useGamification(userId);
+  const { userStats, levelInfo: hookLevelInfo, badges, crystalConfig, isLoading } = useGamification(userId);
+  // Fallback: compute levelInfo from userStats if hook hasn't set it yet
+  const levelInfo = hookLevelInfo ?? (userStats ? getLevelInfo(userStats) : null);
   const [allBadges, setAllBadges] = useState<BadgeDefinition[]>([]);
   const [badgesLoading, setBadgesLoading] = useState(true);
 

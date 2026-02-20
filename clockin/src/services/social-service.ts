@@ -252,7 +252,11 @@ export async function getFocusRoom(roomId: string): Promise<FocusRoom | null> {
   // Attach user data to participants
   const participantsWithUser = (data.participants || []).map((p) => ({
     ...p,
-    user: userProfiles[p.user_id] || { display_name: "Unknown", avatar_url: undefined },
+    user: userProfiles[p.user_id] ? {
+      id: p.user_id,
+      display_name: userProfiles[p.user_id].display_name,
+      avatar_url: userProfiles[p.user_id].avatar_url,
+    } : { id: p.user_id, display_name: "Unknown", avatar_url: undefined },
   }));
 
   return {

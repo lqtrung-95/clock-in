@@ -34,7 +34,7 @@ export default function SocialPage() {
         .from("profiles")
         .select("display_name, avatar_url")
         .eq("user_id", user.id)
-        .single();
+        .single() as { data: { display_name: string; avatar_url: string } | null };
 
       // Use profile data if available, fallback to auth metadata
       setUserName(profile?.display_name || user.user_metadata?.display_name || "User");

@@ -80,7 +80,17 @@ export function AppSidebar() {
         <nav className="flex-1 space-y-1 p-4 overflow-y-auto scrollbar-hide">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname.startsWith(item.href);
+            // Check if active
+            let isActive = false;
+            if (item.href === '/focus') {
+              // Only match exact /focus or /focus?x=y, not /focus-room
+              isActive = pathname === '/focus' || pathname.startsWith('/focus?');
+            } else if (item.href === '/social') {
+              // Match /social and /focus-room paths
+              isActive = pathname.startsWith('/social') || pathname.startsWith('/focus-room');
+            } else {
+              isActive = pathname.startsWith(item.href);
+            }
             return (
               <Link
                 key={item.href}

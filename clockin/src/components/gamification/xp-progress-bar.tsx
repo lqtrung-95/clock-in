@@ -26,6 +26,26 @@ export function XPProgressBar({
     lg: "h-3 text-base",
   };
 
+  // Show encouragement message for new users with 0 XP
+  if (xpProgress === 0 && currentLevel === 1) {
+    return (
+      <div className={cn("w-full", className)}>
+        {showText && (
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="font-medium text-foreground">Level {currentLevel}</span>
+            <span className="text-muted-foreground">0 / 1000 XP</span>
+          </div>
+        )}
+        <div className={cn("relative overflow-hidden rounded-full bg-muted", sizeClasses[size])}>
+          <div className="h-full w-full rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20" />
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground text-center">
+          Start focusing to earn XP!
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("w-full", className)}>
       {showText && (
