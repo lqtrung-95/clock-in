@@ -116,7 +116,12 @@ export default function FocusPage() {
   const { phase, cycle, totalCycles, formatted, progress, isWork, remaining, isRunning } = usePomodoro();
   const { start, pause, resume, reset, completePhase } = usePomodoroStore();
 
-  const [selectedPreset, setSelectedPreset] = useState<keyof typeof POMODORO_PRESETS>("25/5");
+  // Initialize from localStorage cache to avoid flash on first render
+  const [selectedPreset, setSelectedPreset] = useState<keyof typeof POMODORO_PRESETS>(() => {
+    if (typeof window === "undefined") return "25/5";
+    const cached = localStorage.getItem("pomodoroPreset") as keyof typeof POMODORO_PRESETS;
+    return cached && cached in POMODORO_PRESETS ? cached : "25/5";
+  });
   const [background, setBackground] = useState<string>("https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&q=80");
   const [videoEmbedUrl, setVideoEmbedUrl] = useState<string>("");
   const [overlay, setOverlay] = useState<OverlayType>("none");
@@ -164,6 +169,7 @@ export default function FocusPage() {
       const preset = prefs?.pomodoro_preset as keyof typeof POMODORO_PRESETS | undefined;
       if (preset && preset in POMODORO_PRESETS) {
         setSelectedPreset(preset);
+        localStorage.setItem("pomodoroPreset", preset);
       }
     });
   }, [isAuthenticated]);
