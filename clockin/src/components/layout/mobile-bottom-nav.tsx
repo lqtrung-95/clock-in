@@ -17,6 +17,7 @@ import {
   LogOut,
   LogIn,
   X,
+  Download,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -36,6 +37,7 @@ const secondaryNavItems = [
   { href: "/achievements", label: "Achievements", icon: Trophy },
   { href: "/categories", label: "Categories", icon: Tags },
   { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/install", label: "Install App", icon: Download },
 ];
 
 // Pages that count as "More" being active
