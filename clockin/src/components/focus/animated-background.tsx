@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 interface AnimatedBackgroundProps {
@@ -9,6 +9,7 @@ interface AnimatedBackgroundProps {
   overlay?: "none" | "aurora" | "particles" | "vignette" | "gradient" | "rain";
   className?: string;
   videoMuted?: boolean;
+  isRunning?: boolean;
 }
 
 // Aurora Overlay - flowing lights on top of image/video
@@ -232,15 +233,37 @@ function BaseImage({ url }: { url: string }) {
   );
 }
 
-// YouTube Background Component
-function VideoBackground({ embedUrl, muted = true }: { embedUrl: string; muted?: boolean }) {
-  // Replace mute parameter in URL based on muted state
-  const url = embedUrl.replace(/mute=[01]/, `mute=${muted ? 1 : 0}`);
+// YouTube Background Component - uses postMessage to control playback/mute without re-mounting
+function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUrl: string; muted?: boolean; isRunning?: boolean }) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Ensure enablejsapi=1 is in the URL so postMessage commands work
+  const url = useMemo(() => {
+    if (embedUrl.includes('enablejsapi')) return embedUrl;
+    return embedUrl.includes('?') ? `${embedUrl}&enablejsapi=1` : `${embedUrl}?enablejsapi=1`;
+  }, [embedUrl]);
+
+  const postCommand = (func: string) => {
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: 'command', func, args: '' }),
+      '*'
+    );
+  };
+
+  // Control mute without re-mounting the iframe
+  useEffect(() => {
+    postCommand(muted ? 'mute' : 'unMute');
+  }, [muted]);
+
+  // Pause/resume video when timer state changes
+  useEffect(() => {
+    postCommand(isRunning ? 'playVideo' : 'pauseVideo');
+  }, [isRunning]);
 
   return (
     <div className="absolute inset-0">
       <iframe
-        key={url} // Force re-render when muted state changes
+        ref={iframeRef}
         src={url}
         className="absolute inset-0 h-full w-full"
         style={{
@@ -258,12 +281,12 @@ function VideoBackground({ embedUrl, muted = true }: { embedUrl: string; muted?:
   );
 }
 
-export function AnimatedBackground({ imageUrl, embedUrl, overlay = "none", className, videoMuted = true }: AnimatedBackgroundProps) {
+export function AnimatedBackground({ imageUrl, embedUrl, overlay = "none", className, videoMuted = true, isRunning = true }: AnimatedBackgroundProps) {
   return (
     <div className={cn("absolute inset-0 overflow-hidden", className)}>
       {/* Base Layer - Image or YouTube Embed */}
       {embedUrl ? (
-        <VideoBackground embedUrl={embedUrl} muted={videoMuted} />
+        <VideoBackground embedUrl={embedUrl} muted={videoMuted} isRunning={isRunning} />
       ) : imageUrl ? (
         <BaseImage url={imageUrl} />
       ) : null}

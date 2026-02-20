@@ -467,6 +467,7 @@ export default function FocusPage() {
           embedUrl={videoEmbedUrl || undefined}
           overlay={overlay}
           videoMuted={videoMuted}
+          isRunning={isRunning}
         />
         <div
           className="absolute inset-0 bg-gradient-to-b from-black via-black to-black transition-opacity duration-300"
