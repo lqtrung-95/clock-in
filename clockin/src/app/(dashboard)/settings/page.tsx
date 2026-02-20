@@ -179,14 +179,14 @@ export default function SettingsPage() {
     }
   };
 
-  // Avatar options
+  // Avatar options - cute icons
   const avatarOptions = [
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Zack",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Bella",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Molly",
+    "https://api.dicebear.com/7.x/notionists/svg?seed=robot",
+    "https://api.dicebear.com/7.x/notionists/svg?seed=cat",
+    "https://api.dicebear.com/7.x/notionists/svg?seed=dog",
+    "https://api.dicebear.com/7.x/notionists/svg?seed=bear",
+    "https://api.dicebear.com/7.x/notionists/svg?seed=fox",
+    "https://api.dicebear.com/7.x/notionists/svg?seed=panda",
   ];
 
   async function loadPreferences() {
@@ -401,44 +401,50 @@ export default function SettingsPage() {
                     </button>
                   ))}
                   {/* Custom Upload */}
-                  <label className="relative rounded-full p-1 transition-all cursor-pointer hover:opacity-80">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarUpload}
-                      disabled={uploadingAvatar}
-                      className="hidden"
-                    />
-                    <Avatar className="h-12 w-12 border-2 border-dashed border-muted-foreground/50">
-                      {avatarUrl && !avatarOptions.includes(avatarUrl) ? (
-                        <div className="relative h-full w-full">
+                  <div className="relative">
+                    <label
+                      className={`relative rounded-full p-1 transition-all cursor-pointer inline-flex ${
+                        avatarUrl && !avatarOptions.includes(avatarUrl)
+                          ? "ring-2 ring-blue-500 ring-offset-2"
+                          : "hover:opacity-80"
+                      }`}
+                    >
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        disabled={uploadingAvatar}
+                        className="hidden"
+                      />
+                      <Avatar className="h-12 w-12 bg-muted">
+                        {avatarUrl && !avatarOptions.includes(avatarUrl) ? (
                           <img
                             src={avatarUrl}
                             alt="Custom avatar"
-                            className="h-full w-full object-cover rounded-full"
+                            className="h-full w-full object-cover"
                           />
-                        </div>
-                      ) : (
-                        <AvatarFallback className="bg-muted">
-                          {uploadingAvatar ? (
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                          ) : (
-                            <Upload className="h-5 w-5 text-muted-foreground" />
-                          )}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                  </label>
-                  {/* Delete custom avatar */}
-                  {avatarUrl && !avatarOptions.includes(avatarUrl) && (
-                    <button
-                      onClick={handleDeleteAvatar}
-                      className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
-                      title="Delete custom avatar"
-                    >
-                      ×
-                    </button>
-                  )}
+                        ) : (
+                          <AvatarFallback className="bg-muted">
+                            {uploadingAvatar ? (
+                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                            ) : (
+                              <Upload className="h-5 w-5 text-muted-foreground" />
+                            )}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                    </label>
+                    {/* Delete custom avatar */}
+                    {avatarUrl && !avatarOptions.includes(avatarUrl) && (
+                      <button
+                        onClick={handleDeleteAvatar}
+                        className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 z-10"
+                        title="Delete custom avatar"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Max 5MB, will be compressed to 200x200px
