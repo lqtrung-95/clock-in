@@ -169,19 +169,35 @@ export default function SettingsPage() {
 
       // Upload to Supabase Storage
       const fileName = `${user.id}/${Date.now()}.jpg`;
-      const { error: uploadError } = await supabase.storage
+      console.log("Uploading avatar:", fileName);
+
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from("avatars")
         .upload(fileName, compressedBlob, {
           contentType: "image/jpeg",
           upsert: true,
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        throw uploadError;
+      }
+
+      console.log("Upload success:", uploadData);
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from("avatars")
         .getPublicUrl(fileName);
+
+      console.log("Public URL:", publicUrl);
+
+      // Verify the file exists
+      const { data: fileData, error: fileError } = await supabase.storage
+        .from("avatars")
+        .list(user.id, { limit: 1 });
+
+      console.log("Files in bucket:", fileData, "Error:", fileError);
 
       setAvatarUrl(publicUrl);
       setCustomAvatarUrl(publicUrl); // Track as custom avatar

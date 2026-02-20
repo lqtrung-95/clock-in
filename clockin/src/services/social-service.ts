@@ -17,6 +17,7 @@ function getAvatarUrl(avatarUrl: string | undefined | null): string | undefined 
 
   // If it's already a full URL, return it
   if (avatarUrl.startsWith("http")) {
+    console.log("Avatar URL (external):", avatarUrl);
     return avatarUrl;
   }
 
@@ -26,6 +27,7 @@ function getAvatarUrl(avatarUrl: string | undefined | null): string | undefined 
     .from("avatars")
     .getPublicUrl(avatarUrl);
 
+  console.log("Avatar URL (storage):", publicUrl, "from path:", avatarUrl);
   return publicUrl;
 }
 
