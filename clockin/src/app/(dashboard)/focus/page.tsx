@@ -116,12 +116,7 @@ export default function FocusPage() {
   const { phase, cycle, totalCycles, formatted, progress, isWork, remaining, isRunning } = usePomodoro();
   const { start, pause, resume, reset, completePhase } = usePomodoroStore();
 
-  // Initialize from localStorage cache to avoid flash on first render
-  const [selectedPreset, setSelectedPreset] = useState<keyof typeof POMODORO_PRESETS>(() => {
-    if (typeof window === "undefined") return "25/5";
-    const cached = localStorage.getItem("pomodoroPreset") as keyof typeof POMODORO_PRESETS;
-    return cached && cached in POMODORO_PRESETS ? cached : "25/5";
-  });
+  const [selectedPreset, setSelectedPreset] = useState<keyof typeof POMODORO_PRESETS | null>(null);
   const [background, setBackground] = useState<string>("https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&q=80");
   const [videoEmbedUrl, setVideoEmbedUrl] = useState<string>("");
   const [overlay, setOverlay] = useState<OverlayType>("none");
@@ -169,7 +164,6 @@ export default function FocusPage() {
       const preset = prefs?.pomodoro_preset as keyof typeof POMODORO_PRESETS | undefined;
       if (preset && preset in POMODORO_PRESETS) {
         setSelectedPreset(preset);
-        localStorage.setItem("pomodoroPreset", preset);
       }
     });
   }, [isAuthenticated]);
@@ -223,7 +217,7 @@ export default function FocusPage() {
     }
   }, [isAuthenticated]);
 
-  const preset = POMODORO_PRESETS[selectedPreset];
+  const preset = POMODORO_PRESETS[selectedPreset ?? "25/5"];
 
   // Initialize audio - create new Audio element each time to avoid issues
   const initAudio = useCallback(() => {
@@ -1009,11 +1003,11 @@ export default function FocusPage() {
           {/* Start Button */}
           <Button
             onClick={handleStart}
-            disabled={!selectedCategory}
+            disabled={!selectedCategory || !selectedPreset}
             className="w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           >
             <Play className="mr-2 h-5 w-5 fill-current" />
-            {selectedCategory ? "Start Focus Session" : "Select a category to start"}
+            {!selectedPreset ? "Select a session duration" : !selectedCategory ? "Select a category to start" : "Start Focus Session"}
           </Button>
         </Card>
 
