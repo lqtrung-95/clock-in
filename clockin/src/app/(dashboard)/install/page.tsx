@@ -120,8 +120,8 @@ export default function InstallPage() {
               "Works offline — track time anywhere",
               "Faster load times after first install",
             ].map((b) => (
-              <li key={b} className="flex items-start gap-2">
-                <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />
+              <li key={b} className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />
                 {b}
               </li>
             ))}
