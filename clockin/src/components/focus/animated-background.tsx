@@ -263,22 +263,14 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
     );
   };
 
-  // iOS jolt: rapid play→pause→play sequence after load.
-  // iOS Safari won't autoplay iframes — but responds to this postMessage sequence
-  // when triggered shortly after user interaction (e.g. selecting a scene).
+  // After iframe loads, sync mute/play state.
+  // autoplay=1 + mute=1 + playsinline=1 in URL handles actual playback start on iOS.
+  // We only need to unMute if user wants sound, or pause if timer isn't running.
   const handleIframeLoad = () => {
-    // Step 1: initial play attempt + mute sync
     setTimeout(() => {
-      postCommand('playVideo');
       if (!muted) postCommand('unMute');
-    }, 800);
-    // Step 2: pause (the "jolt")
-    setTimeout(() => postCommand('pauseVideo'), 1000);
-    // Step 3: resume — iOS now actually starts playing
-    setTimeout(() => {
-      postCommand('playVideo');
       if (!isRunning) postCommand('pauseVideo');
-    }, 1200);
+    }, 800);
   };
 
   // User-triggered changes — player is already running, fire directly
