@@ -18,7 +18,7 @@ export function MobileBottomNav() {
 
   return (
     <nav className="fixed bottom-4 left-4 right-4 md:hidden">
-      <div className="flex h-16 items-center rounded-2xl border border-border bg-card/95 backdrop-blur-xl shadow-2xl shadow-black/20 dark:shadow-black/50">
+      <div className="flex h-16 items-center rounded-2xl border border-border bg-card/95 backdrop-blur-xl shadow-2xl shadow-black/20 dark:shadow-black/50 overflow-hidden">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname.startsWith(item.href);
@@ -61,7 +61,7 @@ export function MobileBottomNav() {
 
               {/* Active Glow Dot */}
               {isActive && (
-                <div className="absolute -bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                <div className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
               )}
             </Link>
           );
