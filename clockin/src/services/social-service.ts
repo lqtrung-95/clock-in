@@ -41,15 +41,14 @@ export async function searchUsers(query: string, currentUserId: string): Promise
   const supabase = createClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, display_name, avatar_url")
+    .select("user_id, display_name, avatar_url")
     .ilike("display_name", `%${query}%`)
-    .neq("id", currentUserId)
-    .limit(20) as { data: { id: string; display_name: string; avatar_url?: string }[] | null; error: Error | null };
+    .neq("user_id", currentUserId)  // user_id holds the auth user ID
+    .limit(20) as { data: { user_id: string; display_name: string; avatar_url?: string }[] | null; error: Error | null };
 
   if (error) throw error;
 
-  // Get friendship status for each user
-  const userIds = (data || []).map((u) => u.id);
+  const userIds = (data || []).map((u) => u.user_id);
 
   if (userIds.length === 0) return [];
 
@@ -60,15 +59,14 @@ export async function searchUsers(query: string, currentUserId: string): Promise
     .eq("status", "pending") as { data: Friendship[] | null };
 
   return (data || []).map((user) => {
-    const supabase = createClient();
     const friendship = friendships?.find(
       (f) =>
-        (f.requester_id === currentUserId && f.addressee_id === user.id) ||
-        (f.addressee_id === currentUserId && f.requester_id === user.id)
+        (f.requester_id === currentUserId && f.addressee_id === user.user_id) ||
+        (f.addressee_id === currentUserId && f.requester_id === user.user_id)
     );
 
     return {
-      id: user.id,
+      id: user.user_id,
       display_name: user.display_name,
       avatar_url: getAvatarUrl(user.avatar_url),
       friendship_status: friendship ? "pending" : "none",
@@ -156,6 +154,33 @@ export async function getFriendsLeaderboard(
 ): Promise<LeaderboardEntry[]> {
   const supabase = createClient();
   const { data, error } = await supabase.rpc("get_friends_leaderboard", {
+    p_user_id: userId,
+    p_period: period,
+  } as never) as { data: LeaderboardEntry[] | null; error: Error | null };
+
+  if (error) throw error;
+
+  // Deduplicate entries by friend_id (defensive against duplicate data)
+  const seen = new Set<string>();
+  const uniqueData = (data || []).filter((entry: LeaderboardEntry) => {
+    if (seen.has(entry.friend_id)) return false;
+    seen.add(entry.friend_id);
+    return true;
+  });
+
+  return uniqueData.map((entry: LeaderboardEntry) => ({
+    ...entry,
+    avatar_url: getAvatarUrl(entry.avatar_url),
+    is_current_user: entry.friend_id === userId,
+  }));
+}
+
+export async function getGlobalLeaderboard(
+  userId: string,
+  period: "weekly" | "monthly" = "weekly"
+): Promise<LeaderboardEntry[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("get_global_leaderboard", {
     p_user_id: userId,
     p_period: period,
   } as never) as { data: LeaderboardEntry[] | null; error: Error | null };

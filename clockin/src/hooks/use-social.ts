@@ -154,6 +154,33 @@ export function useLeaderboard(
   return { leaderboard, loading, refresh: loadLeaderboard };
 }
 
+export function useGlobalLeaderboard(
+  userId: string | undefined,
+  period: "weekly" | "monthly" = "weekly"
+) {
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadLeaderboard = useCallback(async () => {
+    if (!userId) return;
+    setLoading(true);
+    try {
+      const data = await socialService.getGlobalLeaderboard(userId, period);
+      setLeaderboard(data);
+    } catch (error) {
+      console.error("Error loading global leaderboard:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId, period]);
+
+  useEffect(() => {
+    loadLeaderboard();
+  }, [loadLeaderboard]);
+
+  return { leaderboard, loading, refresh: loadLeaderboard };
+}
+
 // ============================================
 // FOCUS ROOMS HOOK
 // ============================================

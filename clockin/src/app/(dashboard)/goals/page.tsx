@@ -85,17 +85,9 @@ export default function GoalsPage() {
   const [categoryId, setCategoryId] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const { dreamGoal, progress, isLoading: dreamGoalLoading } = useDreamGoal(userId);
+  const { dreamGoal, progress, isLoading: dreamGoalLoading, refresh: refreshDreamGoal } = useDreamGoal(userId);
   const [showDreamGoal, setShowDreamGoal] = useState(false);
-
-  // Sync dream goal with history on first load
-  useEffect(() => {
-    if (userId && userId !== 'guest' && !dreamGoalLoading && dreamGoal && dreamGoal.current_hours === 0) {
-      syncDreamGoalWithHistory(userId).then(() => {
-        window.location.reload();
-      });
-    }
-  }, [userId, dreamGoalLoading, dreamGoal]);
+  const [dreamGoalSynced, setDreamGoalSynced] = useState(false);
 
   async function loadData() {
     if (!isAuthenticated) {
@@ -142,14 +134,15 @@ export default function GoalsPage() {
     }
   }, [isAuthenticated]);
 
-  // Sync dream goal with history on first load
+  // Sync dream goal with historical time entries (once, no page reload)
   useEffect(() => {
-    if (userId && userId !== 'guest' && !dreamGoalLoading && dreamGoal && dreamGoal.current_hours === 0) {
-      syncDreamGoalWithHistory(userId).then(() => {
-        window.location.reload();
-      });
+    if (!dreamGoalSynced && userId && userId !== 'guest' && !dreamGoalLoading && dreamGoal && dreamGoal.current_hours === 0) {
+      setDreamGoalSynced(true);
+      syncDreamGoalWithHistory(userId)
+        .then(() => refreshDreamGoal())
+        .catch((err) => console.error('Failed to sync dream goal history:', err));
     }
-  }, [userId, dreamGoalLoading, dreamGoal]);
+  }, [userId, dreamGoalLoading, dreamGoal, dreamGoalSynced, refreshDreamGoal]);
 
   async function handleCreateGoal(e: React.FormEvent) {
     e.preventDefault();

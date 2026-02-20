@@ -4,9 +4,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLeaderboard } from "@/hooks/use-social";
-import { Trophy, Medal, Award, Clock } from "lucide-react";
+import { useLeaderboard, useGlobalLeaderboard } from "@/hooks/use-social";
+import { Trophy, Medal, Award, Clock, Users, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface LeaderboardProps {
   userId: string;
@@ -121,18 +122,34 @@ function LeaderboardEntry({
 }
 
 export function Leaderboard({ userId }: LeaderboardProps) {
+  const [scope, setScope] = useState<"friends" | "global">("friends");
+
+  // Friend leaderboard hooks
   const {
-    leaderboard: weeklyLeaderboard,
-    loading: weeklyLoading,
-    refresh: refreshWeekly,
+    leaderboard: friendWeeklyLeaderboard,
+    loading: friendWeeklyLoading,
   } = useLeaderboard(userId, "weekly");
   const {
-    leaderboard: monthlyLeaderboard,
-    loading: monthlyLoading,
-    refresh: refreshMonthly,
+    leaderboard: friendMonthlyLeaderboard,
+    loading: friendMonthlyLoading,
   } = useLeaderboard(userId, "monthly");
 
-  const loading = weeklyLoading || monthlyLoading;
+  // Global leaderboard hooks
+  const {
+    leaderboard: globalWeeklyLeaderboard,
+    loading: globalWeeklyLoading,
+  } = useGlobalLeaderboard(userId, "weekly");
+  const {
+    leaderboard: globalMonthlyLeaderboard,
+    loading: globalMonthlyLoading,
+  } = useGlobalLeaderboard(userId, "monthly");
+
+  // Select data based on scope
+  const weeklyLeaderboard = scope === "friends" ? friendWeeklyLeaderboard : globalWeeklyLeaderboard;
+  const monthlyLeaderboard = scope === "friends" ? friendMonthlyLeaderboard : globalMonthlyLeaderboard;
+  const loading = scope === "friends"
+    ? (friendWeeklyLoading || friendMonthlyLoading)
+    : (globalWeeklyLoading || globalMonthlyLoading);
 
   if (loading) {
     return (
@@ -146,15 +163,33 @@ export function Leaderboard({ userId }: LeaderboardProps) {
 
   return (
     <Card className="p-6 h-full">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold">Friend Leaderboard</h3>
+          <h3 className="text-lg font-semibold">
+            {scope === "friends" ? "Friend Leaderboard" : "Global Leaderboard"}
+          </h3>
           <p className="text-sm text-muted-foreground">
-            Compete with your friends
+            {scope === "friends"
+              ? "Compete with your friends"
+              : "Top focusers worldwide"}
           </p>
         </div>
         <Trophy className="h-8 w-8 text-yellow-500" />
       </div>
+
+      {/* Scope Toggle */}
+      <Tabs value={scope} onValueChange={(v) => setScope(v as "friends" | "global")} className="mb-4">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="friends" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Friends
+          </TabsTrigger>
+          <TabsTrigger value="global" className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            Global
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       <Tabs defaultValue="weekly">
         <TabsList className="grid w-full grid-cols-2 mb-4">
@@ -167,13 +202,14 @@ export function Leaderboard({ userId }: LeaderboardProps) {
             <div className="text-center py-8">
               <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                No activity this week. Start focusing to appear on the
-                leaderboard!
+                {scope === "friends"
+                  ? "No friend activity this week. Start focusing to appear on the leaderboard!"
+                  : "No global activity this week. Be the first to make the leaderboard!"}
               </p>
             </div>
           ) : (
             weeklyLeaderboard.map((entry, index) => (
-              <LeaderboardEntry key={`weekly-${entry.friend_id}`} entry={entry} index={index} />
+              <LeaderboardEntry key={`${scope}-weekly-${entry.friend_id}`} entry={entry} index={index} />
             ))
           )}
         </TabsContent>
@@ -183,13 +219,14 @@ export function Leaderboard({ userId }: LeaderboardProps) {
             <div className="text-center py-8">
               <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                No activity this month. Start focusing to appear on the
-                leaderboard!
+                {scope === "friends"
+                  ? "No friend activity this month. Start focusing to appear on the leaderboard!"
+                  : "No global activity this month. Be the first to make the leaderboard!"}
               </p>
             </div>
           ) : (
             monthlyLeaderboard.map((entry, index) => (
-              <LeaderboardEntry key={`monthly-${entry.friend_id}`} entry={entry} index={index} />
+              <LeaderboardEntry key={`${scope}-monthly-${entry.friend_id}`} entry={entry} index={index} />
             ))
           )}
         </TabsContent>

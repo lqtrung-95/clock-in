@@ -21,9 +21,10 @@ import {
   PieChart,
   Pie,
   Cell,
+  CartesianGrid,
 } from "recharts";
-import { format, subDays, parseISO, startOfYear, endOfYear } from "date-fns";
-import { Clock, Flame, Calendar, BarChart3, Grid3X3 } from "lucide-react";
+import { format, subDays, parseISO } from "date-fns";
+import { Clock, Flame, Calendar, BarChart3, Grid3X3, TrendingUp } from "lucide-react";
 import type { TimeEntry } from "@/types/timer";
 import type { DailyStats } from "@/services/stats-service";
 
@@ -246,7 +247,7 @@ export default function AnalyticsPage() {
                   className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 ${
                     days === d
                       ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25"
-                      : "border border-border bg-white/5 text-muted-foreground/90 hover:bg-white/10 hover:text-foreground"
+                      : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   {d} days
@@ -254,20 +255,59 @@ export default function AnalyticsPage() {
               ))}
             </div>
             <Card className="border border-border bg-card p-6">
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dailyData}>
-                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }} axisLine={{ stroke: "rgba(255,255,255,0.1)" }} tickLine={{ stroke: "rgba(255,255,255,0.1)" }} />
-                    <YAxis tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }} axisLine={{ stroke: "rgba(255,255,255,0.1)" }} tickLine={{ stroke: "rgba(255,255,255,0.1)" }} />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", color: "hsl(var(--foreground))" }}
-                      itemStyle={{ color: "hsl(var(--foreground))" }}
-                      formatter={(value) => [`${value} min`, "Time"]}
-                    />
-                    <Bar dataKey="minutes" fill="#3b82f6" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {dailyData.some((d) => d.minutes > 0) ? (
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dailyData} barCategoryGap="30%">
+                      <defs>
+                        <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.8} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeDasharray="3 3" strokeOpacity={0.5} />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                        axisLine={false}
+                        tickLine={false}
+                        dy={8}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                        axisLine={false}
+                        tickLine={false}
+                        tickFormatter={(v) => `${v}m`}
+                        width={36}
+                      />
+                      <Tooltip
+                        cursor={{ fill: "hsl(var(--muted))", radius: 6 }}
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "12px",
+                          color: "hsl(var(--foreground))",
+                          boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
+                          fontSize: "13px",
+                        }}
+                        itemStyle={{ color: "hsl(var(--foreground))" }}
+                        formatter={(value) => [`${value} min`, "Focus time"]}
+                      />
+                      <Bar dataKey="minutes" fill="url(#barGradient)" radius={[6, 6, 0, 0]} maxBarSize={48} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="flex h-[300px] flex-col items-center justify-center gap-3 text-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
+                    <TrendingUp className="h-7 w-7 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">No focus sessions yet</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Start a session to see your daily progress here</p>
+                  </div>
+                </div>
+              )}
             </Card>
           </TabsContent>
 
@@ -317,9 +357,15 @@ export default function AnalyticsPage() {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <p className="text-center py-8 text-muted-foreground">
-                  No data available
-                </p>
+                <div className="flex h-[300px] flex-col items-center justify-center gap-3 text-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
+                    <BarChart3 className="h-7 w-7 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">No category data yet</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Tag your sessions with categories to see the breakdown</p>
+                  </div>
+                </div>
               )}
             </Card>
           </TabsContent>
