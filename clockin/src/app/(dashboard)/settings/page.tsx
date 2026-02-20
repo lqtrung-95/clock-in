@@ -395,6 +395,7 @@ export default function SettingsPage() {
               {/* Avatar Selection */}
               <div className="space-y-2">
                 <div className="flex gap-3 flex-wrap items-center">
+                  {/* Preset avatars */}
                   {avatarOptions.map((url) => (
                     <button
                       key={url}
@@ -413,7 +414,19 @@ export default function SettingsPage() {
                       </Avatar>
                     </button>
                   ))}
-                  {/* Custom Upload - Always visible */}
+                  {/* Custom avatar thumbnail (selectable) */}
+                  {avatarUrl && !avatarOptions.includes(avatarUrl) && (
+                    <button
+                      onClick={() => setAvatarUrl(avatarUrl)}
+                      className="relative rounded-full p-1 transition-all ring-2 ring-blue-500 ring-offset-2"
+                    >
+                      <Avatar className="h-11 w-11">
+                        <AvatarImage src={avatarUrl} alt="Custom avatar" />
+                        <AvatarFallback className="bg-muted">?</AvatarFallback>
+                      </Avatar>
+                    </button>
+                  )}
+                  {/* Upload button */}
                   <label className="relative rounded-full p-1 transition-all cursor-pointer hover:opacity-80 inline-flex">
                     <input
                       type="file"
@@ -422,11 +435,7 @@ export default function SettingsPage() {
                       disabled={uploadingAvatar}
                       className="hidden"
                     />
-                    <div className={`h-11 w-11 rounded-full border-2 border-dashed flex items-center justify-center transition-colors ${
-                      avatarUrl && !avatarOptions.includes(avatarUrl)
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-muted-foreground/30 hover:border-muted-foreground/50"
-                    }`}>
+                    <div className="h-11 w-11 rounded-full border-2 border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 flex items-center justify-center transition-colors">
                       {uploadingAvatar ? (
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                       ) : (
@@ -434,7 +443,7 @@ export default function SettingsPage() {
                       )}
                     </div>
                   </label>
-                  {/* Delete button - only when custom avatar selected */}
+                  {/* Delete button - only when custom avatar exists */}
                   {avatarUrl && !avatarOptions.includes(avatarUrl) && (
                     <button
                       onClick={handleDeleteAvatar}
