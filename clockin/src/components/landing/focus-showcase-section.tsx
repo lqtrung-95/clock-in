@@ -1,10 +1,10 @@
-import { Music, Video, Layers, Sun } from "lucide-react";
+import { Music, Video, Layers, Sun, Plus } from "lucide-react";
 
 const SHOWCASE_ITEMS = [
   {
     icon: Video,
-    label: "8 ambient video scenes",
-    desc: "Lofi Girl, Rain Window, Fireplace, Ocean Waves, Forest, Snowfall, Coffee Shop, Starry Night",
+    label: "8 built-in scenes + your own",
+    desc: "Lofi Girl, Rain Window, Fireplace, Ocean Waves, Forest, Snowfall, Coffee Shop, Starry Night — or paste any YouTube link",
   },
   {
     icon: Layers,
@@ -26,38 +26,39 @@ const SHOWCASE_ITEMS = [
 export function FocusShowcaseSection() {
   return (
     <section className="relative py-32 px-4 overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent" />
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full bg-purple-600/10 blur-3xl" />
+      {/* Background glow — blue/cyan to match app */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/8 to-transparent" />
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full bg-blue-600/10 blur-3xl" />
 
       <div className="relative max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
+
           {/* Left: copy */}
           <div>
-            <p className="text-sm font-semibold text-purple-400 uppercase tracking-widest mb-3">Focus Mode</p>
+            <p className="text-sm font-semibold text-blue-400 uppercase tracking-widest mb-3">Focus Mode</p>
             <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6 leading-tight">
               Your office,{" "}
-              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 reimagined
               </span>
             </h2>
             <p className="text-lg text-white/55 mb-10 leading-relaxed">
-              Step into full-screen focus mode and make distractions impossible. Choose a scene
-              that matches your mood, layer on effects, add ambient sound, and disappear into
-              deep work. Your timer runs quietly in the background.
+              Step into full-screen focus mode and make distractions impossible. Pick a scene,
+              layer on effects, add ambient sound — and disappear into deep work. Your timer
+              runs quietly behind it all.
             </p>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               {SHOWCASE_ITEMS.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div key={item.label} className="flex gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-500/15 border border-purple-500/20">
-                      <Icon className="h-5 w-5 text-purple-400" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20">
+                      <Icon className="h-5 w-5 text-blue-400" />
                     </div>
                     <div>
                       <p className="font-semibold text-white text-sm">{item.label}</p>
-                      <p className="text-sm text-white/45 mt-0.5">{item.desc}</p>
+                      <p className="text-sm text-white/45 mt-0.5 leading-relaxed">{item.desc}</p>
                     </div>
                   </div>
                 );
@@ -65,40 +66,79 @@ export function FocusShowcaseSection() {
             </div>
           </div>
 
-          {/* Right: visual mockup */}
+          {/* Right: mockup matching actual focus page UI */}
           <div className="relative">
-            <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-black/60 aspect-video shadow-2xl shadow-black/60">
-              {/* Fake fullscreen timer UI */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-purple-900/30 to-cyan-900/20" />
+            <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a1a] aspect-video shadow-2xl shadow-black/60">
+              {/* Background gradient matching app */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-[#0a0a1a] to-cyan-900/20" />
+
+              {/* Top-left phase badge */}
+              <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-600/80 to-cyan-600/80 border border-blue-400/30 shadow-lg">
+                <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                <span className="text-xs font-bold text-white tracking-wide">FOCUS TIME</span>
+              </div>
 
               {/* Timer display */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                <div className="text-xs font-bold text-white/60 uppercase tracking-widest px-3 py-1 rounded-full bg-blue-500/30 border border-blue-400/30">
-                  Focus Time
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                {/* Circular ring hint */}
+                <div className="relative flex items-center justify-center w-40 h-40">
+                  <svg className="absolute inset-0 -rotate-90" viewBox="0 0 160 160">
+                    <circle cx="80" cy="80" r="72" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
+                    <circle
+                      cx="80" cy="80" r="72"
+                      fill="none"
+                      stroke="url(#timerGrad)"
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      strokeDasharray={452}
+                      strokeDashoffset={452 * 0.38}
+                    />
+                    <defs>
+                      <linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#3B82F6" />
+                        <stop offset="100%" stopColor="#06B6D4" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-4xl font-mono font-bold text-white tabular-nums tracking-tight">24:13</span>
+                    <span className="text-xs text-white/50">Cycle 2 of 4</span>
+                  </div>
                 </div>
-                <div className="text-6xl sm:text-7xl font-mono font-bold text-white tabular-nums drop-shadow-2xl">
-                  24:13
-                </div>
-                <div className="text-white/50 text-sm">Cycle 2 of 4</div>
-                <div className="flex gap-2 mt-2">
+
+                {/* Cycle dots */}
+                <div className="flex items-center gap-2">
                   {[0, 1, 2, 3].map((i) => (
                     <div
                       key={i}
-                      className={`h-2 rounded-full transition-all ${
-                        i < 2 ? "w-8 bg-gradient-to-r from-blue-500 to-cyan-400" : "w-2.5 bg-white/20"
+                      className={`h-2 rounded-full ${
+                        i < 2
+                          ? "w-7 bg-gradient-to-r from-blue-500 to-cyan-400"
+                          : "w-2 bg-white/20"
                       }`}
                     />
                   ))}
                 </div>
               </div>
 
-              {/* Ambient overlay effect */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+              {/* Darkening overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 pointer-events-none" />
             </div>
 
-            {/* Floating badge */}
+            {/* Custom video badge */}
+            <div className="absolute -bottom-4 -left-4 flex items-center gap-2.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 shadow-xl">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/30 to-cyan-500/30 border border-blue-400/20">
+                <Plus className="h-4 w-4 text-cyan-400" />
+              </div>
+              <div>
+                <p className="text-xs text-white/50 leading-none mb-0.5">Custom Scene</p>
+                <p className="text-sm font-semibold text-white">Add any YouTube link</p>
+              </div>
+            </div>
+
+            {/* Ambient sound badge */}
             <div className="absolute -bottom-4 -right-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 shadow-xl">
-              <p className="text-xs text-white/50 mb-1">Ambient Sound</p>
+              <p className="text-xs text-white/50 mb-1.5">Ambient Sound</p>
               <div className="flex items-center gap-2">
                 <div className="flex gap-0.5 items-end h-4">
                   {[3, 5, 4, 6, 3, 5, 4].map((h, i) => (
@@ -109,10 +149,11 @@ export function FocusShowcaseSection() {
                     />
                   ))}
                 </div>
-                <span className="text-sm font-medium text-white">Rain</span>
+                <span className="text-sm font-semibold text-white">Rain</span>
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </section>
