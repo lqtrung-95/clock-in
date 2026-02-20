@@ -14,21 +14,88 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://clockin.app";
+const APP_NAME = "Clockin";
+const APP_DESCRIPTION =
+  "A gamified focus tracker with Pomodoro timers, ambient video scenes, streaks, social leaderboards, and dream goal tracking. Stay in flow, every day.";
+
 export const metadata: Metadata = {
-  title: "Clockin - Effort Tracker",
-  description: "Motivation-driven time tracker with Pomodoro, focus mode, streaks, and gamification",
+  metadataBase: new URL(APP_URL),
+
+  // Title
+  title: {
+    default: `${APP_NAME} — Focus & Flow`,
+    template: `%s | ${APP_NAME}`,
+  },
+
+  // Description & keywords
+  description: APP_DESCRIPTION,
+  keywords: [
+    "pomodoro timer",
+    "focus app",
+    "time tracker",
+    "productivity",
+    "study timer",
+    "ambient music",
+    "deep work",
+    "flow state",
+    "streaks",
+    "gamification",
+    "goal tracker",
+    "focus room",
+  ],
+
+  // Canonical
+  alternates: { canonical: "/" },
+
+  // Robots
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+
+  // Favicon / icons
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: "/favicon.ico",
+    shortcut: "/favicon.ico",
+  },
+
+  // PWA manifest
   manifest: "/manifest.json",
+
+  // Apple PWA
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
-    title: "Clockin",
+    statusBarStyle: "black-translucent",
+    title: APP_NAME,
+  },
+
+  // Open Graph
+  openGraph: {
+    type: "website",
+    url: APP_URL,
+    siteName: APP_NAME,
+    title: `${APP_NAME} — Focus & Flow`,
+    description: APP_DESCRIPTION,
+    locale: "en_US",
+  },
+
+  // Twitter / X card
+  twitter: {
+    card: "summary_large_image",
+    title: `${APP_NAME} — Focus & Flow`,
+    description: APP_DESCRIPTION,
   },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: dark)", color: "#060614" },
+    { media: "(prefers-color-scheme: light)", color: "#060614" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -42,9 +109,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
           {children}
           <Toaster />
