@@ -47,8 +47,8 @@ export default function SettingsPage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  // Compress image before upload
-  const compressImage = (file: File, maxWidth = 200, maxHeight = 200, quality = 0.8): Promise<Blob> => {
+  // Compress image before upload - creates square crop from center
+  const compressImage = (file: File, size = 200, quality = 0.85): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -57,26 +57,29 @@ export default function SettingsPage() {
         img.src = event.target?.result as string;
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          let width = img.width;
-          let height = img.height;
-
-          // Calculate new dimensions
-          if (width > height) {
-            if (width > maxWidth) {
-              height = Math.round((height * maxWidth) / width);
-              width = maxWidth;
-            }
-          } else {
-            if (height > maxHeight) {
-              width = Math.round((width * maxHeight) / height);
-              height = maxHeight;
-            }
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Failed to get canvas context"));
+            return;
           }
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx?.drawImage(img, 0, 0, width, height);
+          // Calculate crop dimensions for center square
+          let sx = 0, sy = 0, sWidth = img.width, sHeight = img.height;
+
+          if (img.width > img.height) {
+            // Landscape - crop width to match height
+            sWidth = img.height;
+            sx = (img.width - img.height) / 2;
+          } else if (img.height > img.width) {
+            // Portrait - crop height to match width
+            sHeight = img.width;
+            sy = (img.height - img.width) / 2;
+          }
+
+          // Draw cropped square image
+          ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, size, size);
 
           canvas.toBlob(
             (blob) => {
@@ -91,6 +94,30 @@ export default function SettingsPage() {
       };
       reader.onerror = reject;
     });
+  };
+
+  // Delete custom avatar
+  const handleDeleteAvatar = async () => {
+    if (!avatarUrl || avatarOptions.includes(avatarUrl)) return;
+
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Extract file path from URL
+      const url = new URL(avatarUrl);
+      const pathMatch = url.pathname.match(/\/avatars\/(.+)/);
+      if (pathMatch) {
+        await supabase.storage.from("avatars").remove([pathMatch[1]]);
+      }
+
+      // Reset to first preset
+      setAvatarUrl(avatarOptions[0]);
+      toast.success("Avatar deleted");
+    } catch (error) {
+      toast.error("Failed to delete avatar");
+    }
   };
 
   // Handle custom avatar upload
@@ -116,7 +143,7 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Compress image
+      // Compress image (creates 200x200 square crop from center)
       const compressedBlob = await compressImage(file);
 
       // Check compressed size (max 500KB after compression)
@@ -384,7 +411,13 @@ export default function SettingsPage() {
                     />
                     <Avatar className="h-12 w-12 border-2 border-dashed border-muted-foreground/50">
                       {avatarUrl && !avatarOptions.includes(avatarUrl) ? (
-                        <AvatarImage src={avatarUrl} alt="Custom avatar" />
+                        <div className="relative h-full w-full">
+                          <img
+                            src={avatarUrl}
+                            alt="Custom avatar"
+                            className="h-full w-full object-cover rounded-full"
+                          />
+                        </div>
                       ) : (
                         <AvatarFallback className="bg-muted">
                           {uploadingAvatar ? (
@@ -396,6 +429,16 @@ export default function SettingsPage() {
                       )}
                     </Avatar>
                   </label>
+                  {/* Delete custom avatar */}
+                  {avatarUrl && !avatarOptions.includes(avatarUrl) && (
+                    <button
+                      onClick={handleDeleteAvatar}
+                      className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                      title="Delete custom avatar"
+                    >
+                      ×
+                    </button>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Max 5MB, will be compressed to 200x200px

@@ -76,7 +76,7 @@ function LeaderboardEntry({
 
       <Avatar className="h-10 w-10">
         {entry.avatar_url && (
-          <img src={entry.avatar_url} alt={entry.display_name} className="h-full w-full object-cover" />
+          <img src={entry.avatar_url} alt={entry.display_name} className="h-full w-full object-cover rounded-full" />
         )}
         <AvatarFallback
           className={cn(
