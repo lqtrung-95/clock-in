@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useMemo, useCallback } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 interface AnimatedBackgroundProps {
@@ -236,60 +236,43 @@ function BaseImage({ url }: { url: string }) {
 // YouTube Background Component - uses postMessage to control playback/mute without re-mounting
 function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUrl: string; muted?: boolean; isRunning?: boolean }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  // Track whether the YouTube player JS API is ready to receive commands
-  const isReadyRef = useRef(false);
-  // Store latest desired state so we can apply it once player becomes ready
-  const pendingMuted = useRef(muted);
-  const pendingRunning = useRef(isRunning);
 
-  // Ensure enablejsapi=1 is in the URL so postMessage commands and onReady events work
+  // Ensure enablejsapi=1 is in the URL so postMessage commands work
   const url = useMemo(() => {
-    let u = embedUrl.includes('enablejsapi') ? embedUrl
-      : embedUrl.includes('?') ? `${embedUrl}&enablejsapi=1` : `${embedUrl}?enablejsapi=1`;
-    // origin param required for YouTube to emit API events back to us
-    if (typeof window !== 'undefined' && !u.includes('origin=')) {
-      u += `&origin=${encodeURIComponent(window.location.origin)}`;
-    }
-    return u;
+    if (embedUrl.includes('enablejsapi')) return embedUrl;
+    return embedUrl.includes('?') ? `${embedUrl}&enablejsapi=1` : `${embedUrl}?enablejsapi=1`;
   }, [embedUrl]);
 
-  const postCommand = useCallback((func: string) => {
+  const postCommand = (func: string) => {
     iframeRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ event: 'command', func, args: '' }),
-      '*'
+      JSON.stringify({ event: 'command', func, args: '' }), '*'
     );
-  }, []);
+  };
 
-  // Wait for YouTube player ready event, then apply the initial mute/play state.
-  // Commands sent before onReady are silently ignored by the YouTube API.
+  // On initial player load, apply mute/play state once the YouTube API is ready.
+  // Commands fired before onReady are silently dropped, so we re-apply here.
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       try {
         const data = JSON.parse(typeof event.data === 'string' ? event.data : '{}');
         if (data.event === 'onReady') {
-          isReadyRef.current = true;
-          postCommand(pendingMuted.current ? 'mute' : 'unMute');
-          if (!pendingRunning.current) postCommand('pauseVideo');
+          postCommand(muted ? 'mute' : 'unMute');
+          if (!isRunning) postCommand('pauseVideo');
         }
-      } catch {
-        // ignore non-JSON messages from other sources
-      }
+      } catch { /* ignore non-JSON messages */ }
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [postCommand]);
+  }, [muted, isRunning]);
 
-  // Mute/unmute — only send if player is ready, else update pending state
+  // Always fire directly for user-triggered changes (player is ready by this point)
   useEffect(() => {
-    pendingMuted.current = muted;
-    if (isReadyRef.current) postCommand(muted ? 'mute' : 'unMute');
-  }, [muted, postCommand]);
+    postCommand(muted ? 'mute' : 'unMute');
+  }, [muted]);
 
-  // Pause/resume — only send if player is ready, else update pending state
   useEffect(() => {
-    pendingRunning.current = isRunning;
-    if (isReadyRef.current) postCommand(isRunning ? 'playVideo' : 'pauseVideo');
-  }, [isRunning, postCommand]);
+    postCommand(isRunning ? 'playVideo' : 'pauseVideo');
+  }, [isRunning]);
 
   return (
     <div className="absolute inset-0">
