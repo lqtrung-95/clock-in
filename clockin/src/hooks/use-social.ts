@@ -219,6 +219,7 @@ export function useFocusRooms() {
 
 export function useFocusRoomParticipants(roomId: string | undefined) {
   const [participants, setParticipants] = useState<FocusRoomParticipant[]>([]);
+  const [activeParticipants, setActiveParticipants] = useState<FocusRoomParticipant[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadParticipants = useCallback(async () => {
@@ -226,7 +227,10 @@ export function useFocusRoomParticipants(roomId: string | undefined) {
     setLoading(true);
     try {
       const room = await socialService.getFocusRoom(roomId);
-      setParticipants(room?.participants || []);
+      const allParticipants = room?.participants || [];
+      setParticipants(allParticipants);
+      // Filter only active participants (those who haven't left)
+      setActiveParticipants(allParticipants.filter(p => !p.left_at));
     } catch (error) {
       console.error("Error loading participants:", error);
     } finally {
@@ -262,7 +266,7 @@ export function useFocusRoomParticipants(roomId: string | undefined) {
     };
   }, [roomId, loadParticipants]);
 
-  return { participants, loading, refresh: loadParticipants };
+  return { participants, activeParticipants, loading, refresh: loadParticipants };
 }
 
 // ============================================
@@ -449,4 +453,106 @@ export function useFocusStatus(roomId: string | undefined, userId: string | unde
   };
 
   return { isFocused, focusTime, toggleFocus };
+}
+
+// ============================================
+// FOCUS ROOM SESSION HOOK (Realtime)
+// ============================================
+
+export function useFocusRoomSession(roomId: string | undefined) {
+  const [sessionState, setSessionState] = useState<'idle' | 'active' | 'paused' | 'completed'>('idle');
+  const [sessionDuration, setSessionDuration] = useState(25);
+  const [sessionStartedAt, setSessionStartedAt] = useState<string | null>(null);
+  const [remainingTime, setRemainingTime] = useState(0);
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    const supabase = createClient();
+
+    // Get initial room state
+    const loadRoomState = async () => {
+      const { data } = await supabase
+        .from('focus_rooms')
+        .select('session_state, session_duration, session_started_at')
+        .eq('id', roomId)
+        .single() as { data: { session_state: 'idle' | 'active' | 'paused' | 'completed'; session_duration: number; session_started_at: string | null } | null };
+
+      if (data) {
+        setSessionState(data.session_state || 'idle');
+        setSessionDuration(data.session_duration || 25);
+        setSessionStartedAt(data.session_started_at);
+
+        if (data.session_state === 'active' && data.session_started_at) {
+          const elapsed = Math.floor(
+            (new Date().getTime() - new Date(data.session_started_at).getTime()) / 1000
+          );
+          const totalSeconds = (data.session_duration || 25) * 60;
+          setRemainingTime(Math.max(0, totalSeconds - elapsed));
+        } else {
+          setRemainingTime((data.session_duration || 25) * 60);
+        }
+      }
+    };
+
+    loadRoomState();
+
+    // Subscribe to room session changes
+    const subscription = supabase
+      .channel(`room_session_${roomId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'focus_rooms',
+          filter: `id=eq.${roomId}`,
+        },
+        (payload) => {
+          const newData = payload.new as FocusRoom;
+          setSessionState(newData.session_state || 'idle');
+          setSessionDuration(newData.session_duration || 25);
+          setSessionStartedAt(newData.session_started_at || null);
+
+          if (newData.session_state === 'active' && newData.session_started_at) {
+            const elapsed = Math.floor(
+              (new Date().getTime() - new Date(newData.session_started_at).getTime()) / 1000
+            );
+            const totalSeconds = (newData.session_duration || 25) * 60;
+            setRemainingTime(Math.max(0, totalSeconds - elapsed));
+          } else if (newData.session_state === 'idle' || newData.session_state === 'completed') {
+            setRemainingTime((newData.session_duration || 25) * 60);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [roomId]);
+
+  // Update remaining time countdown
+  useEffect(() => {
+    if (sessionState !== 'active') return;
+
+    const interval = setInterval(() => {
+      setRemainingTime((prev) => {
+        if (prev <= 1) {
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [sessionState, sessionStartedAt, sessionDuration]);
+
+  return {
+    sessionState,
+    sessionDuration,
+    sessionStartedAt,
+    remainingTime,
+    progress: sessionDuration > 0 ? ((sessionDuration * 60 - remainingTime) / (sessionDuration * 60)) * 100 : 0,
+  };
 }

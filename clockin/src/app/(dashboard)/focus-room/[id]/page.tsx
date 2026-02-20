@@ -10,14 +10,17 @@ import { useAuthState } from "@/hooks/use-auth-state";
 import {
   useFocusRoomParticipants,
   useFocusRoomMessages,
-  useFocusStatus,
+  useFocusRoomSession,
 } from "@/hooks/use-social";
+import type { FocusRoomParticipant } from "@/types/social";
 import * as socialService from "@/services/social-service";
 import {
   Users,
   Send,
   Play,
   Square,
+  Pause,
+  RotateCcw,
   Clock,
   ArrowLeft,
   Crown,
@@ -181,16 +184,19 @@ export default function FocusRoomPage() {
   const roomId = params.id as string;
   const { userId: currentUserId, isAuthenticated } = useAuthState();
 
-  const { participants, loading: participantsLoading } =
+  const { participants, activeParticipants, loading: participantsLoading } =
     useFocusRoomParticipants(roomId);
   const { messages, sendMessage } = useFocusRoomMessages(roomId);
-  const { isFocused, focusTime, toggleFocus } = useFocusStatus(
-    roomId,
-    currentUserId || undefined
-  );
+  const {
+    sessionState,
+    sessionDuration,
+    remainingTime,
+    progress,
+  } = useFocusRoomSession(roomId);
 
   const [messageInput, setMessageInput] = useState("");
   const [isHost, setIsHost] = useState(false);
+  const [roomHostId, setRoomHostId] = useState<string | null>(null);
   const [showParticipants, setShowParticipants] = useState(true);
   const [showChat, setShowChat] = useState(true);
 
@@ -230,6 +236,7 @@ export default function FocusRoomPage() {
         const room = await socialService.getFocusRoom(roomId);
         if (room) {
           setIsHost(room.host_id === currentUserId);
+          setRoomHostId(room.host_id);
           await socialService.joinFocusRoom(roomId, currentUserId);
         }
       } catch (error) {
@@ -256,9 +263,53 @@ export default function FocusRoomPage() {
 
   const handleLeave = async () => {
     if (currentUserId) {
-      await socialService.leaveFocusRoom(roomId, currentUserId);
+      await socialService.leaveFocusRoomAndRemove(roomId, currentUserId);
     }
     router.push("/social");
+  };
+
+  const handleStartSession = async () => {
+    if (!isHost || !currentUserId) return;
+    try {
+      await socialService.startFocusRoomSession(roomId, currentUserId, selectedDuration);
+      toast.success(`Session started: ${selectedDuration} minutes`);
+    } catch (error) {
+      toast.error("Failed to start session");
+      console.error(error);
+    }
+  };
+
+  const handlePauseSession = async () => {
+    if (!isHost || !currentUserId) return;
+    try {
+      await socialService.pauseFocusRoomSession(roomId, currentUserId);
+      toast.success("Session paused");
+    } catch (error) {
+      toast.error("Failed to pause session");
+      console.error(error);
+    }
+  };
+
+  const handleResetSession = async () => {
+    if (!isHost || !currentUserId) return;
+    try {
+      await socialService.resetFocusRoomSession(roomId, currentUserId);
+      toast.success("Session reset");
+    } catch (error) {
+      toast.error("Failed to reset session");
+      console.error(error);
+    }
+  };
+
+  const handleCompleteSession = async () => {
+    if (!isHost || !currentUserId) return;
+    try {
+      await socialService.completeFocusRoomSession(roomId, currentUserId);
+      toast.success("Session completed!");
+    } catch (error) {
+      toast.error("Failed to complete session");
+      console.error(error);
+    }
   };
 
   const handleShare = async () => {
@@ -271,9 +322,9 @@ export default function FocusRoomPage() {
     }
   };
 
-  const totalSeconds = selectedDuration * 60;
-  const remainingSeconds = Math.max(0, totalSeconds - focusTime);
-  const progress = Math.min(100, (focusTime / totalSeconds) * 100);
+  // Use synchronized session time for display
+  const displayProgress = sessionState === 'idle' ? 0 : progress;
+  const displayRemaining = remainingTime;
 
   if (!isAuthenticated) {
     return <GuestPrompt roomId={roomId} />;
@@ -319,7 +370,7 @@ export default function FocusRoomPage() {
             <h1 className="font-bold text-white text-lg tracking-tight">Focus Room</h1>
             <p className="text-sm text-white/70 flex items-center gap-1.5 font-medium">
               <Users className="h-4 w-4 text-violet-400" />
-              {participants.length} participants
+              {activeParticipants.length} active
             </p>
           </div>
           <Button
@@ -357,28 +408,85 @@ export default function FocusRoomPage() {
             Settings
           </Button>
 
-          <Button
-            size="sm"
-            onClick={toggleFocus}
-            className={cn(
-              "gap-2 px-6 transition-all duration-300",
-              isFocused
-                ? "bg-rose-500/90 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30"
-                : "bg-emerald-500/90 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30"
-            )}
-          >
-            {isFocused ? (
-              <>
-                <Square className="h-4 w-4" />
-                Stop
-              </>
-            ) : (
-              <>
-                <Play className="h-4 w-4" />
-                Start Focus
-              </>
-            )}
-          </Button>
+          {isHost ? (
+            <>
+              {sessionState === 'idle' && (
+                <Button
+                  size="sm"
+                  onClick={handleStartSession}
+                  className="gap-2 px-6 bg-emerald-500/90 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30"
+                >
+                  <Play className="h-4 w-4" />
+                  Start Session
+                </Button>
+              )}
+              {sessionState === 'active' && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePauseSession}
+                    className="bg-transparent border-white/20 text-white/80 hover:bg-white/10 hover:text-white"
+                  >
+                    <Pause className="h-4 w-4 mr-2" />
+                    Pause
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResetSession}
+                    className="bg-transparent border-white/20 text-white/80 hover:bg-white/10 hover:text-white"
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Reset
+                  </Button>
+                </>
+              )}
+              {sessionState === 'paused' && (
+                <>
+                  <Button
+                    size="sm"
+                    onClick={handleStartSession}
+                    className="gap-2 px-6 bg-emerald-500/90 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30"
+                  >
+                    <Play className="h-4 w-4" />
+                    Resume
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResetSession}
+                    className="bg-transparent border-white/20 text-white/80 hover:bg-white/10 hover:text-white"
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Reset
+                  </Button>
+                </>
+              )}
+              {(sessionState === 'active' || sessionState === 'paused') && remainingTime <= 0 && (
+                <Button
+                  size="sm"
+                  onClick={handleCompleteSession}
+                  className="gap-2 px-6 bg-violet-500/90 hover:bg-violet-600 text-white shadow-lg shadow-violet-500/30"
+                >
+                  <Square className="h-4 w-4" />
+                  Complete
+                </Button>
+              )}
+            </>
+          ) : (
+            <div className={cn(
+              "px-4 py-2 rounded-lg text-sm font-medium",
+              sessionState === 'active' ? "bg-emerald-500/20 text-emerald-400" :
+              sessionState === 'paused' ? "bg-amber-500/20 text-amber-400" :
+              "bg-white/5 text-white/60"
+            )}>
+              {sessionState === 'active' ? 'Session Active' :
+               sessionState === 'paused' ? 'Session Paused' :
+               sessionState === 'completed' ? 'Session Completed' :
+               'Waiting for host...'}
+            </div>
+          )}
         </div>
       </header>
 
@@ -389,24 +497,31 @@ export default function FocusRoomPage() {
             {/* Session Duration */}
             <div className="space-y-3">
               <label className="text-xs font-medium text-white/50 uppercase tracking-wider">
-                Session Duration
+                Next Session Duration
               </label>
               <div className="flex gap-2">
                 {POMODORO_PRESETS.map((preset) => (
                   <button
                     key={preset.name}
-                    onClick={() => setSelectedDuration(preset.minutes)}
+                    onClick={() => sessionState === 'idle' && setSelectedDuration(preset.minutes)}
+                    disabled={sessionState !== 'idle'}
                     className={cn(
                       "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                       selectedDuration === preset.minutes
                         ? "bg-violet-500 text-white shadow-lg shadow-violet-500/30"
-                        : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+                        : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white",
+                      sessionState !== 'idle' && "opacity-50 cursor-not-allowed"
                     )}
                   >
                     {preset.label}
                   </button>
                 ))}
               </div>
+              {sessionState !== 'idle' && (
+                <p className="text-xs text-amber-400">
+                  Cannot change duration while session is {sessionState}
+                </p>
+              )}
             </div>
 
             {/* Atmosphere */}
@@ -478,7 +593,7 @@ export default function FocusRoomPage() {
                   Participants
                 </h3>
                 <span className="px-2 py-0.5 rounded-full bg-white/10 text-xs font-medium text-white/80">
-                  {participants.length}
+                  {activeParticipants.length}
                 </span>
               </div>
               <Button
@@ -492,11 +607,11 @@ export default function FocusRoomPage() {
             </div>
             <ScrollArea className="flex-1 pr-2">
               <div className="space-y-2">
-                {participants.map((participant) => (
+                {activeParticipants.map((participant) => (
                   <ParticipantCard
                     key={participant.user_id}
                     participant={participant}
-                    isHost={participant.user_id === currentUserId && isHost}
+                    isHost={participant.user_id === roomHostId}
                   />
                 ))}
               </div>
@@ -513,7 +628,7 @@ export default function FocusRoomPage() {
               className="absolute left-0 top-1/2 -translate-y-1/2 pl-3 pr-4 py-4 rounded-r-xl bg-black/60 backdrop-blur-xl border border-l-0 border-white/20 text-white/70 hover:text-white hover:bg-black/80 hover:border-white/40 transition-all shadow-lg shadow-black/30 flex items-center gap-2"
             >
               <Users className="h-4 w-4" />
-              <span className="text-xs font-medium">{participants.length}</span>
+              <span className="text-xs font-medium">{activeParticipants.length}</span>
               <PanelLeft className="h-4 w-4" />
             </button>
           )}
@@ -533,7 +648,7 @@ export default function FocusRoomPage() {
             {/* Glow effect */}
             <div className={cn(
               "absolute inset-0 rounded-full blur-3xl transition-all duration-1000",
-              isFocused ? "bg-emerald-500/20" : "bg-violet-500/20"
+              sessionState === 'active' ? "bg-emerald-500/20" : "bg-violet-500/20"
             )} />
 
             <div className="relative w-80 h-80 rounded-full bg-black/40 backdrop-blur-3xl border border-white/10 flex flex-col items-center justify-center">
@@ -556,10 +671,10 @@ export default function FocusRoomPage() {
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
-                  strokeDasharray={`${progress * 2.89} 289`}
+                  strokeDasharray={`${displayProgress * 2.89} 289`}
                   className={cn(
                     "transition-all duration-1000",
-                    isFocused ? "text-emerald-400" : "text-violet-400"
+                    sessionState === 'active' ? "text-emerald-400" : "text-violet-400"
                   )}
                 />
               </svg>
@@ -568,19 +683,26 @@ export default function FocusRoomPage() {
               <div className="text-center z-10">
                 <div className={cn(
                   "w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center transition-all duration-500",
-                  isFocused
+                  sessionState === 'active'
                     ? "bg-emerald-500/20 text-emerald-400 shadow-lg shadow-emerald-500/20"
+                    : sessionState === 'paused'
+                    ? "bg-amber-500/20 text-amber-400 shadow-lg shadow-amber-500/20"
                     : "bg-white/5 text-white/40"
                 )}>
-                  {isFocused ? <Play className="h-8 w-8 fill-current" /> : <Timer className="h-8 w-8" />}
+                  {sessionState === 'active' ? <Play className="h-8 w-8 fill-current" /> :
+                   sessionState === 'paused' ? <Pause className="h-8 w-8" /> :
+                   <Timer className="h-8 w-8" />}
                 </div>
 
                 <div className="text-6xl font-mono font-light tracking-wider text-white mb-2">
-                  {formatTime(remainingSeconds)}
+                  {formatTime(displayRemaining)}
                 </div>
 
                 <p className="text-white/40 text-sm">
-                  {isFocused ? "Stay focused" : `${selectedDuration} minute session`}
+                  {sessionState === 'active' ? "Stay focused" :
+                   sessionState === 'paused' ? "Session paused" :
+                   sessionState === 'completed' ? "Session completed" :
+                   `${selectedDuration} minute session`}
                 </p>
               </div>
             </div>
@@ -590,7 +712,7 @@ export default function FocusRoomPage() {
           <div className="mt-8 flex items-center gap-6 text-white/40 text-sm">
             <span className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
-              {selectedDuration} min
+              {sessionDuration} min
             </span>
             <span className="flex items-center gap-2">
               <ImageIcon className="h-4 w-4" />
@@ -598,7 +720,7 @@ export default function FocusRoomPage() {
             </span>
             <span className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              {participants.filter(p => p.is_focused).length} focusing
+              {activeParticipants.length} active
             </span>
           </div>
         </div>

@@ -32,6 +32,10 @@ export interface FocusRoom {
   ended_at?: string;
   created_at: string;
   updated_at: string;
+  // Session fields
+  session_duration?: number;
+  session_started_at?: string;
+  session_state?: 'idle' | 'active' | 'paused' | 'completed';
   // Joined fields
   host?: UserProfile;
   participants?: FocusRoomParticipant[];
@@ -116,4 +120,26 @@ export interface FriendSearchResult {
   avatar_url?: string;
   friendship_status?: 'pending' | 'accepted' | 'none';
   is_requester?: boolean;
+}
+
+// Focus Room Session Types
+export interface FocusRoomSession {
+  id: string;
+  room_id: string;
+  host_id: string;
+  duration: number;
+  started_at: string;
+  completed_at?: string;
+  participant_count: number;
+  completed_count: number;
+  created_at: string;
+}
+
+export interface FocusRoomSessionParticipant {
+  id: string;
+  session_id: string;
+  user_id: string;
+  joined_at: string;
+  completed_at?: string;
+  focus_seconds: number;
 }

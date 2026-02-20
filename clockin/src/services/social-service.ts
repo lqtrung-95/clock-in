@@ -9,6 +9,7 @@ import type {
   SharedAchievement,
   ProgressShareCard,
   FriendSearchResult,
+  FocusRoomSession,
 } from "@/types/social";
 
 // Helper to get public avatar URL
@@ -483,4 +484,99 @@ export async function incrementShareCount(cardId: string): Promise<void> {
   const supabase = createClient();
   const { error } = await supabase.rpc("increment_share_count", { card_id: cardId } as never);
   if (error) throw error;
+}
+
+// ============================================
+// FOCUS ROOM SESSION OPERATIONS
+// ============================================
+
+export async function startFocusRoomSession(
+  roomId: string,
+  hostId: string,
+  duration: number
+): Promise<string> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("start_focus_room_session", {
+    p_room_id: roomId,
+    p_host_id: hostId,
+    p_duration: duration,
+  } as never) as { data: string; error: Error | null };
+
+  if (error) throw error;
+  return data;
+}
+
+export async function completeFocusRoomSession(roomId: string, hostId: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("complete_focus_room_session", {
+    p_room_id: roomId,
+    p_host_id: hostId,
+  } as never);
+
+  if (error) throw error;
+}
+
+export async function pauseFocusRoomSession(roomId: string, hostId: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("pause_focus_room_session", {
+    p_room_id: roomId,
+    p_host_id: hostId,
+  } as never);
+
+  if (error) throw error;
+}
+
+export async function resetFocusRoomSession(roomId: string, hostId: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("reset_focus_room_session", {
+    p_room_id: roomId,
+    p_host_id: hostId,
+  } as never);
+
+  if (error) throw error;
+}
+
+export async function completeSessionParticipant(sessionId: string, userId: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("complete_session_participant", {
+    p_session_id: sessionId,
+    p_user_id: userId,
+  } as never);
+
+  if (error) throw error;
+}
+
+export async function getFocusRoomSessions(roomId: string): Promise<FocusRoomSession[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("focus_room_sessions")
+    .select("*")
+    .eq("room_id", roomId)
+    .order("created_at", { ascending: false })
+    .limit(10) as { data: FocusRoomSession[] | null; error: Error | null };
+
+  if (error) throw error;
+  return data || [];
+}
+
+export async function leaveFocusRoomAndRemove(roomId: string, userId: string): Promise<void> {
+  const supabase = createClient();
+
+  // Mark as left
+  await supabase
+    .from("focus_room_participants")
+    .update({ left_at: new Date().toISOString() } as never)
+    .eq("room_id", roomId)
+    .eq("user_id", userId);
+
+  // If user is host, end the room
+  const { data: room } = await supabase
+    .from("focus_rooms")
+    .select("host_id")
+    .eq("id", roomId)
+    .single() as { data: { host_id: string } | null };
+
+  if (room?.host_id === userId) {
+    await endFocusRoom(roomId, userId);
+  }
 }
