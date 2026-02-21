@@ -651,11 +651,9 @@ export default function SettingsPage() {
             )}
           </div>
 
-          {/* Divider */}
+          {/* Quick Links — only shown on mobile (desktop has sidebar) */}
+          <div className="space-y-3 md:hidden">
           <div className="h-px bg-border" />
-
-          {/* Quick Links */}
-          <div className="space-y-3">
             <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">More</h2>
             <div className="space-y-1">
               <Link
