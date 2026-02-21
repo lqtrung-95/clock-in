@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 export type AlarmSound = "bell" | "digital" | "chime" | "none";
 
@@ -98,7 +98,13 @@ export function playAlarmWithWebAudio(type: AlarmSound, volume: number) {
 }
 
 export function useFocusTimerSettings() {
-  const [settings, setSettings] = useState<FocusTimerSettings>(loadSettings);
+  // Always start with DEFAULT_SETTINGS so SSR and client initial render match,
+  // then hydrate from localStorage after mount to avoid hydration mismatch.
+  const [settings, setSettings] = useState<FocusTimerSettings>(DEFAULT_SETTINGS);
+
+  useEffect(() => {
+    setSettings(loadSettings());
+  }, []);
 
   const updateSettings = useCallback((updates: Partial<FocusTimerSettings>) => {
     setSettings((prev) => {
