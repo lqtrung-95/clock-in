@@ -4,7 +4,9 @@
       "Bash(npx tsc:*)",
       "Bash(npx next build)",
       "Bash(npm install:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(cd /Users/lequoctrung/Documents/Personal\\\\ Projects/EffortCounter/clockin && git commit -m \"$\\(cat <<'EOF'\nfix\\(focus\\): resolve React hydration mismatch in useFocusTimerSettings\n\nInitialize state with DEFAULT_SETTINGS instead of calling loadSettings\\(\\) directly,\nthen load from localStorage in useEffect after mount. This ensures SSR and client\ninitial renders match, preventing hydration warnings.\nEOF\n\\)\")",
+      "Bash(cd /Users/lequoctrung/Documents/Personal\\\\ Projects/EffortCounter/clockin && git add src/app/\\\\\\(dashboard\\\\\\)/focus/page.tsx && git commit -m \"$\\(cat <<'EOF'\nfix\\(focus\\): resolve TypeScript build error in upsert call to user_preferences table\n\nCast object parameter to `as never` to match Supabase's generated types,\naligning with the pattern used in settings/page.tsx.\nEOF\n\\)\" && git log --oneline -1)"
     ]
   }
 }
