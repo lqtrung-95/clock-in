@@ -21,7 +21,9 @@ import { BACKGROUND_IMAGES } from "@/data/background-images";
 import { VIDEO_BACKGROUNDS } from "@/data/video-backgrounds";
 import { AnimatedBackground } from "@/components/focus/animated-background";
 import { DreamCrystal } from "@/components/focus/dream-crystal";
-import { Video, Plus, Trash2 } from "lucide-react";
+import { useFocusTimerSettings } from "@/hooks/use-focus-timer-settings";
+import { FocusTimerSettingsModal } from "@/components/focus/focus-timer-settings-modal";
+import { Video, Plus, Trash2, SlidersHorizontal } from "lucide-react";
 import {
   Play,
   Pause,
@@ -117,6 +119,8 @@ export default function FocusPage() {
   const { start, pause, resume, reset, completePhase } = usePomodoroStore();
 
   const [selectedPreset, setSelectedPreset] = useState<keyof typeof POMODORO_PRESETS | null>(null);
+  const [timerSettingsOpen, setTimerSettingsOpen] = useState(false);
+  const { settings: timerSettings, updateSettings: updateTimerSettings, playAlarm } = useFocusTimerSettings();
   const [background, setBackground] = useState<string>("https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&q=80");
   const [videoEmbedUrl, setVideoEmbedUrl] = useState<string>("");
   const [overlay, setOverlay] = useState<OverlayType>("none");
@@ -217,7 +221,8 @@ export default function FocusPage() {
     }
   }, [isAuthenticated]);
 
-  const preset = POMODORO_PRESETS[selectedPreset ?? "25/5"];
+  // Use custom timer settings as source of truth; presets are just shortcuts
+  const preset = { work: timerSettings.workMinutes, break: timerSettings.shortBreakMinutes };
 
   // Initialize audio - create new Audio element each time to avoid issues
   const initAudio = useCallback(() => {
@@ -341,6 +346,7 @@ export default function FocusPage() {
   useEffect(() => {
     if (phase !== "idle" && remaining <= 0 && !showComplete) {
       setShowComplete(true);
+      playAlarm();
       if (isWork) {
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
         toast.success("Work session complete! Take a break.");
@@ -353,7 +359,7 @@ export default function FocusPage() {
       completePhase();
       setShowComplete(false);
     }
-  }, [remaining, phase, isWork, completePhase, showComplete, pauseAudio, saveTimeEntry]);
+  }, [remaining, phase, isWork, completePhase, showComplete, pauseAudio, saveTimeEntry, playAlarm]);
 
   // Fullscreen
   const toggleFullscreen = useCallback(() => {
@@ -478,6 +484,7 @@ export default function FocusPage() {
   // Active session view
   if (phase !== "idle") {
     return (
+      <>
       <div className="fixed inset-0 z-50 overflow-hidden">
         {/* Animated Background */}
         <AnimatedBackground
@@ -671,9 +678,23 @@ export default function FocusPage() {
             <RotateCcw className="h-4 w-4" />
             Stop
           </Button>
+          <button
+            onClick={() => setTimerSettingsOpen(true)}
+            className="h-10 w-10 rounded-full bg-white/10 backdrop-blur-xl border-2 border-white/30 text-white flex items-center justify-center hover:bg-white/20 hover:border-white/50 transition-all duration-300"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+          </button>
         </div>
 
       </div>
+
+      <FocusTimerSettingsModal
+        open={timerSettingsOpen}
+        onClose={() => setTimerSettingsOpen(false)}
+        settings={timerSettings}
+        onSave={updateTimerSettings}
+      />
+      </>
     );
   }
 
@@ -705,15 +726,30 @@ export default function FocusPage() {
         <Card className="border border-border bg-card/80 backdrop-blur-xl p-6 sm:p-8 shadow-xl">
           {/* Presets */}
           <div className="mb-8">
-            <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-4">
-              <Clock className="h-4 w-4 text-blue-400" />
-              Session Duration
-            </label>
+            <div className="flex items-center justify-between mb-4">
+              <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Clock className="h-4 w-4 text-blue-400" />
+                Session Duration
+              </label>
+              <button
+                onClick={() => setTimerSettingsOpen(true)}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-muted"
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                Customize
+              </button>
+            </div>
             <div className="grid grid-cols-3 gap-3">
               {(Object.keys(POMODORO_PRESETS) as Array<keyof typeof POMODORO_PRESETS>).map((key) => (
                 <button
                   key={key}
-                  onClick={() => setSelectedPreset(key)}
+                  onClick={() => {
+                    setSelectedPreset(key);
+                    updateTimerSettings({
+                      workMinutes: POMODORO_PRESETS[key].work,
+                      shortBreakMinutes: POMODORO_PRESETS[key].break,
+                    });
+                  }}
                   className={cn(
                     "relative p-4 rounded-xl border-2 transition-all duration-300 text-left group",
                     selectedPreset === key
@@ -1062,6 +1098,14 @@ export default function FocusPage() {
           ))}
         </div>
       </div>
+
+      {/* Timer Settings Modal — shared between setup and active timer */}
+      <FocusTimerSettingsModal
+        open={timerSettingsOpen}
+        onClose={() => setTimerSettingsOpen(false)}
+        settings={timerSettings}
+        onSave={updateTimerSettings}
+      />
 
     </div>
   );
