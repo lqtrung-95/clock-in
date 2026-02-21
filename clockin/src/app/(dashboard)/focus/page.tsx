@@ -897,7 +897,7 @@ export default function FocusPage() {
                       const { data: { user } } = await supabase.auth.getUser();
                       if (user) {
                         await supabase.from("user_preferences").upsert(
-                          { user_id: user.id, pomodoro_preset: key },
+                          { user_id: user.id, pomodoro_preset: key } as never,
                           { onConflict: "user_id" }
                         );
                       }
