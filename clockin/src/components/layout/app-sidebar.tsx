@@ -23,8 +23,8 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/focus", label: "Focus", icon: Brain },
+  { href: "/dashboard", label: "Summary", icon: Home },
   { href: "/history", label: "History", icon: List },
   { href: "/stats", label: "Stats", icon: BarChart3 },
   { href: "/goals", label: "Goals", icon: Target },

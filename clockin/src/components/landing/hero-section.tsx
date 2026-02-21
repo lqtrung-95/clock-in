@@ -28,14 +28,14 @@ export function HeroSection() {
         </h1>
 
         <p className="text-xl text-white/55 max-w-2xl mx-auto mb-10 leading-relaxed">
-          Clockin combines Pomodoro timers, immersive focus sessions, streaks, social
-          leaderboards, and dream goal tracking — everything you need to show up and do the work.
+          Clockin combines AI coaching, Pomodoro timers, immersive focus sessions, real-time focus rooms,
+          streaks, social leaderboards, and dream goal tracking — everything you need to show up and do the work.
         </p>
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
           <Link
-            href="/dashboard"
+            href="/focus"
             className="px-8 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-lg shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 transition-all duration-300"
           >
             Start Tracking Free
@@ -51,8 +51,8 @@ export function HeroSection() {
         {/* Stats row */}
         <div className="flex flex-wrap items-center justify-center gap-8 text-center">
           {[
-            { value: "3 timer modes", label: "Stopwatch, Pomodoro & Focus" },
-            { value: "15+ scenes", label: "Video & static backgrounds" },
+            { value: "AI-powered", label: "Smart coaching & insights" },
+            { value: "15+ scenes", label: "Video & overlay effects" },
             { value: "100%", label: "Free, forever" },
           ].map((stat) => (
             <div key={stat.label} className="flex flex-col gap-1">

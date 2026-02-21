@@ -3,10 +3,12 @@
 import { useEffect, useRef, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 
+type OverlayEffect = "none" | "aurora" | "particles" | "vignette" | "gradient" | "rain" | "fireflies" | "snow" | "bokeh";
+
 interface AnimatedBackgroundProps {
   imageUrl?: string;
   embedUrl?: string;
-  overlay?: "none" | "aurora" | "particles" | "vignette" | "gradient" | "rain";
+  overlay?: OverlayEffect;
   className?: string;
   videoMuted?: boolean;
   isRunning?: boolean;
@@ -208,6 +210,121 @@ function RainOverlay() {
   );
 }
 
+// Fireflies Overlay - warm golden glowing orbs drifting lazily
+function FirefliesOverlay() {
+  return (
+    <>
+      {Array.from({ length: 25 }).map((_, i) => (
+        <div
+          key={i}
+          className="firefly absolute rounded-full"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            width: `${Math.random() * 5 + 3}px`,
+            height: `${Math.random() * 5 + 3}px`,
+            background: `rgba(${200 + Math.random() * 55}, ${180 + Math.random() * 55}, ${50 + Math.random() * 80}, 0.9)`,
+            boxShadow: `0 0 ${Math.random() * 10 + 6}px 2px rgba(255, 220, 80, 0.6)`,
+            animationDuration: `${Math.random() * 8 + 6}s`,
+            animationDelay: `${Math.random() * 8}s`,
+          }}
+        />
+      ))}
+      <style jsx>{`
+        .firefly {
+          animation: firefly-drift ease-in-out infinite;
+        }
+        @keyframes firefly-drift {
+          0%   { transform: translate(0, 0);       opacity: 0; }
+          15%  { opacity: 1; }
+          50%  { transform: translate(${Math.random() > 0.5 ? '' : '-'}${(Math.random() * 60 + 20).toFixed(0)}px, -${(Math.random() * 60 + 20).toFixed(0)}px); opacity: 0.8; }
+          85%  { opacity: 1; }
+          100% { transform: translate(0, 0);       opacity: 0; }
+        }
+      `}</style>
+    </>
+  );
+}
+
+// Snow Overlay - gentle snowflakes falling
+function SnowOverlay() {
+  return (
+    <>
+      {Array.from({ length: 60 }).map((_, i) => (
+        <div
+          key={i}
+          className="snowflake absolute rounded-full bg-white"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `-${Math.random() * 20}%`,
+            width: `${Math.random() * 5 + 2}px`,
+            height: `${Math.random() * 5 + 2}px`,
+            opacity: Math.random() * 0.5 + 0.4,
+            animationDuration: `${Math.random() * 8 + 5}s`,
+            animationDelay: `${Math.random() * 8}s`,
+          }}
+        />
+      ))}
+      <style jsx>{`
+        .snowflake {
+          animation: snowfall linear infinite;
+        }
+        @keyframes snowfall {
+          0%   { transform: translateY(-10px) translateX(0) rotate(0deg);     opacity: 0; }
+          10%  { opacity: 0.9; }
+          90%  { opacity: 0.9; }
+          100% { transform: translateY(110vh) translateX(40px) rotate(360deg); opacity: 0; }
+        }
+      `}</style>
+    </>
+  );
+}
+
+// Bokeh Overlay - soft blurred circles of light floating gently
+function BokehOverlay() {
+  const colors = [
+    "rgba(56,189,248,0.35)",
+    "rgba(139,92,246,0.35)",
+    "rgba(251,191,36,0.25)",
+    "rgba(52,211,153,0.3)",
+    "rgba(248,113,113,0.25)",
+  ];
+  return (
+    <>
+      {Array.from({ length: 18 }).map((_, i) => {
+        const size = Math.random() * 120 + 60;
+        return (
+          <div
+            key={i}
+            className="bokeh-circle absolute rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: `${size}px`,
+              height: `${size}px`,
+              background: colors[i % colors.length],
+              filter: `blur(${Math.random() * 20 + 14}px)`,
+              animationDuration: `${Math.random() * 12 + 8}s`,
+              animationDelay: `${Math.random() * 8}s`,
+            }}
+          />
+        );
+      })}
+      <style jsx>{`
+        .bokeh-circle {
+          animation: bokeh-float ease-in-out infinite alternate;
+          mix-blend-mode: screen;
+        }
+        @keyframes bokeh-float {
+          0%   { transform: translate(0, 0) scale(1);    opacity: 0.4; }
+          50%  { transform: translate(30px, -40px) scale(1.15); opacity: 0.7; }
+          100% { transform: translate(-20px, 20px) scale(0.9); opacity: 0.4; }
+        }
+      `}</style>
+    </>
+  );
+}
+
 // Base Image with Ken Burns Effect
 function BaseImage({ url }: { url: string }) {
   return (
@@ -339,6 +456,9 @@ export function AnimatedBackground({ imageUrl, embedUrl, overlay = "none", class
       {overlay === "vignette" && <VignetteOverlay />}
       {overlay === "gradient" && <GradientOverlay />}
       {overlay === "rain" && <RainOverlay />}
+      {overlay === "fireflies" && <FirefliesOverlay />}
+      {overlay === "snow" && <SnowOverlay />}
+      {overlay === "bokeh" && <BokehOverlay />}
     </div>
   );
 }

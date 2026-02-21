@@ -24,8 +24,8 @@ import { createClient } from "@/lib/supabase/client";
 
 // Primary tabs always visible in bottom bar
 const primaryNavItems = [
-  { href: "/dashboard", label: "Home", icon: Home },
   { href: "/focus", label: "Focus", icon: Brain },
+  { href: "/dashboard", label: "Summary", icon: Home },
   { href: "/social", label: "Social", icon: Users },
   { href: "/goals", label: "Goals", icon: Target },
 ];

@@ -50,8 +50,11 @@ function CrystalCore({ progress, phase, cycle, totalCycles, isComplete }: Crysta
     meshRef.current.scale.setScalar(scale);
     innerRef.current.scale.setScalar(scale * 0.85);
 
-    // Glow intensity
-    const glowScale = scale * (1.2 + fillLevel * 0.5);
+    // Cap glow scale so the sphere never fills the entire viewport.
+    // Camera is at z=6, FOV=45 (half=22.5°). Sphere geometry radius=1.5.
+    // Sphere subtends > half-FOV when effective radius > 6*tan(22.5°)≈2.49.
+    // Keep effective radius < 2.0 → glowScale < 2.0/1.5 ≈ 1.33
+    const glowScale = scale * Math.min(1.3, 1.1 + fillLevel * 0.2);
     glowRef.current.scale.setScalar(glowScale);
 
     // Update material color
@@ -98,7 +101,7 @@ function CrystalCore({ progress, phase, cycle, totalCycles, isComplete }: Crysta
         <meshBasicMaterial
           color={color}
           transparent
-          opacity={0.1 + fillLevel * 0.15}
+          opacity={0.06 + fillLevel * 0.08}
           side={THREE.BackSide}
         />
       </mesh>
@@ -168,8 +171,8 @@ function CrystalCore({ progress, phase, cycle, totalCycles, isComplete }: Crysta
       {/* Sparkles around the crystal */}
       <Sparkles
         count={20 + Math.floor(fillLevel * 30)}
-        scale={4 + fillLevel * 2}
-        size={2 + fillLevel * 3}
+        scale={3.5 + fillLevel * 1}
+        size={1 + fillLevel * 1.5}
         speed={0.3 + fillLevel * 0.5}
         color={color.getStyle()}
       />
@@ -236,7 +239,7 @@ function Scene(props: CrystalCoreProps) {
       <directionalLight position={[5, 5, 5]} intensity={0.8} castShadow />
       <pointLight position={[-5, -5, -5]} intensity={0.5} color="#3B82F6" />
       <CrystalCore {...props} />
-      <Environment preset="night" />
+      <Environment preset="night" background={false} />
     </>
   );
 }
@@ -264,6 +267,7 @@ export function DreamCrystal({
         camera={{ position: [0, 0, 6], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
         dpr={[1, 2]}
+        style={{ background: "transparent" }}
       >
         <Scene
           progress={progress}

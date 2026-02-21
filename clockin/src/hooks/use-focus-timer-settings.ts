@@ -11,6 +11,8 @@ export interface FocusTimerSettings {
   longBreakInterval: number; // pomodoros before a long break
   alarmSound: AlarmSound;
   alarmVolume: number; // 0–100
+  autoStartBreak: boolean; // auto-advance to break when work phase ends
+  autoStartWork: boolean;  // auto-advance to next work phase when break ends
 }
 
 const STORAGE_KEY = "clockin-focus-timer-settings";
@@ -22,6 +24,8 @@ const DEFAULT_SETTINGS: FocusTimerSettings = {
   longBreakInterval: 4,
   alarmSound: "bell",
   alarmVolume: 70,
+  autoStartBreak: false,
+  autoStartWork: false,
 };
 
 function loadSettings(): FocusTimerSettings {

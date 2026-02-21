@@ -9,6 +9,7 @@ import { ShareCard } from "@/components/social/share-card";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import { Users, Trophy, MessageSquare, Share2 } from "lucide-react";
+import { AiInsightsCard } from "@/components/ai/ai-insights-card";
 
 export default function SocialPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
@@ -126,6 +127,9 @@ export default function SocialPage() {
             period="weekly"
           />
         </div>
+
+        {/* AI Insights */}
+        <AiInsightsCard />
 
         {/* Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">

@@ -17,7 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Timer, Volume2 } from "lucide-react";
+import { Timer, Volume2, Zap } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import {
   type FocusTimerSettings,
   type AlarmSound,
@@ -141,6 +142,38 @@ export function FocusTimerSettingsModal({ open, onClose, settings, onSave }: Pro
                   +
                 </button>
               </div>
+            </div>
+          </div>
+
+          <div className="h-px bg-border" />
+
+          {/* Auto-start */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-cyan-400" />
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Auto-start
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-border bg-muted/40 px-4 py-3">
+              <div>
+                <p className="text-sm font-medium text-foreground">Auto-start breaks</p>
+                <p className="text-xs text-muted-foreground">Jump to break when work ends</p>
+              </div>
+              <Switch
+                checked={local.autoStartBreak}
+                onCheckedChange={(v) => setLocal((p) => ({ ...p, autoStartBreak: v }))}
+              />
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-border bg-muted/40 px-4 py-3">
+              <div>
+                <p className="text-sm font-medium text-foreground">Auto-start pomodoros</p>
+                <p className="text-xs text-muted-foreground">Jump to work when break ends</p>
+              </div>
+              <Switch
+                checked={local.autoStartWork}
+                onCheckedChange={(v) => setLocal((p) => ({ ...p, autoStartWork: v }))}
+              />
             </div>
           </div>
 

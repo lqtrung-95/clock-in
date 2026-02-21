@@ -35,7 +35,12 @@ export default function HistoryPage() {
       const cats = guestStorage.getCategories();
       const ents = guestStorage.getEntries();
       setCategories(cats as unknown as Category[]);
-      setEntries(ents as unknown as TimeEntry[]);
+      // Enrich entries with their category object (guest entries only store category_id)
+      const enriched = ents.map((e) => ({
+        ...e,
+        category: cats.find((c) => c.id === e.category_id),
+      }));
+      setEntries(enriched as unknown as TimeEntry[]);
     }
     setLoading(false);
   }

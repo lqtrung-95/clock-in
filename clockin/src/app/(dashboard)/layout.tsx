@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { AiCoachPanel } from "@/components/ai/ai-coach-panel";
 
 export default function DashboardLayout({
   children,
@@ -15,6 +16,7 @@ export default function DashboardLayout({
         {children}
       </main>
       <MobileBottomNav />
+      <AiCoachPanel />
     </div>
   );
 }

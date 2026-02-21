@@ -21,9 +21,10 @@ import { BACKGROUND_IMAGES } from "@/data/background-images";
 import { VIDEO_BACKGROUNDS } from "@/data/video-backgrounds";
 import { AnimatedBackground } from "@/components/focus/animated-background";
 import { DreamCrystal } from "@/components/focus/dream-crystal";
-import { useFocusTimerSettings } from "@/hooks/use-focus-timer-settings";
+import { useFocusTimerSettings, type FocusTimerSettings } from "@/hooks/use-focus-timer-settings";
 import { FocusTimerSettingsModal } from "@/components/focus/focus-timer-settings-modal";
-import { Video, Plus, Trash2, SlidersHorizontal } from "lucide-react";
+import { Video, Plus, Trash2, SlidersHorizontal, Wand2 } from "lucide-react";
+import { AiSessionSuggestion } from "@/components/ai/ai-session-suggestion";
 import {
   Play,
   Pause,
@@ -50,7 +51,7 @@ const AMBIENT_SOUNDS = [
   { name: "Thunder", src: "https://actions.google.com/sounds/v1/weather/thunder_crack.ogg", volume: 1 },
 ];
 
-type OverlayType = "none" | "aurora" | "particles" | "vignette" | "gradient" | "rain";
+type OverlayType = "none" | "aurora" | "particles" | "vignette" | "gradient" | "rain" | "fireflies" | "snow" | "bokeh";
 
 // Circular Progress Component
 function CircularProgress({
@@ -127,6 +128,8 @@ export default function FocusPage() {
   const [selectedSound, setSelectedSound] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [showComplete, setShowComplete] = useState(false);
+  // null = running, "break" = waiting to start break, "work" = waiting to start next work
+  const [waitingForNext, setWaitingForNext] = useState<"break" | "work" | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [videoMuted, setVideoMuted] = useState(false);
@@ -137,6 +140,11 @@ export default function FocusPage() {
   const [showAddVideoDialog, setShowAddVideoDialog] = useState(false);
   const [newVideoUrl, setNewVideoUrl] = useState("");
   const [newVideoTitle, setNewVideoTitle] = useState("");
+
+  // AI category suggestion state
+  const [taskDescription, setTaskDescription] = useState("");
+  const [aiCatSuggesting, setAiCatSuggesting] = useState(false);
+  const aiCatDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Category and auth
   const { categories, setCategories } = useCategoryStore();
@@ -302,7 +310,7 @@ export default function FocusPage() {
           started_at: startedAt.toISOString(),
           ended_at: new Date().toISOString(),
           duration_seconds: workDuration,
-          notes: `Focus session (${selectedPreset})`,
+          notes: `Focus session (${selectedPreset ?? `${timerSettings.workMinutes}m`})`,
         });
 
         // Track XP for the focus session
@@ -327,7 +335,7 @@ export default function FocusPage() {
         started_at: startedAt.toISOString(),
         ended_at: new Date().toISOString(),
         duration_seconds: workDuration,
-        notes: `Focus session (${selectedPreset})`,
+        notes: `Focus session (${selectedPreset ?? `${timerSettings.workMinutes}m`})`,
         entry_type: "manual",
       });
 
@@ -342,24 +350,34 @@ export default function FocusPage() {
     }
   }, [selectedCategory, preset.work, selectedPreset, isAuthenticated]);
 
-  // Auto-complete
+  // Auto-complete: advance phase or wait for manual start depending on settings
   useEffect(() => {
     if (phase !== "idle" && remaining <= 0 && !showComplete) {
       setShowComplete(true);
       playAlarm();
+      pauseAudio();
+
       if (isWork) {
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
         toast.success("Work session complete! Take a break.");
-        // Save time entry for work session
         saveTimeEntry();
+        if (timerSettings.autoStartBreak) {
+          completePhase();
+        } else {
+          setWaitingForNext("break");
+        }
       } else {
         toast.info("Break over! Ready to focus?");
+        if (timerSettings.autoStartWork) {
+          completePhase();
+        } else {
+          setWaitingForNext("work");
+        }
       }
-      pauseAudio();
-      completePhase();
+
       setShowComplete(false);
     }
-  }, [remaining, phase, isWork, completePhase, showComplete, pauseAudio, saveTimeEntry, playAlarm]);
+  }, [remaining, phase, isWork, completePhase, showComplete, pauseAudio, saveTimeEntry, playAlarm, timerSettings.autoStartBreak, timerSettings.autoStartWork]);
 
   // Fullscreen
   const toggleFullscreen = useCallback(() => {
@@ -400,6 +418,16 @@ export default function FocusPage() {
 
 
 
+  function handleTimerSettingsSave(updates: Partial<FocusTimerSettings>) {
+    updateTimerSettings(updates);
+    const newWork = updates.workMinutes ?? timerSettings.workMinutes;
+    const newBreak = updates.shortBreakMinutes ?? timerSettings.shortBreakMinutes;
+    const matched = (Object.keys(POMODORO_PRESETS) as Array<keyof typeof POMODORO_PRESETS>).find(
+      (k) => POMODORO_PRESETS[k].work === newWork && POMODORO_PRESETS[k].break === newBreak
+    );
+    setSelectedPreset(matched ?? null);
+  }
+
   async function handleStart() {
     if (!selectedCategory) {
       toast.error("Please select what you're working on first!");
@@ -416,9 +444,18 @@ export default function FocusPage() {
     toast.success("Focus session started!");
   }
 
+  async function handleStartNextPhase() {
+    setWaitingForNext(null);
+    completePhase();
+    if (selectedSound && audioEnabled) {
+      await playAudio();
+    }
+  }
+
   function handleReset() {
     reset();
     pauseAudio();
+    setWaitingForNext(null);
   }
 
   function handlePause() {
@@ -479,6 +516,25 @@ export default function FocusPage() {
       setVideoEmbedUrl("");
     }
     toast.success("Video removed");
+  }
+
+  function handleTaskDescriptionChange(text: string) {
+    setTaskDescription(text);
+    if (aiCatDebounceRef.current) clearTimeout(aiCatDebounceRef.current);
+    if (!text.trim() || !isAuthenticated) return;
+    aiCatDebounceRef.current = setTimeout(async () => {
+      setAiCatSuggesting(true);
+      try {
+        const res = await fetch("/api/ai/suggest-category", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        const data = await res.json() as { categoryId: string | null };
+        if (data.categoryId) setSelectedCategory(data.categoryId);
+      } catch { /* ignore */ }
+      finally { setAiCatSuggesting(false); }
+    }, 800);
   }
 
   // Active session view
@@ -578,25 +634,46 @@ export default function FocusPage() {
           </div>
         )}
 
-        {/* Background Brightness Control */}
+        {/* Background Brightness + Overlay Controls */}
         <div
           className={cn(
-            "absolute top-20 left-6 z-20 flex flex-col gap-1 rounded-xl bg-black/60 backdrop-blur-md px-3 py-2 border border-white/20 transition-all",
+            "absolute top-20 left-6 z-20 flex flex-col gap-2 rounded-xl bg-black/60 backdrop-blur-md px-3 py-2 border border-white/20 transition-all",
             showControls ? "opacity-100" : "opacity-0"
           )}
         >
-          <span className="text-[10px] text-white/60 uppercase tracking-wider font-medium">Brightness</span>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/40">Dark</span>
-            <Slider
-              value={[bgOpacity]}
-              onValueChange={([v]) => setBgOpacity(v)}
-              max={90}
-              min={10}
-              step={5}
-              className="w-20"
-            />
-            <span className="text-xs text-white/40">Light</span>
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] text-white/60 uppercase tracking-wider font-medium">Brightness</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/40">Dark</span>
+              <Slider
+                value={[bgOpacity]}
+                onValueChange={([v]) => setBgOpacity(v)}
+                max={90}
+                min={10}
+                step={5}
+                className="w-20"
+              />
+              <span className="text-xs text-white/40">Light</span>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] text-white/60 uppercase tracking-wider font-medium">Overlay</span>
+            <div className="flex gap-1.5 flex-wrap">
+              {(["none", "aurora", "particles", "vignette", "rain", "fireflies", "snow", "bokeh"] as const).map((fx) => (
+                <button
+                  key={fx}
+                  onClick={() => setOverlay(fx as OverlayType)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-xs transition-all duration-200 capitalize",
+                    overlay === fx
+                      ? "bg-cyan-500 text-white shadow-lg shadow-cyan-500/30"
+                      : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                  )}
+                >
+                  {fx === "none" ? "None" : fx.charAt(0).toUpperCase() + fx.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -641,6 +718,46 @@ export default function FocusPage() {
             ))}
           </div>
         </div>
+
+        {/* Manual phase transition overlay */}
+        {waitingForNext && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="text-center space-y-6 px-6">
+              <div className={cn(
+                "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold",
+                waitingForNext === "break"
+                  ? "bg-orange-500/20 border border-orange-400/50 text-orange-300"
+                  : "bg-blue-500/20 border border-blue-400/50 text-blue-300"
+              )}>
+                {waitingForNext === "break" ? <Coffee className="h-4 w-4" /> : <Brain className="h-4 w-4" />}
+                {waitingForNext === "break" ? "Work session complete!" : "Break over!"}
+              </div>
+              <p className="text-white/70 text-sm">
+                {waitingForNext === "break" ? "Ready for a break?" : "Ready to get back to it?"}
+              </p>
+              <div className="flex flex-col sm:flex-row items-center gap-3 justify-center">
+                <Button
+                  onClick={handleStartNextPhase}
+                  className={cn(
+                    "h-12 px-8 rounded-full font-semibold text-white border-0",
+                    waitingForNext === "break"
+                      ? "bg-gradient-to-r from-orange-500 to-amber-500 shadow-[0_0_24px_rgba(249,115,22,0.5)]"
+                      : "bg-gradient-to-r from-blue-500 to-cyan-500 shadow-[0_0_24px_rgba(59,130,246,0.5)]"
+                  )}
+                >
+                  {waitingForNext === "break" ? "Start Break" : "Start Next Session"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={handleReset}
+                  className="h-12 px-6 rounded-full text-white/70 hover:text-white hover:bg-white/10"
+                >
+                  End Session
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Bottom Controls */}
         <div
@@ -692,7 +809,7 @@ export default function FocusPage() {
         open={timerSettingsOpen}
         onClose={() => setTimerSettingsOpen(false)}
         settings={timerSettings}
-        onSave={updateTimerSettings}
+        onSave={handleTimerSettingsSave}
       />
       </>
     );
@@ -724,6 +841,25 @@ export default function FocusPage() {
 
         {/* Main Card */}
         <Card className="border border-border bg-card/80 backdrop-blur-xl p-6 sm:p-8 shadow-xl">
+          {/* AI Session Suggestion */}
+          <AiSessionSuggestion
+            isAuthenticated={!!isAuthenticated}
+            onApply={(categoryName, duration) => {
+              const cat = categories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
+              if (cat) setSelectedCategory(cat.id);
+              const preset = Object.keys(POMODORO_PRESETS).find(
+                k => POMODORO_PRESETS[k as keyof typeof POMODORO_PRESETS].work === duration
+              ) as keyof typeof POMODORO_PRESETS | undefined;
+              if (preset) {
+                setSelectedPreset(preset);
+                updateTimerSettings({ workMinutes: POMODORO_PRESETS[preset].work, shortBreakMinutes: POMODORO_PRESETS[preset].break });
+              } else {
+                updateTimerSettings({ workMinutes: duration });
+                setSelectedPreset(null);
+              }
+            }}
+          />
+
           {/* Presets */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
@@ -774,14 +910,42 @@ export default function FocusPage() {
                 </button>
               ))}
             </div>
+            {/* Custom timer card — shown when saved values don't match any preset */}
+            {!selectedPreset && (
+              <button
+                onClick={() => setTimerSettingsOpen(true)}
+                className="mt-3 relative w-full p-4 rounded-xl border-2 border-blue-500 bg-blue-500/10 text-left transition-all duration-300 hover:bg-blue-500/15 group"
+              >
+                <div className="absolute top-3 right-3">
+                  <CheckCircle2 className="h-4 w-4 text-blue-400" />
+                </div>
+                <div className="font-semibold text-foreground">Custom</div>
+                <div className="text-sm text-blue-400 mt-0.5 font-mono">
+                  {timerSettings.workMinutes}m work · {timerSettings.shortBreakMinutes}m break
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">Click to adjust</div>
+              </button>
+            )}
           </div>
 
           {/* Category Selection */}
           <div className="mb-8">
-            <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-4">
+            <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
               <Tag className="h-4 w-4 text-emerald-400" />
               What are you working on?
             </label>
+            {/* AI-powered task description → auto-selects category */}
+            {isAuthenticated && (
+              <div className="relative mb-3">
+                <Input
+                  placeholder="Describe your task… AI will suggest a category"
+                  value={taskDescription}
+                  onChange={e => handleTaskDescriptionChange(e.target.value)}
+                  className="pr-8 text-sm bg-muted/50 border-border focus-visible:ring-1 focus-visible:ring-purple-500/50"
+                />
+                <Wand2 className={`absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 ${aiCatSuggesting ? "text-purple-400 animate-pulse" : "text-muted-foreground/40"}`} />
+              </div>
+            )}
             {categories.length > 0 ? (
               <div className="flex gap-2 flex-wrap">
                 {categories.map((cat) => (
@@ -946,14 +1110,19 @@ export default function FocusPage() {
                 ))}
               </div>
 
-              {/* Effects - Only for static */}
-              {!videoEmbedUrl && (
-                <div className="flex gap-2 flex-wrap mb-3">
+              {/* Overlay Effects — available for both static and video backgrounds */}
+              <div className="mb-3">
+                <p className="text-xs text-muted-foreground mb-2">Overlay</p>
+                <div className="flex gap-2 flex-wrap">
                   {[
                     { id: "none", name: "None" },
                     { id: "aurora", name: "Aurora" },
-                    { id: "particles", name: "Stars" },
+                    { id: "particles", name: "Particles" },
+                    { id: "vignette", name: "Vignette" },
                     { id: "rain", name: "Rain" },
+                    { id: "fireflies", name: "Fireflies" },
+                    { id: "snow", name: "Snow" },
+                    { id: "bokeh", name: "Bokeh" },
                   ].map((fx) => (
                     <button
                       key={fx.id}
@@ -969,7 +1138,7 @@ export default function FocusPage() {
                     </button>
                   ))}
                 </div>
-              )}
+              </div>
 
               {/* Ambient Sound - Only for static images */}
               {!videoEmbedUrl && (
@@ -1039,11 +1208,11 @@ export default function FocusPage() {
           {/* Start Button */}
           <Button
             onClick={handleStart}
-            disabled={!selectedCategory || !selectedPreset}
+            disabled={!selectedCategory}
             className="w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           >
             <Play className="mr-2 h-5 w-5 fill-current" />
-            {!selectedPreset ? "Select a session duration" : !selectedCategory ? "Select a category to start" : "Start Focus Session"}
+            {!selectedCategory ? "Select a category to start" : "Start Focus Session"}
           </Button>
         </Card>
 
@@ -1104,7 +1273,7 @@ export default function FocusPage() {
         open={timerSettingsOpen}
         onClose={() => setTimerSettingsOpen(false)}
         settings={timerSettings}
-        onSave={updateTimerSettings}
+        onSave={handleTimerSettingsSave}
       />
 
     </div>

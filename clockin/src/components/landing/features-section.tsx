@@ -1,13 +1,22 @@
-import { Timer, Maximize, BarChart3, Flame, Trophy, Mountain } from "lucide-react";
+import { Timer, Maximize, BarChart3, Flame, Trophy, Mountain, Sparkles, Users } from "lucide-react";
 
 const FEATURES = [
+  {
+    icon: Sparkles,
+    gradient: "from-violet-500 to-purple-500",
+    glow: "shadow-violet-500/20",
+    title: "AI Focus Coach",
+    description:
+      "Powered by Groq & Llama 3.3. Get personalized productivity insights, chat with your AI coach, auto-categorize tasks, and receive smart session suggestions based on your patterns.",
+    badge: "New",
+  },
   {
     icon: Timer,
     gradient: "from-blue-500 to-cyan-500",
     glow: "shadow-blue-500/20",
     title: "Pomodoro Timer",
     description:
-      "Work in science-backed focused bursts. Choose 25/5, 50/10, or 90/20 presets, track your cycles, and celebrate completions with confetti.",
+      "Work in science-backed focused bursts. Choose 25/5, 50/10, or 90/20 presets — or set custom durations. Auto-start breaks or control transitions manually.",
   },
   {
     icon: Maximize,
@@ -15,7 +24,16 @@ const FEATURES = [
     glow: "shadow-purple-500/20",
     title: "Immersive Focus Mode",
     description:
-      "Enter fullscreen flow. Pick from Lofi, Rain, Fireplace, Ocean and more video scenes — or layer aurora, stars, and rain overlays over your own backgrounds.",
+      "Fullscreen flow with Lofi, Rain, Fireplace, Mountain Lake video scenes. Layer 8 visual effects — Aurora, Bokeh, Fireflies, Snow, Particles, Rain, Vignette, and more.",
+  },
+  {
+    icon: Users,
+    gradient: "from-teal-500 to-emerald-500",
+    glow: "shadow-teal-500/20",
+    title: "Focus Rooms",
+    description:
+      "Study and work together in real-time focus rooms. Hosts control synchronized Pomodoro sessions — start, pause, and reset for everyone at once.",
+    badge: "New",
   },
   {
     icon: BarChart3,
@@ -39,7 +57,7 @@ const FEATURES = [
     glow: "shadow-indigo-500/20",
     title: "Social Leaderboard",
     description:
-      "Add friends and see who's putting in the most work this week. Friendly competition is one of the most powerful productivity hacks.",
+      "Add friends and see who's putting in the most work this week. Compete on weekly and monthly boards — friendly rivalry is one of the best productivity hacks.",
   },
   {
     icon: Mountain,
@@ -84,7 +102,14 @@ export function FeaturesSection() {
                 >
                   <Icon className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-lg font-semibold text-white">{feature.title}</h3>
+                  {"badge" in feature && feature.badge && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gradient-to-r from-violet-500 to-purple-500 text-white uppercase tracking-wide">
+                      {feature.badge}
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-white/50 leading-relaxed">{feature.description}</p>
               </div>
             );

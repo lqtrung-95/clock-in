@@ -129,7 +129,34 @@ export async function getFriends(userId: string): Promise<Friendship[]> {
     .eq("status", "accepted") as { data: Friendship[] | null; error: Error | null };
 
   if (error) throw error;
-  return data || [];
+  if (!data || data.length === 0) return [];
+
+  // Collect all friend user IDs to fetch their profiles
+  const friendIds = data.map((f) =>
+    f.requester_id === userId ? f.addressee_id : f.requester_id
+  );
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("user_id, display_name, avatar_url")
+    .in("user_id", friendIds) as { data: { user_id: string; display_name: string; avatar_url?: string }[] | null };
+
+  const profileMap = (profiles || []).reduce<Record<string, { user_id: string; display_name: string; avatar_url?: string }>>(
+    (acc, p) => ({ ...acc, [p.user_id]: p }),
+    {}
+  );
+
+  return data.map((f) => {
+    const friendId = f.requester_id === userId ? f.addressee_id : f.requester_id;
+    const profile = profileMap[friendId];
+    const friendProfile = profile
+      ? { id: friendId, display_name: profile.display_name, avatar_url: getAvatarUrl(profile.avatar_url) }
+      : undefined;
+    return {
+      ...f,
+      requester: f.requester_id === userId ? undefined : friendProfile,
+      addressee: f.addressee_id === userId ? undefined : friendProfile,
+    };
+  });
 }
 
 export async function getPendingRequests(userId: string): Promise<Friendship[]> {
@@ -141,7 +168,26 @@ export async function getPendingRequests(userId: string): Promise<Friendship[]> 
     .eq("status", "pending") as { data: Friendship[] | null; error: Error | null };
 
   if (error) throw error;
-  return data || [];
+  if (!data || data.length === 0) return [];
+
+  // Fetch requester profiles so the recipient can see who sent the request
+  const requesterIds = data.map((f) => f.requester_id);
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("user_id, display_name, avatar_url")
+    .in("user_id", requesterIds) as { data: { user_id: string; display_name: string; avatar_url?: string }[] | null };
+
+  const profileMap = (profiles || []).reduce<Record<string, { user_id: string; display_name: string; avatar_url?: string }>>(
+    (acc, p) => ({ ...acc, [p.user_id]: p }),
+    {}
+  );
+
+  return data.map((f) => ({
+    ...f,
+    requester: profileMap[f.requester_id]
+      ? { id: f.requester_id, display_name: profileMap[f.requester_id].display_name, avatar_url: getAvatarUrl(profileMap[f.requester_id].avatar_url) }
+      : undefined,
+  }));
 }
 
 // ============================================
@@ -334,9 +380,10 @@ export async function joinFocusRoom(roomId: string, userId: string): Promise<Foc
 
 export async function leaveFocusRoom(roomId: string, userId: string): Promise<void> {
   const supabase = createClient();
+  // Delete participant row so the live count decrements immediately
   const { error } = await supabase
     .from("focus_room_participants")
-    .update({ left_at: new Date().toISOString() } as never)
+    .delete()
     .eq("room_id", roomId)
     .eq("user_id", userId);
 
@@ -346,30 +393,20 @@ export async function leaveFocusRoom(roomId: string, userId: string): Promise<vo
 export async function deleteFocusRoom(roomId: string, userId: string): Promise<void> {
   const supabase = createClient();
 
-  // Verify user is the host
+  // Verify user is the host (skip if room is already gone)
   const { data: room } = await supabase
     .from("focus_rooms")
     .select("host_id")
     .eq("id", roomId)
     .single() as { data: { host_id: string } | null };
 
-  if (!room || room.host_id !== userId) {
-    throw new Error("Only the room creator can delete this room");
-  }
+  if (!room) return; // Already deleted — no-op
+  if (room.host_id !== userId) throw new Error("Only the room creator can delete this room");
 
-  // Delete room (participants will be cascade deleted if set up, otherwise delete manually)
-  const { error: participantsError } = await supabase
-    .from("focus_room_participants")
-    .delete()
-    .eq("room_id", roomId);
+  // Remove remaining participants then delete the room
+  await supabase.from("focus_room_participants").delete().eq("room_id", roomId);
 
-  if (participantsError) throw participantsError;
-
-  const { error } = await supabase
-    .from("focus_rooms")
-    .delete()
-    .eq("id", roomId);
-
+  const { error } = await supabase.from("focus_rooms").delete().eq("id", roomId);
   if (error) throw error;
 }
 
@@ -587,21 +624,18 @@ export async function getFocusRoomSessions(roomId: string): Promise<FocusRoomSes
 export async function leaveFocusRoomAndRemove(roomId: string, userId: string): Promise<void> {
   const supabase = createClient();
 
-  // Mark as left
-  await supabase
-    .from("focus_room_participants")
-    .update({ left_at: new Date().toISOString() } as never)
-    .eq("room_id", roomId)
-    .eq("user_id", userId);
-
-  // If user is host, end the room
+  // Check if the leaving user is the host before removing their participant row
   const { data: room } = await supabase
     .from("focus_rooms")
     .select("host_id")
     .eq("id", roomId)
     .single() as { data: { host_id: string } | null };
 
+  // Remove participant row so count decrements immediately
+  await leaveFocusRoom(roomId, userId);
+
+  // If host leaves, delete the entire room (and its remaining participants)
   if (room?.host_id === userId) {
-    await endFocusRoom(roomId, userId);
+    await deleteFocusRoom(roomId, userId);
   }
 }

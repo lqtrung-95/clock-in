@@ -37,11 +37,23 @@ import {
   Timer,
   Maximize,
   Minimize,
+  AlertTriangle,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils";
 import { AnimatedBackground } from "@/components/focus/animated-background";
+import { FocusTimerSettingsModal } from "@/components/focus/focus-timer-settings-modal";
+import { useFocusTimerSettings } from "@/hooks/use-focus-timer-settings";
+import { SlidersHorizontal } from "lucide-react";
 import { VIDEO_BACKGROUNDS } from "@/data/video-backgrounds";
 import { Card } from "@/components/ui/card";
 
@@ -58,6 +70,9 @@ const OVERLAYS = [
   { value: "vignette", label: "Vignette" },
   { value: "gradient", label: "Gradient" },
   { value: "rain", label: "Rain" },
+  { value: "fireflies", label: "Fireflies" },
+  { value: "snow", label: "Snow" },
+  { value: "bokeh", label: "Bokeh" },
 ] as const;
 
 function formatTime(seconds: number): string {
@@ -182,7 +197,7 @@ export default function FocusRoomPage() {
   const params = useParams();
   const router = useRouter();
   const roomId = params.id as string;
-  const { userId: currentUserId, isAuthenticated } = useAuthState();
+  const { userId: currentUserId, isAuthenticated, isLoading: authLoading } = useAuthState();
 
   const { participants, activeParticipants, loading: participantsLoading } =
     useFocusRoomParticipants(roomId);
@@ -197,6 +212,9 @@ export default function FocusRoomPage() {
   const [messageInput, setMessageInput] = useState("");
   const [isHost, setIsHost] = useState(false);
   const [roomHostId, setRoomHostId] = useState<string | null>(null);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [timerSettingsOpen, setTimerSettingsOpen] = useState(false);
+  const { settings: timerSettings, updateSettings: updateTimerSettings } = useFocusTimerSettings();
   const [showParticipants, setShowParticipants] = useState(true);
   const [showChat, setShowChat] = useState(true);
 
@@ -248,7 +266,8 @@ export default function FocusRoomPage() {
 
     return () => {
       if (currentUserId) {
-        socialService.leaveFocusRoom(roomId, currentUserId);
+        // Use leaveFocusRoomAndRemove so host leaving via navigation also deletes the room
+        socialService.leaveFocusRoomAndRemove(roomId, currentUserId).catch(() => {});
       }
     };
   }, [roomId, currentUserId]);
@@ -261,7 +280,28 @@ export default function FocusRoomPage() {
     setMessageInput("");
   };
 
-  const handleLeave = async () => {
+  // Warn host before closing tab/browser — browser will show a generic confirm dialog
+  useEffect(() => {
+    if (!isHost) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ""; // Required for Chrome to show the dialog
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isHost]);
+
+  const handleLeave = () => {
+    if (isHost) {
+      // Show confirmation dialog before deleting room
+      setShowLeaveConfirm(true);
+    } else {
+      confirmLeave();
+    }
+  };
+
+  const confirmLeave = async () => {
+    setShowLeaveConfirm(false);
     if (currentUserId) {
       await socialService.leaveFocusRoomAndRemove(roomId, currentUserId);
     }
@@ -325,6 +365,16 @@ export default function FocusRoomPage() {
   // Use synchronized session time for display
   const displayProgress = sessionState === 'idle' ? 0 : progress;
   const displayRemaining = remainingTime;
+
+  // Wait for auth check to complete before showing the guest prompt
+  // to avoid a flash of the sign-in screen for already-authenticated users
+  if (authLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-950">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <GuestPrompt roomId={roomId} />;
@@ -499,11 +549,15 @@ export default function FocusRoomPage() {
               <label className="text-xs font-medium text-white/50 uppercase tracking-wider">
                 Next Session Duration
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 {POMODORO_PRESETS.map((preset) => (
                   <button
                     key={preset.name}
-                    onClick={() => sessionState === 'idle' && setSelectedDuration(preset.minutes)}
+                    onClick={() => {
+                      if (sessionState !== 'idle') return;
+                      setSelectedDuration(preset.minutes);
+                      updateTimerSettings({ workMinutes: preset.minutes });
+                    }}
                     disabled={sessionState !== 'idle'}
                     className={cn(
                       "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
@@ -516,7 +570,25 @@ export default function FocusRoomPage() {
                     {preset.label}
                   </button>
                 ))}
+                <button
+                  onClick={() => setTimerSettingsOpen(true)}
+                  disabled={sessionState !== 'idle'}
+                  className={cn(
+                    "px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5",
+                    "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white",
+                    sessionState !== 'idle' && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                  Custom
+                </button>
               </div>
+              {/* Show active custom duration if not a standard preset */}
+              {![25, 50, 90].includes(timerSettings.workMinutes) && (
+                <p className="text-xs text-cyan-400">
+                  Custom: {timerSettings.workMinutes}m work · {timerSettings.shortBreakMinutes}m break
+                </p>
+              )}
               {sessionState !== 'idle' && (
                 <p className="text-xs text-amber-400">
                   Cannot change duration while session is {sessionState}
@@ -789,6 +861,47 @@ export default function FocusRoomPage() {
           </div>
         )}
       </div>
+
+      {/* Timer settings modal */}
+      <FocusTimerSettingsModal
+        open={timerSettingsOpen}
+        onClose={() => setTimerSettingsOpen(false)}
+        settings={timerSettings}
+        onSave={(updates) => {
+          updateTimerSettings(updates);
+          if (updates.workMinutes) setSelectedDuration(updates.workMinutes);
+        }}
+      />
+
+      {/* Host leave confirmation dialog */}
+      <Dialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
+        <DialogContent className="border border-border bg-card max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-foreground">
+              <AlertTriangle className="h-5 w-5 text-orange-400" />
+              Delete this room?
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground pt-1">
+              As the host, leaving will permanently delete this room and end the current focus session for all participants.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowLeaveConfirm(false)}
+              className="flex-1 border-border text-foreground hover:bg-muted"
+            >
+              Stay
+            </Button>
+            <Button
+              onClick={confirmLeave}
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white border-0"
+            >
+              Delete &amp; Leave
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

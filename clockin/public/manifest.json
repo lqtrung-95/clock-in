@@ -2,7 +2,7 @@
   "name": "Clockin — Focus & Flow",
   "short_name": "Clockin",
   "description": "A gamified focus tracker with Pomodoro timers, ambient scenes, streaks, and social leaderboards.",
-  "start_url": "/dashboard",
+  "start_url": "/focus",
   "display": "standalone",
   "background_color": "#060614",
   "theme_color": "#060614",
