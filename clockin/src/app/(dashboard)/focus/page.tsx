@@ -122,6 +122,12 @@ export default function FocusPage() {
   const [selectedPreset, setSelectedPreset] = useState<keyof typeof POMODORO_PRESETS | null>(null);
   const [timerSettingsOpen, setTimerSettingsOpen] = useState(false);
   const { settings: timerSettings, updateSettings: updateTimerSettings, playAlarm } = useFocusTimerSettings();
+  // If no explicit preset is selected, derive one from current timer values (e.g. on initial load with default 25/5)
+  const effectivePreset = selectedPreset ?? (
+    (Object.keys(POMODORO_PRESETS) as Array<keyof typeof POMODORO_PRESETS>).find(
+      k => POMODORO_PRESETS[k].work === timerSettings.workMinutes && POMODORO_PRESETS[k].break === timerSettings.shortBreakMinutes
+    ) ?? null
+  );
   const [background, setBackground] = useState<string>("https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&q=80");
   const [videoEmbedUrl, setVideoEmbedUrl] = useState<string>("");
   const [overlay, setOverlay] = useState<OverlayType>("none");
@@ -879,28 +885,39 @@ export default function FocusPage() {
               {(Object.keys(POMODORO_PRESETS) as Array<keyof typeof POMODORO_PRESETS>).map((key) => (
                 <button
                   key={key}
-                  onClick={() => {
+                  onClick={async () => {
                     setSelectedPreset(key);
                     updateTimerSettings({
                       workMinutes: POMODORO_PRESETS[key].work,
                       shortBreakMinutes: POMODORO_PRESETS[key].break,
                     });
+                    // Auto-save preset preference so it's remembered next visit
+                    if (isAuthenticated) {
+                      const supabase = createClient();
+                      const { data: { user } } = await supabase.auth.getUser();
+                      if (user) {
+                        await supabase.from("user_preferences").upsert(
+                          { user_id: user.id, pomodoro_preset: key },
+                          { onConflict: "user_id" }
+                        );
+                      }
+                    }
                   }}
                   className={cn(
                     "relative p-4 rounded-xl border-2 transition-all duration-300 text-left group",
-                    selectedPreset === key
+                    effectivePreset === key
                       ? "border-blue-500 bg-blue-500/10"
                       : "border-border bg-muted hover:border-foreground/20 hover:bg-muted/80"
                   )}
                 >
-                  {selectedPreset === key && (
+                  {effectivePreset === key && (
                     <div className="absolute top-3 right-3">
                       <CheckCircle2 className="h-4 w-4 text-blue-400" />
                     </div>
                   )}
                   <div className={cn(
                     "font-semibold transition-colors",
-                    selectedPreset === key ? "text-foreground" : "text-foreground/80 group-hover:text-foreground"
+                    effectivePreset === key ? "text-foreground" : "text-foreground/80 group-hover:text-foreground"
                   )}>
                     {key}
                   </div>
@@ -910,8 +927,8 @@ export default function FocusPage() {
                 </button>
               ))}
             </div>
-            {/* Custom timer card — shown when saved values don't match any preset */}
-            {!selectedPreset && (
+            {/* Custom timer card — only shown when values don't match any preset */}
+            {!effectivePreset && (
               <button
                 onClick={() => setTimerSettingsOpen(true)}
                 className="mt-3 relative w-full p-4 rounded-xl border-2 border-blue-500 bg-blue-500/10 text-left transition-all duration-300 hover:bg-blue-500/15 group"

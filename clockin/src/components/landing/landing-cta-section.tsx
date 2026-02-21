@@ -24,7 +24,7 @@ export function LandingCtaSection() {
             href="/focus"
             className="group inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-lg shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 transition-all duration-300"
           >
-            Start for Free
+            Start Tracking
             <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
           </Link>
           <Link
@@ -36,7 +36,7 @@ export function LandingCtaSection() {
         </div>
 
         <p className="mt-6 text-sm text-white/30">
-          Free forever · Works as a guest · Install as a PWA
+          Free to start · Works as a guest · Install as a PWA
         </p>
       </div>
     </section>

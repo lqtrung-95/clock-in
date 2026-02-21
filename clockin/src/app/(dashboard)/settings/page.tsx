@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { LoginBanner, LoginPrompt } from "@/components/auth/login-prompt";
 import { toast } from "sonner";
-import { Moon, Sun, Monitor, Settings2, Bell, Timer, Palette, User, Camera, Upload, Trash2, Tag, ChevronRight, Trophy } from "lucide-react";
+import { Moon, Sun, Monitor, Settings2, Bell, Palette, User, Camera, Upload, Trash2, Tag, ChevronRight, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useAuthState } from "@/hooks/use-auth-state";
@@ -26,12 +26,10 @@ const GUEST_PREFS_KEY = "clockin-guest-preferences";
 
 interface Preferences {
   email_digest_enabled: boolean;
-  pomodoro_preset: "25/5" | "50/10" | "90/20";
 }
 
 const defaultPrefs: Preferences = {
   email_digest_enabled: true,
-  pomodoro_preset: "25/5",
 };
 
 export default function SettingsPage() {
@@ -229,14 +227,13 @@ export default function SettingsPage() {
       if (user) {
         const { data } = await supabase
           .from("user_preferences")
-          .select("email_digest_enabled, pomodoro_preset")
+          .select("email_digest_enabled")
           .eq("user_id", user.id)
           .single();
         if (data) {
-          const prefs = data as { email_digest_enabled?: boolean; pomodoro_preset?: Preferences["pomodoro_preset"] };
+          const prefs = data as { email_digest_enabled?: boolean };
           setPreferences({
             email_digest_enabled: prefs.email_digest_enabled ?? true,
-            pomodoro_preset: prefs.pomodoro_preset ?? "25/5",
           });
         }
         // Load profile
@@ -303,7 +300,6 @@ export default function SettingsPage() {
         .from("user_preferences")
         .update({
           email_digest_enabled: preferences.email_digest_enabled,
-          pomodoro_preset: preferences.pomodoro_preset,
         } as never)
         .eq("user_id", user.id);
       if (error) {
@@ -418,7 +414,16 @@ export default function SettingsPage() {
 
         <Card className="border border-border bg-card p-6 space-y-8">
           {/* Profile */}
-          <div className="space-y-4">
+          {!isAuthenticated && !authLoading && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-cyan-400" />
+                <h2 className="text-lg font-semibold text-foreground">Profile</h2>
+              </div>
+              <LoginPrompt feature="general" />
+            </div>
+          )}
+          {isAuthenticated && <div className="space-y-4">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-cyan-400" />
               <h2 className="text-lg font-semibold text-foreground">Profile</h2>
@@ -529,7 +534,7 @@ export default function SettingsPage() {
                 {savingProfile ? "Saving..." : "Update Profile"}
               </Button>
             </div>
-          </div>
+          </div>}
 
           {/* Divider */}
           <div className="h-px bg-border" />
@@ -585,35 +590,6 @@ export default function SettingsPage() {
                   Auto
                 </Button>
               </div>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="h-px bg-border" />
-
-          {/* Pomodoro */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Timer className="h-4 w-4 text-cyan-400" />
-              <h2 className="text-lg font-semibold text-foreground">Pomodoro</h2>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-foreground">Default Preset</Label>
-              <Select
-                value={preferences.pomodoro_preset}
-                onValueChange={(v) =>
-                  setPreferences((p) => ({ ...p, pomodoro_preset: v as typeof p.pomodoro_preset }))
-                }
-              >
-                <SelectTrigger className="border-border bg-card text-foreground">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="border border-border bg-card">
-                  <SelectItem value="25/5" className="text-foreground">25m work / 5m break</SelectItem>
-                  <SelectItem value="50/10" className="text-foreground">50m work / 10m break</SelectItem>
-                  <SelectItem value="90/20" className="text-foreground">90m work / 20m break</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 

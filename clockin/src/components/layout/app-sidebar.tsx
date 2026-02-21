@@ -60,7 +60,7 @@ export function AppSidebar() {
       <div className="m-4 flex h-[calc(100vh-2rem)] flex-col rounded-3xl border border-border bg-card/95 backdrop-blur-2xl shadow-2xl shadow-black/20 dark:shadow-black/50 overflow-hidden">
         {/* Logo Section */}
         <div className="flex h-20 items-center border-b border-border px-6">
-          <Link href="/dashboard" className="group flex items-center gap-3">
+          <Link href="/focus" className="group flex items-center gap-3">
             <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 transition-all duration-300 group-hover:shadow-blue-500/50 group-hover:scale-105">
               <Flame className="h-5 w-5 fill-current" />
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />

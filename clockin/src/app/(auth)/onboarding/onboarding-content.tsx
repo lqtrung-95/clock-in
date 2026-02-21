@@ -31,7 +31,7 @@ export default function OnboardingContent() {
         .limit(1);
       if (categories && categories.length > 0) {
         // User already has categories, skip onboarding
-        router.push("/dashboard");
+        router.push("/focus");
       } else {
         setChecking(false);
       }
@@ -79,7 +79,7 @@ export default function OnboardingContent() {
     if (error) {
       toast.error(error.message);
     } else {
-      router.push("/dashboard");
+      router.push("/focus");
     }
   }
 

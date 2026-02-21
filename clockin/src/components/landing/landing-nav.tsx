@@ -24,7 +24,7 @@ export function LandingNav() {
           href="/focus"
           className="text-sm font-semibold px-5 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-105 transition-all duration-200"
         >
-          Get Started Free
+          Get Started
         </Link>
       </div>
     </nav>

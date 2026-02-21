@@ -23,7 +23,7 @@ export function LoginForm() {
     if (error) {
       toast.error(error.message);
     } else {
-      router.push("/dashboard");
+      router.push("/focus");
       router.refresh();
     }
   }

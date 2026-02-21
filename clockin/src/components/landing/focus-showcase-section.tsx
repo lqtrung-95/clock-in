@@ -1,26 +1,10 @@
 import { Music, Video, Layers, Sun, Plus } from "lucide-react";
 
 const SHOWCASE_ITEMS = [
-  {
-    icon: Video,
-    label: "8 built-in scenes + your own",
-    desc: "Lofi Girl, Rain Window, Fireplace, Ocean Waves, Forest, Snowfall, Coffee Shop, Starry Night — or paste any YouTube link",
-  },
-  {
-    icon: Layers,
-    label: "5 animated overlays",
-    desc: "Aurora borealis, floating particles, vignette pulse, color gradient, falling rain",
-  },
-  {
-    icon: Music,
-    label: "4 ambient sounds",
-    desc: "Heavy rain, howling wind, coffee shop murmur, rolling thunder — with volume control",
-  },
-  {
-    icon: Sun,
-    label: "Full control",
-    desc: "Brightness slider, fullscreen toggle, video mute, auto-hiding controls",
-  },
+  { icon: Video, label: "8 built-in scenes + custom YouTube links" },
+  { icon: Layers, label: "8 animated overlays — Aurora, Snow, Fireflies & more" },
+  { icon: Music, label: "Ambient sounds with volume control" },
+  { icon: Sun, label: "Brightness, fullscreen & auto-hiding controls" },
 ];
 
 export function FocusShowcaseSection() {
@@ -48,18 +32,15 @@ export function FocusShowcaseSection() {
               runs quietly behind it all.
             </p>
 
-            <div className="space-y-5">
+            <div className="space-y-3">
               {SHOWCASE_ITEMS.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <div key={item.label} className="flex gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20">
-                      <Icon className="h-5 w-5 text-blue-400" />
+                  <div key={item.label} className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20">
+                      <Icon className="h-4 w-4 text-blue-400" />
                     </div>
-                    <div>
-                      <p className="font-semibold text-white text-sm">{item.label}</p>
-                      <p className="text-sm text-white/45 mt-0.5 leading-relaxed">{item.desc}</p>
-                    </div>
+                    <p className="text-sm text-white/70">{item.label}</p>
                   </div>
                 );
               })}

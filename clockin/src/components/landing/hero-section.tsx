@@ -16,7 +16,7 @@ export function HeroSection() {
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/25 mb-8">
           <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-          <span className="text-sm text-blue-300 font-medium">Free to use · No account required</span>
+          <span className="text-sm text-blue-300 font-medium">No account required · Open beta</span>
         </div>
 
         {/* Headline */}
@@ -38,7 +38,7 @@ export function HeroSection() {
             href="/focus"
             className="px-8 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-lg shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 transition-all duration-300"
           >
-            Start Tracking Free
+            Start Tracking
           </Link>
           <a
             href="#features"
@@ -53,7 +53,7 @@ export function HeroSection() {
           {[
             { value: "AI-powered", label: "Smart coaching & insights" },
             { value: "15+ scenes", label: "Video & overlay effects" },
-            { value: "100%", label: "Free, forever" },
+            { value: "Free", label: "No credit card needed" },
           ].map((stat) => (
             <div key={stat.label} className="flex flex-col gap-1">
               <span className="text-2xl font-bold text-white">{stat.value}</span>

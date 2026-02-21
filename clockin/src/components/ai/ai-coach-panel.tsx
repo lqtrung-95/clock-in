@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sparkles, X, Send, Bot, Minus } from "lucide-react";
+import { Sparkles, X, Send, Bot, Minus, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuthState } from "@/hooks/use-auth-state";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,6 +21,7 @@ const STARTER_PROMPTS = [
 ];
 
 export function AiCoachPanel() {
+  const { isAuthenticated, isLoading } = useAuthState();
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -78,28 +81,24 @@ export function AiCoachPanel() {
 
   return (
     <>
-      {/* Floating trigger button */}
-      <button
-        onClick={() => setOpen(v => !v)}
-        className={cn(
-          "fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 flex h-13 w-13 items-center justify-center rounded-2xl shadow-2xl transition-all duration-300",
-          open
-            ? "bg-muted text-muted-foreground scale-90"
-            : "bg-gradient-to-br from-purple-500 to-blue-500 text-white scale-100 hover:scale-105 shadow-purple-500/30"
-        )}
-        style={{ width: 52, height: 52 }}
-        title="AI Focus Coach"
-      >
-        {open ? <X className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
-      </button>
+      {/* Floating trigger button — only visible when panel is closed */}
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 flex items-center justify-center rounded-2xl shadow-2xl transition-all duration-300 bg-gradient-to-br from-purple-500 to-blue-500 text-white scale-100 hover:scale-105 shadow-purple-500/30"
+          style={{ width: 52, height: 52 }}
+          title="AI Focus Coach"
+        >
+          <Sparkles className="h-5 w-5" />
+        </button>
+      )}
 
       {/* Chat panel */}
       {open && (
         <div className="fixed bottom-24 right-4 md:bottom-20 md:right-6 z-50 w-[340px] max-w-[calc(100vw-2rem)] flex flex-col rounded-3xl border border-border bg-card/98 backdrop-blur-2xl shadow-2xl shadow-black/40 overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
           {/* Header */}
           <div
-            className="flex items-center gap-3 px-4 py-3 border-b border-border bg-gradient-to-r from-purple-500/10 to-blue-500/10 cursor-pointer select-none"
-            onClick={() => setMinimized(v => !v)}
+            className="flex items-center gap-3 px-4 py-3 border-b border-border bg-gradient-to-r from-purple-500/10 to-blue-500/10"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-blue-500">
               <Bot className="h-4 w-4 text-white" />
@@ -108,17 +107,46 @@ export function AiCoachPanel() {
               <p className="text-sm font-semibold">AI Focus Coach</p>
               <p className="text-[10px] text-muted-foreground">Your personal productivity coach</p>
             </div>
-            <button
-              onClick={e => { e.stopPropagation(); setMinimized(v => !v); }}
-              className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground transition-colors"
-              title={minimized ? "Expand" : "Minimize"}
-            >
-              <Minus className="h-3 w-3" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={e => { e.stopPropagation(); setMinimized(v => !v); }}
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                title={minimized ? "Expand" : "Minimize"}
+              >
+                <Minus className="h-3 w-3" />
+              </button>
+              <button
+                onClick={e => { e.stopPropagation(); setOpen(false); setMinimized(false); }}
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                title="Close"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
           </div>
 
-          {/* Messages + Input — hidden when minimized */}
-          {!minimized && <div className="flex-1 overflow-y-auto p-3 space-y-3 max-h-72 min-h-[120px]">
+          {/* Guest sign-in prompt */}
+          {!minimized && !isLoading && !isAuthenticated && (
+            <div className="flex flex-col items-center justify-center gap-3 p-6 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/20">
+                <Bot className="h-6 w-6 text-purple-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Sign in to chat</p>
+                <p className="text-xs text-muted-foreground mt-1">The AI coach uses your session history to give personalized advice.</p>
+              </div>
+              <Link
+                href="/auth/login"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 text-white text-xs font-semibold hover:opacity-90 transition-opacity"
+              >
+                <LogIn className="h-3.5 w-3.5" />
+                Sign in
+              </Link>
+            </div>
+          )}
+
+          {/* Messages + Input — hidden when minimized or guest */}
+          {!minimized && (isLoading || isAuthenticated) && <div className="flex-1 overflow-y-auto p-3 space-y-3 max-h-72 min-h-[120px]">
             {messages.length === 0 ? (
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground text-center py-2">Ask me anything about your focus & productivity</p>
@@ -163,7 +191,7 @@ export function AiCoachPanel() {
             <div ref={bottomRef} />
           </div>}
 
-          {!minimized && <div className="p-3 border-t border-border flex gap-2">
+          {!minimized && isAuthenticated && <div className="p-3 border-t border-border flex gap-2">
             <Input
               value={input}
               onChange={e => setInput(e.target.value)}

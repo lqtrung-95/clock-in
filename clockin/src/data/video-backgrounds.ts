@@ -59,8 +59,8 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
     category: "ambient",
   },
   {
-    id: "tokyo-night",
-    name: "Tokyo Night",
+    id: "newyork-night",
+    name: "New York Night",
     embedUrl: "https://www.youtube.com/embed/eZe4Q_58UTU?autoplay=1&mute=1&loop=1&playlist=eZe4Q_58UTU&controls=0&rel=0&modestbranding=1",
     thumbnail: "https://img.youtube.com/vi/eZe4Q_58UTU/mqdefault.jpg",
     category: "urban",

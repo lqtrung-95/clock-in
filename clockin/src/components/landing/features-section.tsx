@@ -1,4 +1,4 @@
-import { Timer, Maximize, BarChart3, Flame, Trophy, Mountain, Sparkles, Users } from "lucide-react";
+import { Timer, Maximize, BarChart3, Flame, Sparkles, Users } from "lucide-react";
 
 const FEATURES = [
   {
@@ -6,8 +6,7 @@ const FEATURES = [
     gradient: "from-violet-500 to-purple-500",
     glow: "shadow-violet-500/20",
     title: "AI Focus Coach",
-    description:
-      "Powered by Groq & Llama 3.3. Get personalized productivity insights, chat with your AI coach, auto-categorize tasks, and receive smart session suggestions based on your patterns.",
+    description: "Get personalized insights, chat with your coach, auto-categorize tasks, and receive smart session suggestions based on your patterns.",
     badge: "New",
   },
   {
@@ -15,24 +14,21 @@ const FEATURES = [
     gradient: "from-blue-500 to-cyan-500",
     glow: "shadow-blue-500/20",
     title: "Pomodoro Timer",
-    description:
-      "Work in science-backed focused bursts. Choose 25/5, 50/10, or 90/20 presets — or set custom durations. Auto-start breaks or control transitions manually.",
+    description: "Work in science-backed focused bursts. Choose 25/5, 50/10, or 90/20 presets — or set your own. Auto-start breaks or control manually.",
   },
   {
     icon: Maximize,
     gradient: "from-purple-500 to-pink-500",
     glow: "shadow-purple-500/20",
     title: "Immersive Focus Mode",
-    description:
-      "Fullscreen flow with Lofi, Rain, Fireplace, Mountain Lake video scenes. Layer 8 visual effects — Aurora, Bokeh, Fireflies, Snow, Particles, Rain, Vignette, and more.",
+    description: "Fullscreen flow with ambient video scenes and layered visual effects. Disappear into deep work.",
   },
   {
     icon: Users,
     gradient: "from-teal-500 to-emerald-500",
     glow: "shadow-teal-500/20",
     title: "Focus Rooms",
-    description:
-      "Study and work together in real-time focus rooms. Hosts control synchronized Pomodoro sessions — start, pause, and reset for everyone at once.",
+    description: "Study together in real-time. Hosts run synchronized Pomodoro sessions for everyone at once.",
     badge: "New",
   },
   {
@@ -40,32 +36,14 @@ const FEATURES = [
     gradient: "from-emerald-500 to-teal-500",
     glow: "shadow-emerald-500/20",
     title: "Deep Analytics",
-    description:
-      "Heatmaps, daily bar charts, and category breakdowns. See exactly where your hours go, spot your best days, and understand your real patterns.",
+    description: "Heatmaps, daily charts, and category breakdowns. See exactly where your hours go.",
   },
   {
     icon: Flame,
     gradient: "from-orange-500 to-red-500",
     glow: "shadow-orange-500/20",
     title: "Goals & Streaks",
-    description:
-      "Set daily, weekly, or monthly time targets per category. Build unbroken streaks and watch your consistency compound into results.",
-  },
-  {
-    icon: Trophy,
-    gradient: "from-indigo-500 to-violet-500",
-    glow: "shadow-indigo-500/20",
-    title: "Social Leaderboard",
-    description:
-      "Add friends and see who's putting in the most work this week. Compete on weekly and monthly boards — friendly rivalry is one of the best productivity hacks.",
-  },
-  {
-    icon: Mountain,
-    gradient: "from-amber-500 to-yellow-500",
-    glow: "shadow-amber-500/20",
-    title: "Dream Goal",
-    description:
-      "Declare your biggest life goal — 1,000 hours to master a skill, 500 hours to build a business. Track every session toward the summit.",
+    description: "Set time targets per category, build unbroken streaks, and watch consistency compound into results.",
   },
 ];
 
