@@ -8,6 +8,7 @@ export interface FocusTimerSettings {
   workMinutes: number;
   shortBreakMinutes: number;
   longBreakMinutes: number;
+  longBreakInterval: number; // pomodoros before a long break
   alarmSound: AlarmSound;
   alarmVolume: number; // 0–100
 }
@@ -18,6 +19,7 @@ const DEFAULT_SETTINGS: FocusTimerSettings = {
   workMinutes: 25,
   shortBreakMinutes: 5,
   longBreakMinutes: 20,
+  longBreakInterval: 4,
   alarmSound: "bell",
   alarmVolume: 70,
 };

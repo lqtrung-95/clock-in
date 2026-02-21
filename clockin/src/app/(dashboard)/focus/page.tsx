@@ -405,7 +405,7 @@ export default function FocusPage() {
       toast.error("Please select what you're working on first!");
       return;
     }
-    start(preset.work, preset.break, 4);
+    start(preset.work, preset.break, timerSettings.longBreakInterval);
     if (selectedSound) {
       setAudioEnabled(true);
       const success = await playAudio();

@@ -118,6 +118,30 @@ export function FocusTimerSettingsModal({ open, onClose, settings, onSave }: Pro
                 onChange={(v) => setLocal((p) => ({ ...p, longBreakMinutes: v }))}
               />
             </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-border bg-muted/40 px-4 py-3">
+              <div>
+                <p className="text-sm font-medium text-foreground">Long Break Interval</p>
+                <p className="text-xs text-muted-foreground">Pomodoros before a long break</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setLocal((p) => ({ ...p, longBreakInterval: Math.max(1, p.longBreakInterval - 1) }))}
+                  className="h-7 w-7 rounded-lg border border-border bg-card text-foreground hover:bg-muted flex items-center justify-center text-sm font-bold"
+                >
+                  −
+                </button>
+                <span className="w-6 text-center text-sm font-mono font-semibold text-foreground">
+                  {local.longBreakInterval}
+                </span>
+                <button
+                  onClick={() => setLocal((p) => ({ ...p, longBreakInterval: Math.min(10, p.longBreakInterval + 1) }))}
+                  className="h-7 w-7 rounded-lg border border-border bg-card text-foreground hover:bg-muted flex items-center justify-center text-sm font-bold"
+                >
+                  +
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="h-px bg-border" />
