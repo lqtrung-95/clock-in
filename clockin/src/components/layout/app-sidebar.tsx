@@ -142,28 +142,26 @@ export function AppSidebar() {
             <div className="h-12 rounded-2xl bg-muted animate-pulse" />
           ) : isAuthenticated ? (
             // Sign out button for authenticated users
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3.5 rounded-2xl px-4 py-3.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-red-500/10 hover:text-red-400"
+            <button
+              className="group relative flex w-full items-center gap-3.5 rounded-2xl px-4 py-3.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-muted hover:text-foreground"
               onClick={handleSignOut}
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-all duration-300 group-hover:bg-muted/80 group-hover:text-foreground">
                 <LogOut className="h-[18px] w-[18px] transition-transform duration-300 group-hover:translate-x-0.5" />
               </span>
               Sign out
-            </Button>
+            </button>
           ) : (
             // Sign in button for guests
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3.5 rounded-2xl px-4 py-3.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-blue-500/10 hover:text-blue-400"
+            <button
+              className="group relative flex w-full items-center gap-3.5 rounded-2xl px-4 py-3.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-muted hover:text-foreground"
               onClick={() => router.push("/login")}
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-all duration-300 group-hover:bg-muted/80 group-hover:text-foreground">
                 <LogIn className="h-[18px] w-[18px] transition-transform duration-300 group-hover:translate-x-0.5" />
               </span>
               Sign in
-            </Button>
+            </button>
           )}
         </div>
       </div>

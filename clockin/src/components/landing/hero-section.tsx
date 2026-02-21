@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 
@@ -40,12 +42,12 @@ export function HeroSection() {
           >
             Start Tracking
           </Link>
-          <a
-            href="#features"
+          <button
+            onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
             className="px-8 py-4 rounded-xl bg-white/5 border border-white/10 text-white/70 font-medium text-lg hover:bg-white/10 hover:text-white transition-all duration-300"
           >
             See Features
-          </a>
+          </button>
         </div>
 
         {/* Stats row */}
