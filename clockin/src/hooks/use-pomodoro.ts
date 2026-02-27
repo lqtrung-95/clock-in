@@ -35,6 +35,10 @@ export function usePomodoro() {
       return;
     }
 
+    // Sync elapsed immediately so stale state from the previous phase doesn't
+    // cause a false "remaining = 0" on the first render of a new phase.
+    setElapsed(Math.min(Date.now() - startedAt - accumulatedMs, targetMs));
+
     let rafId: number;
     const tick = () => {
       const now = Date.now();
