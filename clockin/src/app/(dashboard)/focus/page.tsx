@@ -160,6 +160,7 @@ export default function FocusPage() {
 
   // Audio refs for ambient sound
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const alarmIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [volume, setVolume] = useState(0.5);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -384,6 +385,24 @@ export default function FocusPage() {
       setShowComplete(false);
     }
   }, [remaining, phase, isWork, completePhase, showComplete, pauseAudio, saveTimeEntry, playAlarm, timerSettings.autoStartBreak, timerSettings.autoStartWork]);
+
+  // Repeat alarm every 5 s while waiting for user to start the next phase
+  useEffect(() => {
+    if (!waitingForNext || !timerSettings.alarmRepeat) {
+      if (alarmIntervalRef.current) {
+        clearInterval(alarmIntervalRef.current);
+        alarmIntervalRef.current = null;
+      }
+      return;
+    }
+    alarmIntervalRef.current = setInterval(() => playAlarm(), 5000);
+    return () => {
+      if (alarmIntervalRef.current) {
+        clearInterval(alarmIntervalRef.current);
+        alarmIntervalRef.current = null;
+      }
+    };
+  }, [waitingForNext, timerSettings.alarmRepeat, playAlarm]);
 
   // Fullscreen
   const toggleFullscreen = useCallback(() => {

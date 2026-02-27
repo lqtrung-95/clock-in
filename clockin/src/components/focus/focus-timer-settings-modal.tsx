@@ -233,6 +233,18 @@ export function FocusTimerSettingsModal({ open, onClose, settings, onSave }: Pro
                 className="w-full"
               />
             </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-border bg-muted/40 px-4 py-3">
+              <div>
+                <p className="text-sm font-medium text-foreground">Repeat alarm</p>
+                <p className="text-xs text-muted-foreground">Keep ringing until you tap the screen</p>
+              </div>
+              <Switch
+                checked={local.alarmRepeat}
+                disabled={local.alarmSound === "none"}
+                onCheckedChange={(v) => setLocal((p) => ({ ...p, alarmRepeat: v }))}
+              />
+            </div>
           </div>
 
           <Button
