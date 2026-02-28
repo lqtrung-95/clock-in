@@ -11,15 +11,6 @@ export function usePomodoro() {
   const [elapsed, setElapsed] = useState(0);
   const [lastVisible, setLastVisible] = useState(Date.now());
 
-  // Track which startedAt the current elapsed value belongs to.
-  // When startedAt changes (new phase starts), reset elapsed to 0 synchronously
-  // during render — before any effects fire — so remaining is never stale.
-  const [trackedStartedAt, setTrackedStartedAt] = useState(startedAt);
-  if (trackedStartedAt !== startedAt) {
-    setTrackedStartedAt(startedAt);
-    setElapsed(0);
-  }
-
   useVisibility(
     () => {
       const delta = Date.now() - lastVisible;
@@ -44,6 +35,10 @@ export function usePomodoro() {
       return;
     }
 
+    // Reset elapsed for this phase before starting the RAF loop.
+    // This prevents stale elapsed state from a previous phase carrying over.
+    setElapsed(0);
+
     let rafId: number;
     const tick = () => {
       const now = Date.now();
@@ -55,6 +50,17 @@ export function usePomodoro() {
 
     return () => cancelAnimationFrame(rafId);
   }, [phase, startedAt, accumulatedMs, targetMs, pausedAt]);
+
+  // isComplete: computed live from store — not from elapsed state — so it is
+  // never stale when a new phase starts. elapsed state may lag one render behind
+  // after a phase transition; this value is always authoritative.
+  const liveElapsed = (() => {
+    if (phase === "idle" || !startedAt) return 0;
+    return pausedAt
+      ? pausedAt - startedAt - accumulatedMs
+      : Date.now() - startedAt - accumulatedMs;
+  })();
+  const isComplete = phase !== "idle" && startedAt !== null && liveElapsed >= targetMs;
 
   const remaining = Math.max(0, targetMs - elapsed);
   const progress = targetMs > 0 ? (elapsed / targetMs) * 100 : 0;
@@ -75,6 +81,7 @@ export function usePomodoro() {
     isBreak,
     isRunning,
     isPaused,
+    isComplete,
     workMinutes,
     breakMinutes,
   };

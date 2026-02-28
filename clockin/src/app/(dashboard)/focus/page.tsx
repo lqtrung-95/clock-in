@@ -116,7 +116,7 @@ function CircularProgress({
 
 export default function FocusPage() {
   const router = useRouter();
-  const { phase, cycle, totalCycles, formatted, progress, isWork, remaining, elapsed, isRunning } = usePomodoro();
+  const { phase, cycle, totalCycles, formatted, progress, isWork, remaining, isComplete, isRunning } = usePomodoro();
   const { start, pause, resume, reset, completePhase } = usePomodoroStore();
 
   const [selectedPreset, setSelectedPreset] = useState<keyof typeof POMODORO_PRESETS | null>(null);
@@ -358,35 +358,35 @@ export default function FocusPage() {
   }, [selectedCategory, preset.work, selectedPreset, isAuthenticated]);
 
   // Auto-complete: advance phase or wait for manual start depending on settings.
-  // Guard: elapsed > 0 ensures we don't fire on stale remaining=0 right after a
-  // phase transition (the derived-state reset makes elapsed=0 at phase start).
+  // Uses isComplete (computed live from store, not from elapsed state) so it is
+  // never triggered by stale state on a phase transition.
   useEffect(() => {
-    if (phase !== "idle" && remaining <= 0 && elapsed > 0 && !showComplete) {
-      setShowComplete(true);
-      playAlarm();
-      pauseAudio();
+    if (!isComplete || showComplete) return;
 
-      if (isWork) {
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-        toast.success("Work session complete! Take a break.");
-        saveTimeEntry();
-        if (timerSettings.autoStartBreak) {
-          completePhase();
-        } else {
-          setWaitingForNext("break");
-        }
+    setShowComplete(true);
+    playAlarm();
+    pauseAudio();
+
+    if (isWork) {
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      toast.success("Work session complete! Take a break.");
+      saveTimeEntry();
+      if (timerSettings.autoStartBreak) {
+        completePhase();
       } else {
-        toast.info("Break over! Ready to focus?");
-        if (timerSettings.autoStartWork) {
-          completePhase();
-        } else {
-          setWaitingForNext("work");
-        }
+        setWaitingForNext("break");
       }
-
-      setShowComplete(false);
+    } else {
+      toast.info("Break over! Ready to focus?");
+      if (timerSettings.autoStartWork) {
+        completePhase();
+      } else {
+        setWaitingForNext("work");
+      }
     }
-  }, [remaining, elapsed, phase, isWork, completePhase, showComplete, pauseAudio, saveTimeEntry, playAlarm, timerSettings.autoStartBreak, timerSettings.autoStartWork]);
+
+    setShowComplete(false);
+  }, [isComplete, isWork, completePhase, showComplete, pauseAudio, saveTimeEntry, playAlarm, timerSettings.autoStartBreak, timerSettings.autoStartWork]);
 
   // Repeat alarm every 5 s while waiting for user to start the next phase
   useEffect(() => {
