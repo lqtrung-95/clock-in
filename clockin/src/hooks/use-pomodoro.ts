@@ -11,6 +11,15 @@ export function usePomodoro() {
   const [elapsed, setElapsed] = useState(0);
   const [lastVisible, setLastVisible] = useState(Date.now());
 
+  // Track which startedAt the current elapsed value belongs to.
+  // When startedAt changes (new phase starts), reset elapsed to 0 synchronously
+  // during render — before any effects fire — so remaining is never stale.
+  const [trackedStartedAt, setTrackedStartedAt] = useState(startedAt);
+  if (trackedStartedAt !== startedAt) {
+    setTrackedStartedAt(startedAt);
+    setElapsed(0);
+  }
+
   useVisibility(
     () => {
       const delta = Date.now() - lastVisible;
@@ -34,10 +43,6 @@ export function usePomodoro() {
       setElapsed(Math.min(elapsedWhenPaused, targetMs));
       return;
     }
-
-    // Sync elapsed immediately so stale state from the previous phase doesn't
-    // cause a false "remaining = 0" on the first render of a new phase.
-    setElapsed(Math.min(Date.now() - startedAt - accumulatedMs, targetMs));
 
     let rafId: number;
     const tick = () => {
