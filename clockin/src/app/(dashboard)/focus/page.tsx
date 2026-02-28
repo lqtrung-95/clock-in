@@ -116,7 +116,7 @@ function CircularProgress({
 
 export default function FocusPage() {
   const router = useRouter();
-  const { phase, cycle, totalCycles, formatted, progress, isWork, remaining, isRunning } = usePomodoro();
+  const { phase, cycle, totalCycles, formatted, progress, isWork, remaining, elapsed, isRunning } = usePomodoro();
   const { start, pause, resume, reset, completePhase } = usePomodoroStore();
 
   const [selectedPreset, setSelectedPreset] = useState<keyof typeof POMODORO_PRESETS | null>(null);
@@ -357,9 +357,11 @@ export default function FocusPage() {
     }
   }, [selectedCategory, preset.work, selectedPreset, isAuthenticated]);
 
-  // Auto-complete: advance phase or wait for manual start depending on settings
+  // Auto-complete: advance phase or wait for manual start depending on settings.
+  // Guard: elapsed > 0 ensures we don't fire on stale remaining=0 right after a
+  // phase transition (the derived-state reset makes elapsed=0 at phase start).
   useEffect(() => {
-    if (phase !== "idle" && remaining <= 0 && !showComplete) {
+    if (phase !== "idle" && remaining <= 0 && elapsed > 0 && !showComplete) {
       setShowComplete(true);
       playAlarm();
       pauseAudio();
@@ -384,7 +386,7 @@ export default function FocusPage() {
 
       setShowComplete(false);
     }
-  }, [remaining, phase, isWork, completePhase, showComplete, pauseAudio, saveTimeEntry, playAlarm, timerSettings.autoStartBreak, timerSettings.autoStartWork]);
+  }, [remaining, elapsed, phase, isWork, completePhase, showComplete, pauseAudio, saveTimeEntry, playAlarm, timerSettings.autoStartBreak, timerSettings.autoStartWork]);
 
   // Repeat alarm every 5 s while waiting for user to start the next phase
   useEffect(() => {
