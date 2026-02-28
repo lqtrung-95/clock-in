@@ -426,6 +426,13 @@ export default function FocusPage() {
     return () => document.removeEventListener("fullscreenchange", handleChange);
   }, []);
 
+  // Exit fullscreen when the session ends so the overlay isn't stuck fullscreen
+  useEffect(() => {
+    if ((phase === "idle" || waitingForNext) && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, [phase, waitingForNext]);
+
   // Auto-hide controls
   useEffect(() => {
     if (phase === "idle") return;
@@ -766,7 +773,7 @@ export default function FocusPage() {
                 <Button
                   onClick={handleStartNextPhase}
                   className={cn(
-                    "h-12 px-8 rounded-full font-semibold text-white border-0",
+                    "h-12 px-8 rounded-full font-semibold text-white border-0 cursor-pointer",
                     waitingForNext === "break"
                       ? "bg-gradient-to-r from-orange-500 to-amber-500 shadow-[0_0_24px_rgba(249,115,22,0.5)]"
                       : "bg-gradient-to-r from-blue-500 to-cyan-500 shadow-[0_0_24px_rgba(59,130,246,0.5)]"
@@ -777,7 +784,7 @@ export default function FocusPage() {
                 <Button
                   variant="ghost"
                   onClick={handleReset}
-                  className="h-12 px-6 rounded-full text-white/70 hover:text-white hover:bg-white/10"
+                  className="h-12 px-6 rounded-full text-white/70 hover:text-white hover:bg-white/10 cursor-pointer"
                 >
                   End Session
                 </Button>
