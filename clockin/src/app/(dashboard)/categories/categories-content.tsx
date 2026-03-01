@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { categoryService } from "@/services/category-service";
 import { useCategoryStore } from "@/stores/category-store";
@@ -21,18 +21,17 @@ export default function CategoriesContent() {
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [formLoading, setFormLoading] = useState(false);
   const { setCategories } = useCategoryStore();
 
+  const queryKey = ["categories", userId] as const;
+
   const { data: categories = [], isLoading } = useQuery({
-    queryKey: ["categories", userId],
+    queryKey,
     queryFn: async () => {
       if (isAuthenticated && userId) {
-        const cats = await categoryService.getCategories(userId);
-        return cats;
+        return categoryService.getCategories(userId);
       }
-      const cats = guestStorage.getCategories() as unknown as Category[];
-      return cats;
+      return guestStorage.getCategories() as unknown as Category[];
     },
     enabled: !authLoading,
   });
@@ -42,52 +41,92 @@ export default function CategoriesContent() {
     setCategories(categories);
   }, [categories, setCategories]);
 
-  function invalidateCategories() {
-    queryClient.invalidateQueries({ queryKey: ["categories", userId] });
-  }
-
-  async function handleCreate(data: { name: string; color: string; icon: string }) {
-    setFormLoading(true);
-    try {
+  // Create mutation with optimistic update
+  const createMutation = useMutation({
+    mutationFn: async (data: { name: string; color: string; icon: string }) => {
       if (isAuthenticated) {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
-        await categoryService.createCategory(user.id, data);
-      } else {
-        guestStorage.addCategory({ name: data.name, color: data.color, icon: data.icon });
+        return categoryService.createCategory(user.id, data);
       }
+      guestStorage.addCategory(data);
+      return null;
+    },
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<Category[]>(queryKey) ?? [];
+      const now = new Date().toISOString();
+      const optimistic: Category = {
+        id: `optimistic-${Date.now()}`,
+        user_id: userId ?? "",
+        name: data.name,
+        color: data.color,
+        icon: data.icon,
+        is_archived: false,
+        sort_order: 0,
+        created_at: now,
+        updated_at: now,
+      };
+      queryClient.setQueryData<Category[]>(queryKey, [...previous, optimistic]);
+      return { previous };
+    },
+    onError: (_err, _data, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(queryKey, ctx.previous);
+      toast.error("Failed to create category");
+    },
+    onSuccess: () => {
       toast.success("Category created");
       setFormOpen(false);
-      invalidateCategories();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create");
-    }
-    setFormLoading(false);
-  }
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
 
-  async function handleUpdate(data: { name: string; color: string; icon: string }) {
-    if (!editingCategory) return;
-    setFormLoading(true);
-    try {
+  // Update mutation with optimistic update
+  const updateMutation = useMutation({
+    mutationFn: async ({ category, data }: { category: Category; data: { name: string; color: string; icon: string } }) => {
       if (isAuthenticated) {
-        await categoryService.updateCategory(editingCategory.id, data);
-      } else {
-        guestStorage.updateCategory(editingCategory.id, data);
+        return categoryService.updateCategory(category.id, data);
       }
+      guestStorage.updateCategory(category.id, data);
+      return null;
+    },
+    onMutate: async ({ category, data }) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<Category[]>(queryKey) ?? [];
+      queryClient.setQueryData<Category[]>(
+        queryKey,
+        previous.map((c) => (c.id === category.id ? { ...c, ...data } : c))
+      );
+      return { previous };
+    },
+    onError: (_err, _data, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(queryKey, ctx.previous);
+      toast.error("Failed to update category");
+    },
+    onSuccess: () => {
       toast.success("Category updated");
       setEditingCategory(null);
       setFormOpen(false);
-      invalidateCategories();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update");
-    }
-    setFormLoading(false);
-  }
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
 
   function handleEdit(cat: Category) {
     setEditingCategory(cat);
     setFormOpen(true);
+  }
+
+  function handleSubmit(data: { name: string; color: string; icon: string }) {
+    if (editingCategory) {
+      updateMutation.mutate({ category: editingCategory, data });
+    } else {
+      createMutation.mutate(data);
+    }
+  }
+
+  function invalidateCategories() {
+    queryClient.invalidateQueries({ queryKey });
   }
 
   if (isLoading || authLoading) {
@@ -97,6 +136,8 @@ export default function CategoriesContent() {
       </div>
     );
   }
+
+  const formLoading = createMutation.isPending || updateMutation.isPending;
 
   return (
     <div className="p-4 md:p-8 lg:p-10">
@@ -139,7 +180,7 @@ export default function CategoriesContent() {
             setFormOpen(open);
             if (!open) setEditingCategory(null);
           }}
-          onSubmit={editingCategory ? handleUpdate : handleCreate}
+          onSubmit={handleSubmit}
           loading={formLoading}
         />
       </div>
