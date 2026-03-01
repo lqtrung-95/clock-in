@@ -9,6 +9,7 @@ import { useAuthState } from "@/hooks/use-auth-state";
 import { guestStorage } from "@/lib/guest-storage";
 import { Card } from "@/components/ui/card";
 import { CalendarHeatmap } from "@/components/stats/calendar-heatmap";
+import { FocusInsightsCard } from "@/components/stats/focus-insights-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import {
@@ -59,7 +60,7 @@ function StatCard({
 }
 
 export default function AnalyticsPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuthState();
+  const { isAuthenticated, userId, isLoading: authLoading } = useAuthState();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [streak, setStreak] = useState<{ current_streak: number } | null>(null);
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
@@ -224,6 +225,11 @@ export default function AnalyticsPage() {
             gradient="from-emerald-500 to-teal-500"
           />
         </div>
+
+        {/* AI Focus Insights — only for authenticated users with userId */}
+        {userId && (
+          <FocusInsightsCard userId={userId} entries={entries} />
+        )}
 
         <Tabs defaultValue="daily" className="w-full">
           <TabsList className="grid w-full max-w-md grid-cols-3 border border-white/5 bg-white/5 p-1">
