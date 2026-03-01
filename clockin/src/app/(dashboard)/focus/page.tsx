@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { usePomodoro } from "@/hooks/use-pomodoro";
 import { usePomodoroStore } from "@/stores/pomodoro-store";
@@ -154,8 +155,7 @@ export default function FocusPage() {
 
   // Category and auth
   const { categories, setCategories } = useCategoryStore();
-  const { isAuthenticated } = useAuthState();
-  const [userId, setUserId] = useState<string | null>(null);
+  const { isAuthenticated, userId, isLoading: authLoading } = useAuthState();
   const { addProgress } = useDreamGoal(userId);
 
   // Audio refs for ambient sound
@@ -201,40 +201,31 @@ export default function FocusPage() {
     }
   }, []);
 
-  // Load categories
-  useEffect(() => {
-    async function loadCategories() {
-      if (isAuthenticated) {
+  // Load categories via TanStack Query (shared cache with categories-content.tsx and history/page.tsx)
+  const { data: queriedCategories = [] } = useQuery({
+    queryKey: ["categories", userId],
+    queryFn: async () => {
+      if (isAuthenticated && userId) {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data } = await supabase
-            .from("categories")
-            .select("*")
-            .eq("user_id", user.id)
-            .eq("is_archived", false)
-            .order("name");
-          if (data) setCategories(data);
-        }
+        const { data } = await supabase
+          .from("categories")
+          .select("*")
+          .eq("user_id", userId)
+          .eq("is_archived", false)
+          .order("name");
+        return data ?? [];
       } else {
-        const cats = guestStorage.getCategories();
-        setCategories(cats as unknown as typeof categories);
+        return guestStorage.getCategories();
       }
-    }
-    loadCategories();
-  }, [isAuthenticated]);
+    },
+    enabled: !authLoading,
+    staleTime: 1000 * 60 * 5,
+  });
 
-  // Set userId for dream goal tracking
+  // Sync queried categories into Zustand store so timer and other components still work
   useEffect(() => {
-    if (isAuthenticated) {
-      const supabase = createClient();
-      supabase.auth.getUser().then(({ data }) => {
-        setUserId(data.user?.id || "guest");
-      });
-    } else {
-      setUserId("guest");
-    }
-  }, [isAuthenticated]);
+    setCategories(queriedCategories as unknown as typeof categories);
+  }, [queriedCategories, setCategories]);
 
   // Use custom timer settings as source of truth; presets are just shortcuts
   const preset = { work: timerSettings.workMinutes, break: timerSettings.shortBreakMinutes };
