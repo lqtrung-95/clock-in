@@ -11,7 +11,9 @@ import { EntryList } from "@/components/entries/entry-list";
 import { EntryForm } from "@/components/entries/entry-form";
 import { LoginBanner } from "@/components/auth/login-prompt";
 import { Card } from "@/components/ui/card";
-import { List } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { List, Download } from "lucide-react";
+import { exportEntriesToCsv } from "@/lib/export-csv";
 import type { TimeEntry, Category } from "@/types/timer";
 
 export default function HistoryPage() {
@@ -78,7 +80,20 @@ export default function HistoryPage() {
               <p className="text-sm text-muted-foreground">View and manage your time entries</p>
             </div>
           </div>
-          <EntryForm categories={categories} onSuccess={invalidateHistory} isGuest={!isAuthenticated} />
+          <div className="flex items-center gap-2">
+            {entries.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => exportEntriesToCsv(entries, categories)}
+                className="gap-1.5 text-muted-foreground hover:text-foreground"
+              >
+                <Download className="h-4 w-4" />
+                Export CSV
+              </Button>
+            )}
+            <EntryForm categories={categories} onSuccess={invalidateHistory} isGuest={!isAuthenticated} />
+          </div>
         </div>
 
         {/* Entries List */}
