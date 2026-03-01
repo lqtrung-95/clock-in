@@ -10,6 +10,7 @@ import { guestStorage } from "@/lib/guest-storage";
 import { Card } from "@/components/ui/card";
 import { CalendarHeatmap } from "@/components/stats/calendar-heatmap";
 import { FocusInsightsCard } from "@/components/stats/focus-insights-card";
+import { ShareStatsCard } from "@/components/stats/share-stats-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import {
@@ -188,14 +189,17 @@ export default function AnalyticsPage() {
     <div className="p-4 md:p-8 lg:p-10">
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/25">
-            <BarChart3 className="h-5 w-5 text-white" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/25">
+              <BarChart3 className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Statistics</h1>
+              <p className="text-sm text-muted-foreground">Track your productivity trends</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Statistics</h1>
-            <p className="text-sm text-muted-foreground">Track your productivity trends</p>
-          </div>
+          <ShareStatsCard entries={entries} streak={streak?.current_streak ?? 0} />
         </div>
 
         {/* Stats Grid */}
