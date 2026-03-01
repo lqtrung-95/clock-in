@@ -14,14 +14,17 @@ interface CategoryListProps {
   categories: Category[];
   onUpdate?: () => void;
   onEdit: (cat: Category) => void;
+  onDelete?: (id: string) => void; // if provided, skips internal logic (optimistic delete from parent)
   isGuest?: boolean;
 }
 
-export function CategoryList({ categories, onUpdate, onEdit, isGuest }: CategoryListProps) {
+export function CategoryList({ categories, onUpdate, onEdit, onDelete, isGuest }: CategoryListProps) {
   const [deleting, setDeleting] = useState<string | null>(null);
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this category?")) return;
+    // If parent handles delete (optimistic), delegate immediately
+    if (onDelete) { onDelete(id); return; }
     setDeleting(id);
     try {
       if (isGuest) {

@@ -7,6 +7,7 @@ import { FocusSetupAtmosphere } from "@/components/focus/focus-setup-atmosphere"
 import { FocusAddVideoDialog } from "@/components/focus/focus-add-video-dialog";
 import { FocusTimerSettingsModal } from "@/components/focus/focus-timer-settings-modal";
 import { AiSessionSuggestion } from "@/components/ai/ai-session-suggestion";
+import { FocusTodayStats } from "@/components/focus/focus-today-stats";
 import { POMODORO_PRESETS } from "@/lib/constants";
 import { type FocusTimerSettings } from "@/hooks/use-focus-timer-settings";
 import { type CustomVideo } from "@/hooks/use-focus-custom-videos";
@@ -98,6 +99,8 @@ export function FocusSetupView({
             Customize your session and dive into deep work
           </p>
         </div>
+
+        <FocusTodayStats />
 
         <Card className="border border-border bg-card/80 backdrop-blur-xl p-6 sm:p-8 shadow-xl">
           <AiSessionSuggestion

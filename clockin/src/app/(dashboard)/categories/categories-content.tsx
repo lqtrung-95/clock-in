@@ -112,6 +112,31 @@ export default function CategoriesContent() {
     },
   });
 
+  // Delete mutation with optimistic update
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (isAuthenticated) {
+        await categoryService.deleteCategory(id);
+      } else {
+        guestStorage.deleteCategory(id);
+      }
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<Category[]>(queryKey) ?? [];
+      queryClient.setQueryData<Category[]>(queryKey, previous.filter((c) => c.id !== id));
+      return { previous };
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(queryKey, ctx.previous);
+      toast.error("Failed to delete category");
+    },
+    onSuccess: () => {
+      toast.success("Category deleted");
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
   function handleEdit(cat: Category) {
     setEditingCategory(cat);
     setFormOpen(true);
@@ -169,6 +194,7 @@ export default function CategoriesContent() {
             categories={categories}
             onUpdate={invalidateCategories}
             onEdit={handleEdit}
+            onDelete={(id) => deleteMutation.mutate(id)}
             isGuest={!isAuthenticated}
           />
         </Card>

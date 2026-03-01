@@ -10,6 +10,7 @@ import { useFocusAudio } from "@/hooks/use-focus-audio";
 import { useFocusFullscreen } from "@/hooks/use-focus-fullscreen";
 import { useFocusCustomVideos } from "@/hooks/use-focus-custom-videos";
 import { useFocusTimerSettings, type FocusTimerSettings } from "@/hooks/use-focus-timer-settings";
+import { useFocusNotifications } from "@/hooks/use-focus-notifications";
 import { useDreamGoal } from "@/hooks/use-dream-goal";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { timeEntryService } from "@/services/time-entry-service";
@@ -58,6 +59,7 @@ export default function FocusPage() {
   const { volume, setVolume, isPlaying, audioEnabled, setAudioEnabled, playAudio, pauseAudio } = useFocusAudio(selectedSound);
   const { isFullscreen, showControls, toggleFullscreen } = useFocusFullscreen(phase, waitingForNext);
   const customVideoHook = useFocusCustomVideos(videoEmbedUrl, setVideoEmbedUrl);
+  const { notify } = useFocusNotifications();
 
   // Derived preset
   const effectivePreset = selectedPreset ?? (
@@ -68,6 +70,34 @@ export default function FocusPage() {
 
   // Reset on mount
   useEffect(() => { reset(); }, []);
+
+  // Keyboard shortcuts during active session: Space = pause/resume, R = stop
+  useEffect(() => {
+    if (phase === "idle") return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.code === "Space") {
+        e.preventDefault();
+        isRunning ? pause() : resume();
+      } else if (e.code === "KeyR") {
+        e.preventDefault();
+        reset(); pauseAudio(); setWaitingForNext(null);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [phase, isRunning, pause, resume, reset, pauseAudio]);
+
+  // Warn before closing/refreshing tab mid-session
+  useEffect(() => {
+    if (phase === "idle") return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [phase]);
 
   // Load saved preset preference
   useEffect(() => {
@@ -164,10 +194,12 @@ export default function FocusPage() {
     if (isWork) {
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       toast.success("Work session complete! Take a break.");
+      notify("Focus session complete! 🎉", "Time for a well-deserved break.");
       saveTimeEntry();
       timerSettings.autoStartBreak ? completePhase() : setWaitingForNext("break");
     } else {
       toast.info("Break over! Ready to focus?");
+      notify("Break over! ☕", "Ready to get back to it?");
       timerSettings.autoStartWork ? completePhase() : setWaitingForNext("work");
     }
     setShowComplete(false);
