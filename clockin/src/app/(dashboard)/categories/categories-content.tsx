@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { categoryService } from "@/services/category-service";
@@ -25,23 +25,22 @@ export default function CategoriesContent() {
   const { setCategories } = useCategoryStore();
 
   const { data: categories = [], isLoading } = useQuery({
-    queryKey: ["categories", userId, isAuthenticated],
+    queryKey: ["categories", userId],
     queryFn: async () => {
       if (isAuthenticated && userId) {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return [];
-        const cats = await categoryService.getCategories(user.id);
-        // Keep Zustand store in sync for timer/track components
-        setCategories(cats);
+        const cats = await categoryService.getCategories(userId);
         return cats;
       }
       const cats = guestStorage.getCategories() as unknown as Category[];
-      setCategories(cats);
       return cats;
     },
     enabled: !authLoading,
   });
+
+  // Keep Zustand store in sync for timer/track components
+  useEffect(() => {
+    setCategories(categories);
+  }, [categories, setCategories]);
 
   function invalidateCategories() {
     queryClient.invalidateQueries({ queryKey: ["categories", userId] });

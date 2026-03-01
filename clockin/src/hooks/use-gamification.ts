@@ -33,6 +33,15 @@ export function useGamification(userId: string | null) {
     updateXP,
   } = useGamificationStore();
 
+  // Reset store when userId changes so a new user triggers a fresh fetch
+  useEffect(() => {
+    setIsInitialized(false);
+    setUserStats(null);
+    setBadges([]);
+    setChallenges([]);
+    setCrystalConfig(null);
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Initialize gamification data
   useEffect(() => {
     if (isInitialized) return;

@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
 import { categoryService } from "@/services/category-service";
 import { timeEntryService } from "@/services/time-entry-service";
 import { useCategoryStore } from "@/stores/category-store";
@@ -20,19 +20,13 @@ export default function HistoryPage() {
   const { setCategories } = useCategoryStore();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["history", userId, isAuthenticated],
+    queryKey: ["history", userId],
     queryFn: async () => {
       if (isAuthenticated && userId) {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return { entries: [] as TimeEntry[], categories: [] as Category[] };
-
         const [cats, ents] = await Promise.all([
-          categoryService.getCategories(user.id),
-          timeEntryService.getEntries(user.id, 30),
+          categoryService.getCategories(userId),
+          timeEntryService.getEntries(userId, 30),
         ]);
-        // Keep Zustand store in sync for EntryForm category picker
-        setCategories(cats);
         return { entries: ents as TimeEntry[], categories: cats };
       }
 
@@ -43,7 +37,6 @@ export default function HistoryPage() {
         ...e,
         category: cats.find((c) => c.id === e.category_id),
       })) as unknown as TimeEntry[];
-      setCategories(cats);
       return { entries: enriched, categories: cats };
     },
     enabled: !authLoading,
@@ -51,6 +44,11 @@ export default function HistoryPage() {
 
   const entries = data?.entries ?? [];
   const categories = data?.categories ?? [];
+
+  // Keep Zustand store in sync for EntryForm category picker
+  useEffect(() => {
+    setCategories(categories);
+  }, [categories, setCategories]);
 
   function invalidateHistory() {
     queryClient.invalidateQueries({ queryKey: ["history", userId] });

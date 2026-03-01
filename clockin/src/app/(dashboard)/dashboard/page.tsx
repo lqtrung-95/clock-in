@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
 import { useTimerStore } from "@/stores/timer-store";
 import { timeEntryService } from "@/services/time-entry-service";
 import { categoryService } from "@/services/category-service";
@@ -114,23 +113,19 @@ export default function DashboardPage() {
 
   // Fetch dashboard data once userId and auth are resolved
   const { data: dashboardData, isLoading: dataLoading } = useQuery({
-    queryKey: ["dashboard", userId, isAuthenticated],
+    queryKey: ["dashboard", userId],
     queryFn: async () => {
       if (isAuthenticated && userId) {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("User not found");
-
         const [cats, ents, streakData, goalsData] = await Promise.all([
-          categoryService.getCategories(user.id),
-          timeEntryService.getEntries(user.id, 7),
-          streakService.getStreak(user.id),
-          goalService.getGoals(user.id),
+          categoryService.getCategories(userId),
+          timeEntryService.getEntries(userId, 7),
+          streakService.getStreak(userId),
+          goalService.getGoals(userId),
         ]);
 
         const goalsWithProgress = await Promise.all(
           goalsData.map(async (goal) => {
-            const progress = await goalService.calculateProgress(user.id, goal);
+            const progress = await goalService.calculateProgress(userId, goal);
             return { ...goal, progress } as GoalWithProgress;
           })
         );
