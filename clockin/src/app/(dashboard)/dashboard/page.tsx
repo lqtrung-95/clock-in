@@ -17,6 +17,7 @@ import { Progress } from "@/components/ui/progress";
 import { EntryList } from "@/components/entries/entry-list";
 import { TimerWidget } from "@/components/dashboard/timer-widget";
 import { LoginBanner, LoginPrompt } from "@/components/auth/login-prompt";
+import { FirstTimeSetupBanner } from "@/components/onboarding/first-time-setup-banner";
 import { DreamCrystalMini } from "@/components/focus/dream-crystal-mini";
 import { EvolvedCrystal } from "@/components/focus/evolved-crystal";
 import { XPProgressBar } from "@/components/gamification/xp-progress-bar";
@@ -211,6 +212,12 @@ export default function DashboardPage() {
     <div className="p-4 md:p-8 lg:p-10">
       <div className="mx-auto max-w-6xl space-y-8">
         {!isAuthenticated && <LoginBanner feature="sync" />}
+
+        <FirstTimeSetupBanner
+          entries={entries}
+          categories={categories}
+          isAuthenticated={!!isAuthenticated}
+        />
 
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
