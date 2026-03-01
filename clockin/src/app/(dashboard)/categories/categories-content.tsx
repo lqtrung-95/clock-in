@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { categoryService } from "@/services/category-service";
 import { useCategoryStore } from "@/stores/category-store";
@@ -16,33 +17,35 @@ import { Plus, Tags } from "lucide-react";
 import { toast } from "sonner";
 
 export default function CategoriesContent() {
-  const { isAuthenticated, isLoading: authLoading } = useAuthState();
-  const [loading, setLoading] = useState(true);
+  const { isAuthenticated, isLoading: authLoading, userId } = useAuthState();
+  const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formLoading, setFormLoading] = useState(false);
-  const { categories, setCategories } = useCategoryStore();
+  const { setCategories } = useCategoryStore();
 
-  async function loadCategories() {
-    if (isAuthenticated) {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+  const { data: categories = [], isLoading } = useQuery({
+    queryKey: ["categories", userId, isAuthenticated],
+    queryFn: async () => {
+      if (isAuthenticated && userId) {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return [];
         const cats = await categoryService.getCategories(user.id);
+        // Keep Zustand store in sync for timer/track components
         setCategories(cats);
+        return cats;
       }
-    } else {
-      const cats = guestStorage.getCategories();
-      setCategories(cats as unknown as Category[]);
-    }
-    setLoading(false);
-  }
+      const cats = guestStorage.getCategories() as unknown as Category[];
+      setCategories(cats);
+      return cats;
+    },
+    enabled: !authLoading,
+  });
 
-  useEffect(() => {
-    if (!authLoading) {
-      loadCategories();
-    }
-  }, [authLoading, isAuthenticated]);
+  function invalidateCategories() {
+    queryClient.invalidateQueries({ queryKey: ["categories", userId] });
+  }
 
   async function handleCreate(data: { name: string; color: string; icon: string }) {
     setFormLoading(true);
@@ -53,15 +56,11 @@ export default function CategoriesContent() {
         if (!user) throw new Error("Not authenticated");
         await categoryService.createCategory(user.id, data);
       } else {
-        guestStorage.addCategory({
-          name: data.name,
-          color: data.color,
-          icon: data.icon,
-        });
+        guestStorage.addCategory({ name: data.name, color: data.color, icon: data.icon });
       }
       toast.success("Category created");
       setFormOpen(false);
-      loadCategories();
+      invalidateCategories();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create");
     }
@@ -80,7 +79,7 @@ export default function CategoriesContent() {
       toast.success("Category updated");
       setEditingCategory(null);
       setFormOpen(false);
-      loadCategories();
+      invalidateCategories();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to update");
     }
@@ -92,7 +91,7 @@ export default function CategoriesContent() {
     setFormOpen(true);
   }
 
-  if (loading || authLoading) {
+  if (isLoading || authLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
@@ -128,7 +127,7 @@ export default function CategoriesContent() {
         <Card className="border border-border bg-card p-6 backdrop-blur-sm">
           <CategoryList
             categories={categories}
-            onUpdate={loadCategories}
+            onUpdate={invalidateCategories}
             onEdit={handleEdit}
             isGuest={!isAuthenticated}
           />

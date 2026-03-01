@@ -1,40 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useGamification } from "@/hooks/use-gamification";
-import { getLevelInfo } from "@/services/gamification-service";
+import { getLevelInfo, getAllBadgeDefinitions } from "@/services/gamification-service";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { XPProgressBar } from "@/components/gamification/xp-progress-bar";
 import { BadgeCard } from "@/components/gamification/badge-card";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import { EvolvedCrystal } from "@/components/focus/evolved-crystal";
-import { getAllBadgeDefinitions } from "@/services/gamification-service";
 import { Trophy, Target, Award, TrendingUp } from "lucide-react";
 import type { BadgeDefinition } from "@/types/gamification";
 
 export default function AchievementsContent() {
   const { isAuthenticated, isLoading: authLoading, userId } = useAuthState();
   const { userStats, levelInfo: hookLevelInfo, badges, crystalConfig, isLoading } = useGamification(userId);
+
   // Fallback: compute levelInfo from userStats if hook hasn't set it yet
   const levelInfo = hookLevelInfo ?? (userStats ? getLevelInfo(userStats) : null);
-  const [allBadges, setAllBadges] = useState<BadgeDefinition[]>([]);
-  const [badgesLoading, setBadgesLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadBadges() {
-      try {
-        const badges = await getAllBadgeDefinitions();
-        setAllBadges(badges);
-      } catch (error) {
-        console.error("Error loading badges:", error);
-      } finally {
-        setBadgesLoading(false);
-      }
-    }
-    loadBadges();
-  }, []);
+  const { data: allBadges = [], isLoading: badgesLoading } = useQuery<BadgeDefinition[]>({
+    queryKey: ["badge-definitions"],
+    queryFn: getAllBadgeDefinitions,
+    // Badge definitions are static — cache indefinitely for the session
+    staleTime: Infinity,
+  });
 
   if (authLoading || isLoading || badgesLoading) {
     return (
@@ -67,13 +58,6 @@ export default function AchievementsContent() {
   const earnedCount = earnedBadgeKeys.size;
   const totalCount = allBadges.length;
   const progressPercentage = totalCount > 0 ? (earnedCount / totalCount) * 100 : 0;
-
-  // Group badges by rarity
-  const badgesByRarity = allBadges.reduce((acc, badge) => {
-    if (!acc[badge.rarity]) acc[badge.rarity] = [];
-    acc[badge.rarity].push(badge);
-    return acc;
-  }, {} as Record<string, BadgeDefinition[]>);
 
   return (
     <div className="p-4 md:p-8 lg:p-10">

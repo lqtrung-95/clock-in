@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { categoryService } from "@/services/category-service";
 import { timeEntryService } from "@/services/time-entry-service";
@@ -11,47 +11,52 @@ import { EntryList } from "@/components/entries/entry-list";
 import { EntryForm } from "@/components/entries/entry-form";
 import { LoginBanner } from "@/components/auth/login-prompt";
 import { Card } from "@/components/ui/card";
-import { List, Plus } from "lucide-react";
+import { List } from "lucide-react";
 import type { TimeEntry, Category } from "@/types/timer";
 
 export default function HistoryPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuthState();
-  const [entries, setEntries] = useState<TimeEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { categories, setCategories } = useCategoryStore();
+  const { isAuthenticated, isLoading: authLoading, userId } = useAuthState();
+  const queryClient = useQueryClient();
+  const { setCategories } = useCategoryStore();
 
-  async function loadData() {
-    if (isAuthenticated) {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const [cats, ents] = await Promise.all([
-        categoryService.getCategories(user.id),
-        timeEntryService.getEntries(user.id, 30),
-      ]);
-      setCategories(cats);
-      setEntries(ents);
-    } else {
-      const cats = guestStorage.getCategories();
-      const ents = guestStorage.getEntries();
-      setCategories(cats as unknown as Category[]);
-      // Enrich entries with their category object (guest entries only store category_id)
-      const enriched = ents.map((e) => ({
+  const { data, isLoading } = useQuery({
+    queryKey: ["history", userId, isAuthenticated],
+    queryFn: async () => {
+      if (isAuthenticated && userId) {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { entries: [] as TimeEntry[], categories: [] as Category[] };
+
+        const [cats, ents] = await Promise.all([
+          categoryService.getCategories(user.id),
+          timeEntryService.getEntries(user.id, 30),
+        ]);
+        // Keep Zustand store in sync for EntryForm category picker
+        setCategories(cats);
+        return { entries: ents as TimeEntry[], categories: cats };
+      }
+
+      // Guest mode
+      const cats = guestStorage.getCategories() as unknown as Category[];
+      const rawEntries = guestStorage.getEntries();
+      const enriched = rawEntries.map((e) => ({
         ...e,
         category: cats.find((c) => c.id === e.category_id),
-      }));
-      setEntries(enriched as unknown as TimeEntry[]);
-    }
-    setLoading(false);
+      })) as unknown as TimeEntry[];
+      setCategories(cats);
+      return { entries: enriched, categories: cats };
+    },
+    enabled: !authLoading,
+  });
+
+  const entries = data?.entries ?? [];
+  const categories = data?.categories ?? [];
+
+  function invalidateHistory() {
+    queryClient.invalidateQueries({ queryKey: ["history", userId] });
   }
 
-  useEffect(() => {
-    if (!authLoading) {
-      loadData();
-    }
-  }, [authLoading, isAuthenticated]);
-
-  if (loading || authLoading) {
+  if (isLoading || authLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
@@ -75,12 +80,12 @@ export default function HistoryPage() {
               <p className="text-sm text-muted-foreground">View and manage your time entries</p>
             </div>
           </div>
-          <EntryForm categories={categories} onSuccess={loadData} isGuest={!isAuthenticated} />
+          <EntryForm categories={categories} onSuccess={invalidateHistory} isGuest={!isAuthenticated} />
         </div>
 
         {/* Entries List */}
         <Card className="border border-border bg-card p-6 backdrop-blur-sm">
-          <EntryList entries={entries} onDelete={loadData} isGuest={!isAuthenticated} />
+          <EntryList entries={entries} onDelete={invalidateHistory} isGuest={!isAuthenticated} />
         </Card>
       </div>
     </div>

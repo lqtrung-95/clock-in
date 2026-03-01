@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useTimerStore } from "@/stores/timer-store";
-import { useCategoryStore } from "@/stores/category-store";
 import { timeEntryService } from "@/services/time-entry-service";
 import { categoryService } from "@/services/category-service";
 import { streakService } from "@/services/streak-service";
@@ -105,72 +105,65 @@ function GlassCard({
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading } = useAuthState();
-  const [entries, setEntries] = useState<TimeEntry[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [streak, setStreak] = useState<{
-    current_streak: number;
-    longest_streak: number;
-  } | null>(null);
-  const [goals, setGoals] = useState<GoalWithProgress[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { isAuthenticated, isLoading: authLoading, userId } = useAuthState();
+  const queryClient = useQueryClient();
   const { status } = useTimerStore();
 
-  // Gamification
-  const [userId, setUserId] = useState<string | null>(null);
+  // Gamification — userId comes directly from useAuthState
   const { userStats, levelInfo, challenges, crystalConfig } = useGamification(userId);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      const supabase = createClient();
-      supabase.auth.getUser().then(({ data }) => {
-        setUserId(data.user?.id || null);
-      });
-    }
-  }, [isAuthenticated]);
+  // Fetch dashboard data once userId and auth are resolved
+  const { data: dashboardData, isLoading: dataLoading } = useQuery({
+    queryKey: ["dashboard", userId, isAuthenticated],
+    queryFn: async () => {
+      if (isAuthenticated && userId) {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("User not found");
 
-  async function loadData() {
-    if (isAuthenticated) {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
+        const [cats, ents, streakData, goalsData] = await Promise.all([
+          categoryService.getCategories(user.id),
+          timeEntryService.getEntries(user.id, 7),
+          streakService.getStreak(user.id),
+          goalService.getGoals(user.id),
+        ]);
 
-      const [cats, ents, streakData, goalsData] = await Promise.all([
-        categoryService.getCategories(user.id),
-        timeEntryService.getEntries(user.id, 7),
-        streakService.getStreak(user.id),
-        goalService.getGoals(user.id),
-      ]);
+        const goalsWithProgress = await Promise.all(
+          goalsData.map(async (goal) => {
+            const progress = await goalService.calculateProgress(user.id, goal);
+            return { ...goal, progress } as GoalWithProgress;
+          })
+        );
 
-      setCategories(cats);
-      setEntries(ents);
-      setStreak(streakData);
+        return {
+          categories: cats as Category[],
+          entries: ents as TimeEntry[],
+          streak: streakData,
+          goals: goalsWithProgress,
+        };
+      }
 
-      const goalsWithProgress = await Promise.all(
-        goalsData.map(async (goal) => {
-          const progress = await goalService.calculateProgress(user.id, goal);
-          return { ...goal, progress };
-        })
-      );
-      setGoals(goalsWithProgress);
-    } else {
+      // Guest data
       const cats = guestStorage.getCategories();
       const ents = guestStorage.getEntries();
-      setCategories(cats as unknown as Category[]);
-      setEntries(ents as unknown as TimeEntry[]);
-      setStreak(null);
-      setGoals([]);
-    }
-    setLoading(false);
-  }
+      return {
+        categories: cats as unknown as Category[],
+        entries: ents as unknown as TimeEntry[],
+        streak: null,
+        goals: [] as GoalWithProgress[],
+      };
+    },
+    enabled: !authLoading,
+  });
 
-  useEffect(() => {
-    if (!authLoading) {
-      loadData();
-    }
-  }, [authLoading, isAuthenticated]);
+  const categories = dashboardData?.categories ?? [];
+  const entries = dashboardData?.entries ?? [];
+  const streak = dashboardData?.streak ?? null;
+  const goals = dashboardData?.goals ?? [];
+
+  function invalidateDashboard() {
+    queryClient.invalidateQueries({ queryKey: ["dashboard", userId] });
+  }
 
   // Today's stats
   const todayStats = useMemo(() => {
@@ -211,7 +204,7 @@ export default function DashboardPage() {
 
   const maxHours = Math.max(...weeklyData.map((d) => d.hours), 1);
 
-  if (loading || authLoading) {
+  if (dataLoading || authLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
@@ -496,7 +489,7 @@ export default function DashboardPage() {
           </div>
           <EntryList
             entries={entries.slice(0, 5)}
-            onDelete={loadData}
+            onDelete={invalidateDashboard}
             isGuest={!isAuthenticated}
           />
         </GlassCard>
