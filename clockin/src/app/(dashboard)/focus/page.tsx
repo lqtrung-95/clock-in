@@ -5,7 +5,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { usePomodoro } from "@/hooks/use-pomodoro";
 import { usePomodoroStore } from "@/stores/pomodoro-store";
-import { useCategoryStore } from "@/stores/category-store";
 import { useFocusAudio } from "@/hooks/use-focus-audio";
 import { useFocusFullscreen } from "@/hooks/use-focus-fullscreen";
 import { useFocusCustomVideos } from "@/hooks/use-focus-custom-videos";
@@ -52,7 +51,6 @@ export default function FocusPage() {
 
   // Auth & categories
   const { isAuthenticated, userId, isLoading: authLoading } = useAuthState();
-  const setCategories = useCategoryStore((state) => state.setCategories);
   const { addProgress } = useDreamGoal(userId);
 
   // Extracted hooks
@@ -136,9 +134,6 @@ export default function FocusPage() {
     staleTime: 1000 * 60 * 5,
   });
 
-  useEffect(() => {
-    setCategories(queriedCategories as unknown as Category[]);
-  }, [queriedCategories, setCategories]);
 
   // Save completed work session to database / localStorage
   const saveTimeEntry = useCallback(async () => {
