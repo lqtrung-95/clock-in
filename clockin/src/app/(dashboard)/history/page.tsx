@@ -19,7 +19,7 @@ import type { TimeEntry, Category } from "@/types/timer";
 export default function HistoryPage() {
   const { isAuthenticated, isLoading: authLoading, userId } = useAuthState();
   const queryClient = useQueryClient();
-  const { setCategories } = useCategoryStore();
+  const setCategories = useCategoryStore((s) => s.setCategories);
 
   const { data, isLoading } = useQuery({
     queryKey: ["history", userId],

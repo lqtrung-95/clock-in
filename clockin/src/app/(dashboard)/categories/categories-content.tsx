@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { categoryService } from "@/services/category-service";
-import { useCategoryStore } from "@/stores/category-store";
 import { CategoryList } from "@/components/categories/category-list";
 import { CategoryForm } from "@/components/categories/category-form";
 import { LoginBanner } from "@/components/auth/login-prompt";
@@ -21,11 +20,9 @@ export default function CategoriesContent() {
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const { setCategories } = useCategoryStore();
-
   const queryKey = ["categories", userId] as const;
 
-  const { data: categories = [], isLoading } = useQuery({
+  const { data: categories, isLoading } = useQuery({
     queryKey,
     queryFn: async () => {
       if (isAuthenticated && userId) {
@@ -35,11 +32,6 @@ export default function CategoriesContent() {
     },
     enabled: !authLoading,
   });
-
-  // Keep Zustand store in sync for timer/track components
-  useEffect(() => {
-    setCategories(categories);
-  }, [categories, setCategories]);
 
   // Create mutation with optimistic update
   const createMutation = useMutation({
@@ -191,7 +183,7 @@ export default function CategoriesContent() {
 
         <Card className="border border-border bg-card p-6 backdrop-blur-sm">
           <CategoryList
-            categories={categories}
+            categories={categories ?? []}
             onUpdate={invalidateCategories}
             onEdit={handleEdit}
             onDelete={(id) => deleteMutation.mutate(id)}
