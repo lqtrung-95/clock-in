@@ -23,6 +23,7 @@ import { FocusSetupView } from "@/components/focus/focus-setup-view";
 import { type OverlayType } from "@/components/focus/focus-session-overlay-controls";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import type { Category } from "@/types/timer";
 
 export default function FocusPage() {
   const router = useRouter();
@@ -51,7 +52,7 @@ export default function FocusPage() {
 
   // Auth & categories
   const { isAuthenticated, userId, isLoading: authLoading } = useAuthState();
-  const { categories, setCategories } = useCategoryStore();
+  const setCategories = useCategoryStore((state) => state.setCategories);
   const { addProgress } = useDreamGoal(userId);
 
   // Extracted hooks
@@ -136,7 +137,7 @@ export default function FocusPage() {
   });
 
   useEffect(() => {
-    setCategories(queriedCategories as unknown as typeof categories);
+    setCategories(queriedCategories as unknown as Category[]);
   }, [queriedCategories, setCategories]);
 
   // Save completed work session to database / localStorage
@@ -316,7 +317,7 @@ export default function FocusPage() {
       showAddVideoDialog={customVideoHook.showAddVideoDialog}
       newVideoUrl={customVideoHook.newVideoUrl}
       newVideoTitle={customVideoHook.newVideoTitle}
-      selectedCategory={selectedCategory} categories={categories}
+      selectedCategory={selectedCategory} categories={queriedCategories as unknown as Category[]}
       isAuthenticated={!!isAuthenticated} taskDescription={taskDescription}
       aiCatSuggesting={aiCatSuggesting}
       onPresetSelect={handlePresetSelect}
@@ -335,7 +336,7 @@ export default function FocusPage() {
       onSetSelectedCategory={setSelectedCategory}
       onTaskDescriptionChange={handleTaskDescriptionChange}
       onApplyAiSuggestion={(categoryName, duration) => {
-        const cat = categories.find((c) => c.name.toLowerCase() === categoryName.toLowerCase());
+        const cat = (queriedCategories as unknown as Category[]).find((c) => c.name.toLowerCase() === categoryName.toLowerCase());
         if (cat) setSelectedCategory(cat.id);
         const preset = (Object.keys(POMODORO_PRESETS) as Array<keyof typeof POMODORO_PRESETS>).find(
           (k) => POMODORO_PRESETS[k].work === duration
