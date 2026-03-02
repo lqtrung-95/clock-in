@@ -303,7 +303,7 @@ export default function AnalyticsPage() {
                         itemStyle={{ color: "hsl(var(--foreground))" }}
                         formatter={(value) => [`${value} min`, "Focus time"]}
                       />
-                      <Bar dataKey="minutes" fill="url(#barGradient)" radius={[6, 6, 0, 0]} maxBarSize={48} />
+                      <Bar dataKey="minutes" fill="url(#barGradient)" radius={[6, 6, 0, 0]} maxBarSize={48} activeBar={{ fill: "url(#barGradient)", opacity: 0.75 }} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
