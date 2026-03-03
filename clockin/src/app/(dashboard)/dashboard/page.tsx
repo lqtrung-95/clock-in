@@ -179,21 +179,16 @@ export default function DashboardPage() {
 
   // Weekly chart data
   const weeklyData = useMemo(() => {
-    const data: { day: string; hours: number }[] = [];
+    const data: { day: string; date: string; hours: number }[] = [];
     for (let i = 6; i >= 0; i--) {
-      const date = subDays(new Date(), i);
-      data.push({
-        day: format(date, "EEE"),
-        hours: 0,
-      });
+      const d = subDays(new Date(), i);
+      data.push({ day: format(d, "EEE"), date: format(d, "yyyy-MM-dd"), hours: 0 });
     }
     entries.forEach((entry) => {
       if (!entry.duration_seconds) return;
-      const entryDay = format(parseISO(entry.started_at), "EEE");
-      const dayData = data.find((d) => d.day === entryDay);
-      if (dayData) {
-        dayData.hours += entry.duration_seconds / 3600;
-      }
+      const entryDate = format(parseISO(entry.started_at), "yyyy-MM-dd");
+      const dayData = data.find((d) => d.date === entryDate);
+      if (dayData) dayData.hours += entry.duration_seconds / 3600;
     });
     return data;
   }, [entries]);
