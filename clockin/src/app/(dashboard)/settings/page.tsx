@@ -15,14 +15,16 @@ import {
 } from "@/components/ui/select";
 import { LoginBanner, LoginPrompt } from "@/components/auth/login-prompt";
 import { toast } from "sonner";
-import { Moon, Sun, Monitor, Settings2, Bell, Palette, User, Camera, Upload, Trash2, Tag, ChevronRight, Trophy } from "lucide-react";
+import { Moon, Sun, Monitor, Settings2, Bell, Palette, User, Camera, Upload, Trash2, Tag, ChevronRight, Trophy, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { useIsPro } from "@/hooks/use-pro-status";
+import { PlanBadge } from "@/components/billing/plan-badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const GUEST_PREFS_KEY = "clockin-guest-preferences";
+const GUEST_PREFS_KEY = "effortful-guest-preferences";
 
 interface Preferences {
   email_digest_enabled: boolean;
@@ -34,7 +36,8 @@ const defaultPrefs: Preferences = {
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
-  const { isAuthenticated, isLoading: authLoading } = useAuthState();
+  const { isAuthenticated, userId, isLoading: authLoading } = useAuthState();
+  const isPro = useIsPro(userId);
   const [loading, setLoading] = useState(true);
   const [preferences, setPreferences] = useState<Preferences>(defaultPrefs);
   const [saving, setSaving] = useState(false);
@@ -265,7 +268,7 @@ export default function SettingsPage() {
             // ignore parse error
           }
         }
-        const guestProfile = localStorage.getItem("clockin-guest-profile");
+        const guestProfile = localStorage.getItem("effortful-guest-profile");
         if (guestProfile) {
           try {
             const parsed = JSON.parse(guestProfile);
@@ -379,7 +382,7 @@ export default function SettingsPage() {
       // Save to localStorage for guests
       if (typeof window !== "undefined") {
         localStorage.setItem(
-          "clockin-guest-profile",
+          "effortful-guest-profile",
           JSON.stringify({ display_name: displayName.trim(), avatar_url: avatarUrl })
         );
         toast.success("Profile saved locally");
@@ -535,6 +538,33 @@ export default function SettingsPage() {
               </Button>
             </div>
           </div>}
+
+          {/* Divider */}
+          <div className="h-px bg-border" />
+
+          {/* Billing */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4 text-cyan-400" />
+              <h2 className="text-lg font-semibold text-foreground">Billing</h2>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <Label className="text-foreground">Current Plan</Label>
+                  <PlanBadge userId={userId} />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {isPro ? "You have access to all Pro features" : "Upgrade to unlock all features"}
+                </p>
+              </div>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/settings/billing">
+                  {isPro ? "Manage" : "Upgrade"}
+                </Link>
+              </Button>
+            </div>
+          </div>
 
           {/* Divider */}
           <div className="h-px bg-border" />

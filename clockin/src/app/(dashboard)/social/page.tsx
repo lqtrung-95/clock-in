@@ -7,13 +7,16 @@ import { Leaderboard } from "@/components/social/leaderboard";
 import { FocusRooms } from "@/components/social/focus-rooms";
 import { ShareCard } from "@/components/social/share-card";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { useProStatus } from "@/hooks/use-pro-status";
 import { LoginPrompt } from "@/components/auth/login-prompt";
+import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { Users, Trophy, MessageSquare, Share2 } from "lucide-react";
 import { AiInsightsCard } from "@/components/ai/ai-insights-card";
 
 export default function SocialPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
   const [userId, setUserId] = useState<string | null>(null);
+  const { isPro } = useProStatus(userId);
   const [stats, setStats] = useState({
     totalHours: 0,
     sessions: 0,
@@ -128,42 +131,59 @@ export default function SocialPage() {
           />
         </div>
 
-        {/* AI Insights */}
-        <AiInsightsCard />
+        {/* AI Insights — Pro only */}
+        {isPro ? (
+          <AiInsightsCard />
+        ) : (
+          <UpgradePrompt
+            feature="AI Insights"
+            description="Generate personalized productivity insights from your 30-day focus history."
+          />
+        )}
 
-        {/* Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-          {/* Friends List */}
-          <div className="space-y-4 flex flex-col">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-500" />
-              <h2 className="text-lg font-semibold">Friends</h2>
-            </div>
-            <div className="flex-1">
-              <FriendsList userId={userId} />
-            </div>
-          </div>
+        {/* Social features — Pro only */}
+        {isPro ? (
+          <>
+            {/* Grid Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+              {/* Friends List */}
+              <div className="space-y-4 flex flex-col">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-blue-500" />
+                  <h2 className="text-lg font-semibold">Friends</h2>
+                </div>
+                <div className="flex-1">
+                  <FriendsList userId={userId} />
+                </div>
+              </div>
 
-          {/* Leaderboard */}
-          <div className="space-y-4 flex flex-col">
-            <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-yellow-500" />
-              <h2 className="text-lg font-semibold">Leaderboard</h2>
+              {/* Leaderboard */}
+              <div className="space-y-4 flex flex-col">
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-yellow-500" />
+                  <h2 className="text-lg font-semibold">Leaderboard</h2>
+                </div>
+                <div className="flex-1">
+                  <Leaderboard userId={userId} />
+                </div>
+              </div>
             </div>
-            <div className="flex-1">
-              <Leaderboard userId={userId} />
-            </div>
-          </div>
-        </div>
 
-        {/* Focus Rooms */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-green-500" />
-            <h2 className="text-lg font-semibold">Focus Rooms</h2>
-          </div>
-          <FocusRooms userId={userId} />
-        </div>
+            {/* Focus Rooms */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-green-500" />
+                <h2 className="text-lg font-semibold">Focus Rooms</h2>
+              </div>
+              <FocusRooms userId={userId} />
+            </div>
+          </>
+        ) : (
+          <UpgradePrompt
+            feature="Social Features & Focus Rooms"
+            description="Connect with friends, compete on leaderboards, and focus together in real-time rooms."
+          />
+        )}
       </div>
     </div>
   );
