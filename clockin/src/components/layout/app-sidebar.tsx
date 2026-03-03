@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { PlanBadge } from "@/components/billing/plan-badge";
 import {
   Home,
   Brain,
@@ -18,8 +18,8 @@ import {
   Flame,
   Tags,
   Trophy,
-  Sparkles,
   Users,
+  CreditCard,
 } from "lucide-react";
 
 const navItems = [
@@ -32,18 +32,21 @@ const navItems = [
   { href: "/social", label: "Social", icon: Users },
   { href: "/categories", label: "Categories", icon: Tags },
   { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/settings/billing", label: "Billing", icon: CreditCard },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkAuth() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       setIsAuthenticated(!!user);
+      setUserId(user?.id ?? null);
     }
     checkAuth();
   }, []);
@@ -72,6 +75,7 @@ export function AppSidebar() {
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground/70">
                 Focus & Flow
               </span>
+              <PlanBadge userId={userId} className="mt-1 self-start" />
             </div>
           </Link>
         </div>
@@ -88,6 +92,10 @@ export function AppSidebar() {
             } else if (item.href === '/social') {
               // Match /social and /focus-room paths
               isActive = pathname.startsWith('/social') || pathname.startsWith('/focus-room');
+            } else if (item.href === '/settings/billing') {
+              isActive = pathname === '/settings/billing';
+            } else if (item.href === '/settings') {
+              isActive = pathname === '/settings';
             } else {
               isActive = pathname.startsWith(item.href);
             }

@@ -39,6 +39,7 @@ interface FocusSetupViewProps {
   selectedCategory: string;
   categories: Category[];
   isAuthenticated: boolean;
+  isPro: boolean;
   taskDescription: string;
   aiCatSuggesting: boolean;
   // Handlers
@@ -69,7 +70,7 @@ export function FocusSetupView({
   timerSettings, effectivePreset, timerSettingsOpen,
   background, videoEmbedUrl, overlay, selectedSound, isPlaying, customVideos,
   showAddVideoDialog, newVideoUrl, newVideoTitle,
-  selectedCategory, categories, isAuthenticated, taskDescription, aiCatSuggesting,
+  selectedCategory, categories, isAuthenticated, isPro, taskDescription, aiCatSuggesting,
   onPresetSelect, onOpenTimerSettings, onCloseTimerSettings, onSaveTimerSettings,
   onSetBackground, onSetVideoEmbedUrl, onSetOverlay, onSetSelectedSound,
   onPlayAudio, onPauseAudio, onAddVideoClick, onDeleteCustomVideo,
@@ -106,10 +107,12 @@ export function FocusSetupView({
         <FocusActiveGoals />
 
         <Card className="border border-border bg-card/80 backdrop-blur-xl p-6 sm:p-8 shadow-xl">
-          <AiSessionSuggestion
-            isAuthenticated={!!isAuthenticated}
-            onApply={onApplyAiSuggestion}
-          />
+          {isPro && (
+            <AiSessionSuggestion
+              isAuthenticated={!!isAuthenticated}
+              onApply={onApplyAiSuggestion}
+            />
+          )}
 
           {/* Preset picker */}
           <div className="mb-8">
@@ -175,7 +178,7 @@ export function FocusSetupView({
               <Tag className="h-4 w-4 text-emerald-400" />
               What are you working on?
             </label>
-            {isAuthenticated && (
+            {isAuthenticated && isPro && (
               <div className="relative mb-3">
                 <Input
                   placeholder="Describe your task… AI will suggest a category"

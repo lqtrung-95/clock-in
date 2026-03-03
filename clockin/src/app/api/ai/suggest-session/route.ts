@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import { createClient } from "@/lib/supabase/server";
+import { checkProAccess } from "@/lib/check-pro-access";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -9,29 +10,40 @@ type Goal = { title: string; target_hours: number; current_hours: number };
 type Category = { id: string; name: string };
 
 export async function POST() {
+  let userId: string;
+  let isPro: boolean;
+
+  try {
+    ({ userId, isPro } = await checkProAccess());
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!isPro) {
+    return NextResponse.json({ error: "Pro required" }, { status: 403 });
+  }
+
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
   const { data: entries } = await supabase
     .from("time_entries")
     .select("duration_seconds, started_at, categories(name)")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .gte("started_at", since)
     .limit(100) as { data: Entry[] | null };
 
   const { data: goals } = await supabase
     .from("goals")
     .select("title, target_hours, current_hours")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .eq("is_completed", false)
     .limit(5) as { data: Goal[] | null };
 
   const { data: categories } = await supabase
     .from("categories")
     .select("id, name")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .eq("is_archived", false) as { data: Category[] | null };
 
   if (!entries?.length || !categories?.length) return NextResponse.json({ suggestion: null });

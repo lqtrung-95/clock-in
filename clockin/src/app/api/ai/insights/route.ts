@@ -1,22 +1,42 @@
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import { createClient } from "@/lib/supabase/server";
+import { checkProAccess } from "@/lib/check-pro-access";
+import { subscriptionService } from "@/services/subscription-service";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+const FREE_MONTHLY_LIMIT = 3;
 
 type Entry = { duration_seconds: number; started_at: string; categories: { name: string } | null };
 type Goal = { title: string; target_hours: number; current_hours: number };
 
 export async function POST() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  let userId: string;
+  let isPro: boolean;
+  let aiInsightsUsedThisMonth: number;
 
+  try {
+    ({ userId, isPro, aiInsightsUsedThisMonth } = await checkProAccess());
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Free tier: allow up to 3 AI insight generations per month
+  if (!isPro && aiInsightsUsedThisMonth >= FREE_MONTHLY_LIMIT) {
+    return NextResponse.json(
+      { error: "FREE_LIMIT_REACHED", message: "Upgrade to Pro for unlimited AI insights" },
+      { status: 403 }
+    );
+  }
+
+  const supabase = await createClient();
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
   const { data: entries } = await supabase
     .from("time_entries")
     .select("duration_seconds, started_at, categories(name)")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .gte("started_at", since)
     .order("started_at", { ascending: false })
     .limit(200) as { data: Entry[] | null };
@@ -24,7 +44,7 @@ export async function POST() {
   const { data: goals } = await supabase
     .from("goals")
     .select("title, target_hours, current_hours")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .eq("is_completed", false)
     .limit(10) as { data: Goal[] | null };
 
@@ -61,5 +81,11 @@ export async function POST() {
   });
 
   const insights = completion.choices[0]?.message?.content ?? "Unable to generate insights.";
+
+  // Track usage for free tier (fire-and-forget, don't block response)
+  if (!isPro) {
+    subscriptionService.incrementAiInsightsUsed(userId).catch(() => {});
+  }
+
   return NextResponse.json({ insights, generatedAt: new Date().toISOString() });
 }

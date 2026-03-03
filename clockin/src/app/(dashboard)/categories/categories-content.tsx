@@ -7,17 +7,22 @@ import { categoryService } from "@/services/category-service";
 import { CategoryList } from "@/components/categories/category-list";
 import { CategoryForm } from "@/components/categories/category-form";
 import { LoginBanner } from "@/components/auth/login-prompt";
+import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { guestStorage } from "@/lib/guest-storage";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { useProStatus } from "@/hooks/use-pro-status";
 import type { Category } from "@/types/timer";
 import { Plus, Tags } from "lucide-react";
 import { toast } from "sonner";
 
+const FREE_CATEGORY_LIMIT = 5;
+
 export default function CategoriesContent() {
   const { isAuthenticated, isLoading: authLoading, userId } = useAuthState();
   const queryClient = useQueryClient();
+  const { isPro } = useProStatus(userId);
   const [formOpen, setFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const queryKey = ["categories", userId] as const;
@@ -63,9 +68,14 @@ export default function CategoriesContent() {
       queryClient.setQueryData<Category[]>(queryKey, [...previous, optimistic]);
       return { previous };
     },
-    onError: (_err, _data, ctx) => {
+    onError: (err, _data, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(queryKey, ctx.previous);
-      toast.error("Failed to create category");
+      const msg = err instanceof Error ? err.message : "";
+      if (msg === "CATEGORY_LIMIT_REACHED") {
+        toast.error("Category limit reached. Upgrade to Pro for unlimited categories.");
+      } else {
+        toast.error("Failed to create category");
+      }
     },
     onSuccess: () => {
       toast.success("Category created");
@@ -172,13 +182,21 @@ export default function CategoriesContent() {
               <p className="text-sm text-muted-foreground">Organize your time entries</p>
             </div>
           </div>
-          <Button
-            onClick={() => setFormOpen(true)}
-            className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            New Category
-          </Button>
+          {isAuthenticated && !isPro && (categories ?? []).length >= FREE_CATEGORY_LIMIT ? (
+            <UpgradePrompt
+              feature="Unlimited Categories"
+              compact
+              onUpgrade={() => {}}
+            />
+          ) : (
+            <Button
+              onClick={() => setFormOpen(true)}
+              className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              New Category
+            </Button>
+          )}
         </div>
 
         <Card className="border border-border bg-card p-6 backdrop-blur-sm">

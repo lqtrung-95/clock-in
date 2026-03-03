@@ -6,6 +6,8 @@ import { timeEntryService } from "@/services/time-entry-service";
 import { streakService } from "@/services/streak-service";
 import { getDailyFocusStats } from "@/services/stats-service";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { useProStatus } from "@/hooks/use-pro-status";
+import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { guestStorage } from "@/lib/guest-storage";
 import { Card } from "@/components/ui/card";
 import { CalendarHeatmap } from "@/components/stats/calendar-heatmap";
@@ -63,6 +65,7 @@ function StatCard({
 
 export default function AnalyticsPage() {
   const { isAuthenticated, userId, isLoading: authLoading } = useAuthState();
+  const { isPro, aiInsightsUsedThisMonth } = useProStatus(userId);
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [streak, setStreak] = useState<{ current_streak: number } | null>(null);
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
@@ -231,9 +234,14 @@ export default function AnalyticsPage() {
           />
         </div>
 
-        {/* AI Focus Insights — only for authenticated users with userId */}
+        {/* AI Focus Insights — free users get 3/month, Pro gets unlimited */}
         {userId && (
-          <FocusInsightsCard userId={userId} entries={entries} />
+          !isPro && aiInsightsUsedThisMonth >= 3
+            ? <UpgradePrompt
+                feature="AI Focus Insights"
+                description="You've used your 3 free AI insights this month. Upgrade to Pro for unlimited insights."
+              />
+            : <FocusInsightsCard userId={userId} entries={entries} isPro={isPro} aiInsightsUsedThisMonth={aiInsightsUsedThisMonth} />
         )}
 
         <Tabs defaultValue="daily" className="w-full">
@@ -323,15 +331,22 @@ export default function AnalyticsPage() {
           </TabsContent>
 
           <TabsContent value="heatmap" className="space-y-4 mt-6">
-            <Card className="border border-border bg-card p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Grid3X3 className="h-5 w-5 text-emerald-500" />
-                <h3 className="text-lg font-semibold text-foreground">
-                  Activity Heatmap
-                </h3>
-              </div>
-              <CalendarHeatmap data={dailyStats} />
-            </Card>
+            {isPro ? (
+              <Card className="border border-border bg-card p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Grid3X3 className="h-5 w-5 text-emerald-500" />
+                  <h3 className="text-lg font-semibold text-foreground">
+                    Activity Heatmap
+                  </h3>
+                </div>
+                <CalendarHeatmap data={dailyStats} />
+              </Card>
+            ) : (
+              <UpgradePrompt
+                feature="Activity Heatmap"
+                description="Visualize your entire year of focus sessions in a GitHub-style heatmap."
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="category" className="mt-6">

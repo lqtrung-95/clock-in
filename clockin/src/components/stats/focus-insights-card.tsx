@@ -1,6 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Sparkles, Clock, Tag, TrendingUp, Lightbulb, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,8 @@ interface FocusInsights {
 interface FocusInsightsCardProps {
   userId: string;
   entries: TimeEntry[];
+  isPro?: boolean;
+  aiInsightsUsedThisMonth?: number;
 }
 
 async function fetchFocusInsights(userId: string, entries: TimeEntry[]): Promise<FocusInsights> {
@@ -71,7 +74,11 @@ function InsightsSkeleton() {
   );
 }
 
-export function FocusInsightsCard({ userId, entries }: FocusInsightsCardProps) {
+export function FocusInsightsCard({ userId, entries, isPro = true, aiInsightsUsedThisMonth = 0 }: FocusInsightsCardProps) {
+  const queryClient = useQueryClient();
+  // Free users must click to generate; Pro users auto-fetch
+  const [triggered, setTriggered] = useState(isPro);
+
   // Only consider sessions from the last 7 days
   const sevenDaysAgo = subDays(new Date(), 7);
   const recentEntries = entries.filter(
@@ -83,9 +90,15 @@ export function FocusInsightsCard({ userId, entries }: FocusInsightsCardProps) {
     queryKey: ["focus-insights", userId],
     queryFn: () => fetchFocusInsights(userId, recentEntries),
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
-    enabled: hasEnoughData,
+    enabled: hasEnoughData && triggered,
     retry: 1,
   });
+
+  function handleGenerate() {
+    // Force a fresh fetch (bypasses 24h cache) so counter increments
+    queryClient.removeQueries({ queryKey: ["focus-insights", userId] });
+    setTriggered(true);
+  }
 
   return (
     <Card className="border border-border bg-gradient-to-br from-purple-500/5 via-card to-blue-500/5 p-5">
@@ -94,7 +107,7 @@ export function FocusInsightsCard({ userId, entries }: FocusInsightsCardProps) {
         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 shadow-md">
           <Sparkles className="h-4 w-4 text-white" />
         </div>
-        <div>
+        <div className="flex-1">
           <p className="text-sm font-semibold text-foreground">Weekly Focus Insights</p>
           {data?.generatedAt && (
             <p className="text-[10px] text-muted-foreground">
@@ -108,6 +121,18 @@ export function FocusInsightsCard({ userId, entries }: FocusInsightsCardProps) {
             </p>
           )}
         </div>
+        {!isPro && (
+          <span className={cn(
+            "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium",
+            aiInsightsUsedThisMonth >= 3
+              ? "bg-red-500/10 text-red-400 border border-red-500/20"
+              : aiInsightsUsedThisMonth >= 2
+              ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+              : "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+          )}>
+            {aiInsightsUsedThisMonth} / 3 free
+          </span>
+        )}
       </div>
 
       {/* Not enough data state */}
@@ -117,6 +142,24 @@ export function FocusInsightsCard({ userId, entries }: FocusInsightsCardProps) {
           <p className="text-xs text-muted-foreground">
             Complete 3+ focus sessions this week to unlock AI insights
           </p>
+        </div>
+      )}
+
+      {/* Free user idle state — show generate button */}
+      {!isPro && hasEnoughData && !triggered && (
+        <div className="flex flex-col items-center justify-center py-6 gap-3 rounded-xl border border-dashed border-purple-500/20 text-center">
+          <Sparkles className="h-5 w-5 text-purple-400/60" />
+          <div>
+            <p className="text-sm font-medium text-foreground">Ready to generate insights</p>
+            <p className="text-xs text-muted-foreground mt-1">Uses 1 of your {3 - aiInsightsUsedThisMonth} remaining free insight{3 - aiInsightsUsedThisMonth !== 1 ? "s" : ""} this month</p>
+          </div>
+          <button
+            onClick={handleGenerate}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs font-semibold hover:opacity-90 transition-opacity"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            Generate Insights
+          </button>
         </div>
       )}
 

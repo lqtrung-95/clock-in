@@ -1,0 +1,114 @@
+"use client";
+
+import { Suspense } from "react";
+import { CreditCard } from "lucide-react";
+import { PricingCards } from "@/components/billing/pricing-cards";
+import { PlanBadge } from "@/components/billing/plan-badge";
+import { CheckoutSuccessHandler } from "@/components/billing/checkout-success-handler";
+import { ManageSubscriptionButton } from "@/components/billing/manage-subscription-button";
+import { useProStatus } from "@/hooks/use-pro-status";
+import { useAuthState } from "@/hooks/use-auth-state";
+
+const AI_INSIGHTS_MONTHLY_LIMIT = 3;
+
+function BillingContent({ userId }: { userId: string | null }) {
+  const { plan, currentPeriodEnd, aiInsightsUsedThisMonth, isLoading } =
+    useProStatus(userId);
+
+  const periodEndFormatted = currentPeriodEnd
+    ? new Date(currentPeriodEnd).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
+  return (
+    <div className="space-y-8">
+      {/* Current plan summary card */}
+      <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-muted-foreground">Current plan</p>
+            {isLoading ? (
+              <div className="mt-1 h-6 w-20 animate-pulse rounded bg-muted" />
+            ) : (
+              <div className="mt-1">
+                <PlanBadge userId={userId} />
+              </div>
+            )}
+          </div>
+
+          {plan === "free" && !isLoading && (
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">AI Insights used</p>
+              <p className="text-sm font-semibold text-foreground">
+                {aiInsightsUsedThisMonth} / {AI_INSIGHTS_MONTHLY_LIMIT} this month
+              </p>
+            </div>
+          )}
+
+          {plan !== "free" && periodEndFormatted && (
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">
+                {plan === "lifetime" ? "Lifetime access" : "Renews on"}
+              </p>
+              {plan !== "lifetime" && (
+                <p className="text-sm font-semibold text-foreground">{periodEndFormatted}</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {plan === "pro" && (
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 p-3">
+            <p className="flex-1 text-xs text-muted-foreground">
+              Update payment method, view invoices, or cancel your subscription.
+            </p>
+            <ManageSubscriptionButton />
+          </div>
+        )}
+      </div>
+
+      {/* Pricing tiers */}
+      <div className="space-y-3">
+        <h2 className="text-base font-semibold text-foreground">Plans</h2>
+        <PricingCards currentPlan={plan} userId={userId} />
+      </div>
+    </div>
+  );
+}
+
+export default function BillingPage() {
+  const { userId, isLoading: authLoading } = useAuthState();
+
+  return (
+    <div className="p-4 md:p-8 lg:p-10">
+      <div className="mx-auto max-w-4xl space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/25">
+            <CreditCard className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Billing</h1>
+            <p className="text-sm text-muted-foreground">Manage your plan and subscription</p>
+          </div>
+        </div>
+
+        {/* Checkout success handler — reads ?success=true from URL */}
+        <Suspense fallback={null}>
+          <CheckoutSuccessHandler userId={userId} />
+        </Suspense>
+
+        {authLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+          </div>
+        ) : (
+          <BillingContent userId={userId} />
+        )}
+      </div>
+    </div>
+  );
+}

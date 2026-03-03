@@ -12,6 +12,7 @@ import { useFocusTimerSettings, type FocusTimerSettings } from "@/hooks/use-focu
 import { useFocusNotifications } from "@/hooks/use-focus-notifications";
 import { useDreamGoal } from "@/hooks/use-dream-goal";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { useIsPro } from "@/hooks/use-pro-status";
 import { timeEntryService } from "@/services/time-entry-service";
 import { trackFocusTime } from "@/services/gamification-service";
 import { createClient } from "@/lib/supabase/client";
@@ -51,6 +52,7 @@ export default function FocusPage() {
 
   // Auth & categories
   const { isAuthenticated, userId, isLoading: authLoading } = useAuthState();
+  const isPro = useIsPro(userId);
   const { addProgress } = useDreamGoal(userId);
 
   // Extracted hooks
@@ -313,7 +315,7 @@ export default function FocusPage() {
       newVideoUrl={customVideoHook.newVideoUrl}
       newVideoTitle={customVideoHook.newVideoTitle}
       selectedCategory={selectedCategory} categories={queriedCategories as unknown as Category[]}
-      isAuthenticated={!!isAuthenticated} taskDescription={taskDescription}
+      isAuthenticated={!!isAuthenticated} isPro={isPro} taskDescription={taskDescription}
       aiCatSuggesting={aiCatSuggesting}
       onPresetSelect={handlePresetSelect}
       onOpenTimerSettings={() => setTimerSettingsOpen(true)}

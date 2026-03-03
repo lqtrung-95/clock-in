@@ -6,13 +6,14 @@ import { categoryService } from "@/services/category-service";
 import { timeEntryService } from "@/services/time-entry-service";
 import { useCategoryStore } from "@/stores/category-store";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { useProStatus } from "@/hooks/use-pro-status";
 import { guestStorage } from "@/lib/guest-storage";
 import { EntryList } from "@/components/entries/entry-list";
 import { EntryForm } from "@/components/entries/entry-form";
 import { LoginBanner } from "@/components/auth/login-prompt";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { List, Download } from "lucide-react";
+import { List, Download, Lock } from "lucide-react";
 import { exportEntriesToCsv } from "@/lib/export-csv";
 import type { TimeEntry, Category } from "@/types/timer";
 
@@ -20,14 +21,18 @@ export default function HistoryPage() {
   const { isAuthenticated, isLoading: authLoading, userId } = useAuthState();
   const queryClient = useQueryClient();
   const setCategories = useCategoryStore((s) => s.setCategories);
+  const { isPro } = useProStatus(userId);
+
+  // Free users see last 7 days; Pro users see last 365 days
+  const historyDays = isPro ? 365 : 7;
 
   const { data, isLoading } = useQuery({
-    queryKey: ["history", userId],
+    queryKey: ["history", userId, historyDays],
     queryFn: async () => {
       if (isAuthenticated && userId) {
         const [cats, ents] = await Promise.all([
           categoryService.getCategories(userId),
-          timeEntryService.getEntries(userId, 30),
+          timeEntryService.getEntries(userId, historyDays),
         ]);
         return { entries: ents as TimeEntry[], categories: cats };
       }
@@ -53,7 +58,7 @@ export default function HistoryPage() {
   }, [categories, setCategories]);
 
   function invalidateHistory() {
-    queryClient.invalidateQueries({ queryKey: ["history", userId] });
+    queryClient.invalidateQueries({ queryKey: ["history", userId, historyDays] });
   }
 
   if (isLoading || authLoading) {
@@ -68,6 +73,18 @@ export default function HistoryPage() {
     <div className="p-4 md:p-8 lg:p-10">
       <div className="mx-auto max-w-3xl space-y-6">
         {!isAuthenticated && <LoginBanner feature="sync" />}
+
+        {/* Free-tier history limit banner */}
+        {isAuthenticated && !isPro && (
+          <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-2.5 text-sm">
+            <Lock className="h-4 w-4 shrink-0 text-amber-400" />
+            <span className="text-muted-foreground">
+              Showing last 7 days.{" "}
+              <span className="font-medium text-foreground">Upgrade to Pro</span>{" "}
+              for full history.
+            </span>
+          </div>
+        )}
 
         {/* Header */}
         <div className="flex items-center justify-between">

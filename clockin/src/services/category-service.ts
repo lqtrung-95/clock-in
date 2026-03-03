@@ -35,6 +35,28 @@ export const categoryService = {
 
   async createCategory(userId: string, input: CreateCategoryInput): Promise<Category> {
     const supabase = createClient();
+
+    // Check subscription plan for free-tier category limit (max 5)
+    const { data: sub } = await supabase
+      .from("user_subscriptions" as never)
+      .select("plan_type")
+      .eq("user_id", userId)
+      .single() as unknown as { data: { plan_type: string } | null };
+
+    const isPro = sub?.plan_type === "pro" || sub?.plan_type === "lifetime";
+
+    if (!isPro) {
+      const { count } = await supabase
+        .from("categories")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("is_archived", false);
+
+      if ((count ?? 0) >= 5) {
+        throw new Error("CATEGORY_LIMIT_REACHED");
+      }
+    }
+
     const { data: existing } = await supabase
       .from("categories")
       .select("sort_order")

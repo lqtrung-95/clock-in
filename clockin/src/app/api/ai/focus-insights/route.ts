@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Groq from "groq-sdk";
-import { createClient } from "@/lib/supabase/server";
+import { checkProAccess } from "@/lib/check-pro-access";
+import { subscriptionService } from "@/services/subscription-service";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -18,10 +19,23 @@ type FocusInsightsResponse = {
   tip: string;
 };
 
+const FREE_MONTHLY_LIMIT = 3;
+
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  let userId: string;
+  let isPro: boolean;
+  let aiInsightsUsedThisMonth: number;
+
+  try {
+    ({ userId, isPro, aiInsightsUsedThisMonth } = await checkProAccess());
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Free users: enforce monthly quota
+  if (!isPro && aiInsightsUsedThisMonth >= FREE_MONTHLY_LIMIT) {
+    return NextResponse.json({ error: "Monthly limit reached" }, { status: 403 });
+  }
 
   const body = await req.json() as { userId?: string; entries?: TimeEntryInput[] };
   const entries: TimeEntryInput[] = body.entries ?? [];
@@ -96,6 +110,11 @@ Rules:
       weeklyTrend: "You're building a solid focus habit — keep it up!",
       tip: "Try to start your first session within 30 minutes of waking up.",
     };
+  }
+
+  // Track usage for free users
+  if (!isPro) {
+    await subscriptionService.incrementAiInsightsUsed(userId);
   }
 
   return NextResponse.json({ ...parsed, generatedAt: new Date().toISOString() });

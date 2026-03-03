@@ -2,11 +2,13 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sparkles, X, Send, Bot, Minus, LogIn } from "lucide-react";
+import { Sparkles, X, Send, Bot, Minus, LogIn, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { useIsPro } from "@/hooks/use-pro-status";
 
 interface Message {
   role: "user" | "assistant";
@@ -21,7 +23,9 @@ const STARTER_PROMPTS = [
 ];
 
 export function AiCoachPanel() {
-  const { isAuthenticated, isLoading } = useAuthState();
+  const pathname = usePathname();
+  const { isAuthenticated, isLoading, userId } = useAuthState();
+  const isPro = useIsPro(userId);
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -32,6 +36,9 @@ export function AiCoachPanel() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Hide during focus sessions to avoid distraction
+  if (pathname === "/focus") return null;
 
   async function send(text?: string) {
     const content = (text ?? input).trim();
@@ -145,8 +152,28 @@ export function AiCoachPanel() {
             </div>
           )}
 
-          {/* Messages + Input — hidden when minimized or guest */}
-          {!minimized && (isLoading || isAuthenticated) && <div className="flex-1 overflow-y-auto p-3 space-y-3 max-h-72 min-h-[120px]">
+          {/* Pro upgrade prompt for authenticated free users */}
+          {!minimized && !isLoading && isAuthenticated && !isPro && (
+            <div className="flex flex-col items-center justify-center gap-3 p-6 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20">
+                <Lock className="h-6 w-6 text-cyan-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Pro feature</p>
+                <p className="text-xs text-muted-foreground mt-1">Upgrade to Pro to unlock the AI Focus Coach and get personalized productivity advice.</p>
+              </div>
+              <Link
+                href="/settings/billing"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white text-xs font-semibold hover:opacity-90 transition-opacity"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Upgrade to Pro
+              </Link>
+            </div>
+          )}
+
+          {/* Messages + Input — hidden when minimized, guest, or free user */}
+          {!minimized && (isLoading || (isAuthenticated && isPro)) && <div className="flex-1 overflow-y-auto p-3 space-y-3 max-h-72 min-h-[120px]">
             {messages.length === 0 ? (
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground text-center py-2">Ask me anything about your focus & productivity</p>
