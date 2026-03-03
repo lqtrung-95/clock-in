@@ -42,7 +42,7 @@ export default function LandingPage() {
       <FocusShowcaseSection />
       <LandingCtaSection />
       <footer className="border-t border-white/5 py-8 text-center text-sm text-white/25">
-        © {new Date().getFullYear()} Effortful — Built for makers, dreamers, and doers.
+        © {new Date().getFullYear()} Effortful - Built for makers, dreamers, and doers.
       </footer>
     </main>
   );

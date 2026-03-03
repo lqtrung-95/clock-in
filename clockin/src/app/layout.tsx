@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 
   // Title
   title: {
-    default: `${APP_NAME} — Focus & Flow`,
+    default: `${APP_NAME} - Focus & Flow`,
     template: `%s | ${APP_NAME}`,
   },
 
@@ -86,25 +86,16 @@ export const metadata: Metadata = {
     type: "website",
     url: APP_URL,
     siteName: APP_NAME,
-    title: `${APP_NAME} — Focus & Flow`,
+    title: `${APP_NAME} - Focus & Flow`,
     description: APP_DESCRIPTION,
     locale: "en_US",
-    images: [
-      {
-        url: `${APP_URL}/og-image.png`,
-        width: 1200,
-        height: 630,
-        alt: `${APP_NAME} — Turn effort into momentum`,
-      },
-    ],
   },
 
   // Twitter / X card
   twitter: {
     card: "summary_large_image",
-    title: `${APP_NAME} — Focus & Flow`,
+    title: `${APP_NAME} - Focus & Flow`,
     description: APP_DESCRIPTION,
-    images: [`${APP_URL}/og-image.png`],
   },
 };
 
