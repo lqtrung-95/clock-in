@@ -46,7 +46,7 @@ export function exportEntriesToCsv(entries: TimeEntry[], categories: Category[])
 
   const link = document.createElement("a");
   link.href = url;
-  link.download = `clockin-export-${format(new Date(), "yyyy-MM-dd")}.csv`;
+  link.download = `effortful-export-${format(new Date(), "yyyy-MM-dd")}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

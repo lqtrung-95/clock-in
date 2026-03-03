@@ -61,7 +61,7 @@ export function FeaturesSection() {
             </span>
           </h2>
           <p className="text-lg text-white/50 max-w-xl mx-auto">
-            Not another to-do app. Clockin is a serious effort tracker for people who measure their progress in hours.
+            Not another to-do app. Effortful is a serious effort tracker for people who measure their progress in hours.
           </p>
         </div>
 

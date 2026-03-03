@@ -70,7 +70,7 @@ export function AppSidebar() {
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-bold tracking-tight text-foreground">
-                Clockin
+                Effortful
               </span>
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground/70">
                 Focus & Flow

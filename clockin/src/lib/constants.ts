@@ -1,4 +1,4 @@
-export const APP_NAME = "Clockin";
+export const APP_NAME = "Effortful";
 export const APP_DESCRIPTION = "Motivation-driven time tracker";
 
 export const TIMER_MAX_DURATION_SECONDS = 86400; // 24h max single entry

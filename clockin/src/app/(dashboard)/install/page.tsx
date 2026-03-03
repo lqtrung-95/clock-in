@@ -19,7 +19,7 @@ const steps: Record<Platform, { icon: React.ReactNode; title: string; descriptio
     {
       icon: <Share className="h-5 w-5" />,
       title: "Tap the Share button",
-      description: 'Open Clockin in Safari, then tap the Share icon (□↑) at the bottom of the screen.',
+      description: 'Open Effortful in Safari, then tap the Share icon (□↑) at the bottom of the screen.',
     },
     {
       icon: <Plus className="h-5 w-5" />,
@@ -29,14 +29,14 @@ const steps: Record<Platform, { icon: React.ReactNode; title: string; descriptio
     {
       icon: <CheckCircle2 className="h-5 w-5" />,
       title: "Tap Add",
-      description: 'Confirm by tapping "Add" in the top-right corner. Clockin will appear on your home screen.',
+      description: 'Confirm by tapping "Add" in the top-right corner. Effortful will appear on your home screen.',
     },
   ],
   android: [
     {
       icon: <MoreHorizontal className="h-5 w-5" />,
       title: "Open the browser menu",
-      description: "Open Clockin in Chrome, then tap the three-dot menu (⋮) in the top-right corner.",
+      description: "Open Effortful in Chrome, then tap the three-dot menu (⋮) in the top-right corner.",
     },
     {
       icon: <Download className="h-5 w-5" />,
@@ -46,7 +46,7 @@ const steps: Record<Platform, { icon: React.ReactNode; title: string; descriptio
     {
       icon: <CheckCircle2 className="h-5 w-5" />,
       title: "Confirm install",
-      description: 'Tap "Add" or "Install" in the prompt. Clockin will be installed as an app.',
+      description: 'Tap "Add" or "Install" in the prompt. Effortful will be installed as an app.',
     },
   ],
   desktop: [
@@ -58,12 +58,12 @@ const steps: Record<Platform, { icon: React.ReactNode; title: string; descriptio
     {
       icon: <MoreHorizontal className="h-5 w-5" />,
       title: "Or use the browser menu",
-      description: 'Click the three-dot menu → "Install Clockin..." or "Apps" → "Install this site as an app".',
+      description: 'Click the three-dot menu → "Install Effortful..." or "Apps" → "Install this site as an app".',
     },
     {
       icon: <CheckCircle2 className="h-5 w-5" />,
       title: "Launch from desktop",
-      description: "Clockin will open in its own window without browser UI, just like a native app.",
+      description: "Effortful will open in its own window without browser UI, just like a native app.",
     },
   ],
 };
@@ -95,7 +95,7 @@ export default function InstallPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Install App</h1>
-            <p className="text-sm text-muted-foreground">Add Clockin to your home screen</p>
+            <p className="text-sm text-muted-foreground">Add Effortful to your home screen</p>
           </div>
         </div>
 
@@ -103,7 +103,7 @@ export default function InstallPage() {
         {isStandalone && (
           <div className="flex items-center gap-3 rounded-2xl border border-green-500/20 bg-green-500/10 px-4 py-3">
             <CheckCircle2 className="h-5 w-5 shrink-0 text-green-400" />
-            <p className="text-sm font-medium text-green-400">Clockin is already installed on this device!</p>
+            <p className="text-sm font-medium text-green-400">Effortful is already installed on this device!</p>
           </div>
         )}
 

@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     ? goals.map(g => `"${g.title}" ${g.current_hours}/${g.target_hours}h`).join("; ")
     : "no active goals";
 
-  const systemPrompt = `You are a friendly, motivating focus & productivity coach inside the Clockin app. Keep replies concise (2-4 sentences max unless asked for more). Be warm, specific, and actionable.
+  const systemPrompt = `You are a friendly, motivating focus & productivity coach inside the Effortful app. Keep replies concise (2-4 sentences max unless asked for more). Be warm, specific, and actionable.
 
 User's last 7 days: ${(totalMins / 60).toFixed(1)} focus hours in ${entries?.length ?? 0} sessions.
 Active goals: ${goalsText}.

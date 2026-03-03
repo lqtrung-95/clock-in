@@ -30,7 +30,7 @@ export function HeroSection() {
         </h1>
 
         <p className="text-xl text-white/55 max-w-2xl mx-auto mb-10 leading-relaxed">
-          Clockin combines AI coaching, Pomodoro timers, immersive focus sessions, real-time focus rooms,
+          Effortful combines AI coaching, Pomodoro timers, immersive focus sessions, real-time focus rooms,
           streaks, social leaderboards, and dream goal tracking — everything you need to show up and do the work.
         </p>
 

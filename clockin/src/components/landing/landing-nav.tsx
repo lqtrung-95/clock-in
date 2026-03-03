@@ -10,7 +10,7 @@ export function LandingNav() {
             <polyline points="12 6 12 12 16 14" />
           </svg>
         </div>
-        <span className="text-lg font-bold text-white tracking-tight">Clockin</span>
+        <span className="text-lg font-bold text-white tracking-tight">Effortful</span>
       </Link>
 
       <div className="flex items-center gap-3">

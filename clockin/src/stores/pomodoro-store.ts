@@ -161,7 +161,7 @@ export const usePomodoroStore = create<PomodoroState>()(
       },
     }),
     {
-      name: "clockin-pomodoro",
+      name: "effortful-pomodoro",
     }
   )
 );

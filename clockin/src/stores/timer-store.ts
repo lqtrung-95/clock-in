@@ -79,7 +79,7 @@ export const useTimerStore = create<TimerState>()(
       setLastCategoryId: (id) => set({ lastCategoryId: id }),
     }),
     {
-      name: "clockin-timer",
+      name: "effortful-timer",
       onRehydrateStorage: () => (state) => {
         // Validate: if timer was running but started > 24h ago, reset
         if (state && state.startedAt) {

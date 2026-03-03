@@ -16,7 +16,7 @@ export interface FocusTimerSettings {
   autoStartWork: boolean;  // auto-advance to next work phase when break ends
 }
 
-const STORAGE_KEY = "clockin-focus-timer-settings";
+const STORAGE_KEY = "effortful-focus-timer-settings";
 
 const DEFAULT_SETTINGS: FocusTimerSettings = {
   workMinutes: 25,

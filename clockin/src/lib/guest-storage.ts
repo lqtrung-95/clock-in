@@ -3,9 +3,9 @@
 import type { TimeEntry, Category } from "@/types/timer";
 
 const STORAGE_KEYS = {
-  ENTRIES: "clockin-guest-entries",
-  CATEGORIES: "clockin-guest-categories",
-  SESSIONS: "clockin-guest-sessions",
+  ENTRIES: "effortful-guest-entries",
+  CATEGORIES: "effortful-guest-categories",
+  SESSIONS: "effortful-guest-sessions",
 };
 
 // Guest entries with local IDs

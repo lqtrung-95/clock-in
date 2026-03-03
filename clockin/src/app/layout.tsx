@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://clockin.app";
-const APP_NAME = "Clockin";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://effortful.app";
+const APP_NAME = "Effortful";
 const APP_DESCRIPTION =
   "A gamified focus tracker with Pomodoro timers, ambient video scenes, streaks, social leaderboards, and dream goal tracking. Stay in flow, every day.";
 
@@ -84,6 +84,14 @@ export const metadata: Metadata = {
     title: `${APP_NAME} — Focus & Flow`,
     description: APP_DESCRIPTION,
     locale: "en_US",
+    images: [
+      {
+        url: `${APP_URL}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: `${APP_NAME} — Turn effort into momentum`,
+      },
+    ],
   },
 
   // Twitter / X card
@@ -91,6 +99,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${APP_NAME} — Focus & Flow`,
     description: APP_DESCRIPTION,
+    images: [`${APP_URL}/og-image.png`],
   },
 };
 

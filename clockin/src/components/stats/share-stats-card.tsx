@@ -72,7 +72,7 @@ function StatsCard({
               {format(startOfWeek(new Date()), "MMM d")} – {format(new Date(), "MMM d, yyyy")}
             </p>
           </div>
-          <span className="text-xs font-bold text-slate-400 tracking-wider">clockin.app</span>
+          <span className="text-xs font-bold text-slate-400 tracking-wider">effortful.app</span>
         </div>
 
         {/* Total focus time — hero stat */}
@@ -125,7 +125,7 @@ export function ShareStatsCard({ entries, streak }: ShareStatsCardProps) {
 
   function handleCopyText() {
     const text =
-      `My week on clockin.app\n` +
+      `My week on effortful.app\n` +
       `Focus time: ${totalFocusTime}\n` +
       `Sessions: ${sessions}\n` +
       `Streak: ${streak} days\n` +

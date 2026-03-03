@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { TimeEntry, Category } from "@/types/timer";
 
-const DISMISSED_KEY = "clockin-onboarding-dismissed";
+const DISMISSED_KEY = "effortful-onboarding-dismissed";
 
 interface FirstTimeSetupBannerProps {
   entries: TimeEntry[];
@@ -54,7 +54,7 @@ export function FirstTimeSetupBanner({ entries, categories, isAuthenticated }: F
       </button>
 
       <div className="mb-4">
-        <h2 className="text-base font-semibold text-foreground">Get started with clockin</h2>
+        <h2 className="text-base font-semibold text-foreground">Get started with effortful</h2>
         <p className="text-sm text-muted-foreground mt-0.5">Complete these steps to set up your workspace</p>
       </div>
 

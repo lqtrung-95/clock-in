@@ -93,7 +93,7 @@ function ProgressCardPreview({
       )}
 
       <div className="flex items-center justify-between pt-4 border-t border-white/10">
-        <p className="text-sm text-gray-400">Clockin - Focus Together</p>
+        <p className="text-sm text-gray-400">Effortful - Focus Together</p>
         <p className="text-xs text-gray-500">#Productivity #Focus</p>
       </div>
     </div>
@@ -125,13 +125,13 @@ export function ShareCard({ userName, userAvatar, stats, period }: ShareCardProp
   };
 
   const shareToTwitter = async () => {
-    const text = `I focused for ${stats.totalHours.toFixed(1)} hours with ${stats.sessions} sessions this ${period}! 🔥\n\nCurrent streak: ${stats.streak} days\n\nJoin me on Clockin!`;
+    const text = `I focused for ${stats.totalHours.toFixed(1)} hours with ${stats.sessions} sessions this ${period}! 🔥\n\nCurrent streak: ${stats.streak} days\n\nJoin me on Effortful!`;
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank");
   };
 
   const shareToFacebook = () => {
-    const url = "https://clockin.app";
+    const url = "https://effortful.app";
     window.open(
       `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
       "_blank"
