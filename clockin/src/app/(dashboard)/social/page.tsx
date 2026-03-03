@@ -73,16 +73,6 @@ export default function SocialPage() {
     loadUserData();
   }, [isAuthenticated]);
 
-  // Refresh data when window gains focus (e.g., after navigating from Settings)
-  useEffect(() => {
-    const handleFocus = () => {
-      if (isAuthenticated) {
-        loadUserData();
-      }
-    };
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [isAuthenticated]);
 
   if (authLoading) {
     return (
@@ -141,35 +131,25 @@ export default function SocialPage() {
           />
         )}
 
-        {/* Social features — Pro only */}
+        {/* Leaderboard — free for all authenticated users */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-yellow-500" />
+            <h2 className="text-lg font-semibold">Leaderboard</h2>
+          </div>
+          <Leaderboard userId={userId} />
+        </div>
+
+        {/* Friends + Focus Rooms — Pro only */}
         {isPro ? (
           <>
-            {/* Grid Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-              {/* Friends List */}
-              <div className="space-y-4 flex flex-col">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-blue-500" />
-                  <h2 className="text-lg font-semibold">Friends</h2>
-                </div>
-                <div className="flex-1">
-                  <FriendsList userId={userId} />
-                </div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-blue-500" />
+                <h2 className="text-lg font-semibold">Friends</h2>
               </div>
-
-              {/* Leaderboard */}
-              <div className="space-y-4 flex flex-col">
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-yellow-500" />
-                  <h2 className="text-lg font-semibold">Leaderboard</h2>
-                </div>
-                <div className="flex-1">
-                  <Leaderboard userId={userId} />
-                </div>
-              </div>
+              <FriendsList userId={userId} />
             </div>
-
-            {/* Focus Rooms */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-green-500" />
@@ -180,8 +160,8 @@ export default function SocialPage() {
           </>
         ) : (
           <UpgradePrompt
-            feature="Social Features & Focus Rooms"
-            description="Connect with friends, compete on leaderboards, and focus together in real-time rooms."
+            feature="Friends & Focus Rooms"
+            description="Connect with friends and focus together in real-time rooms."
           />
         )}
       </div>
