@@ -22,6 +22,15 @@ import { FocusSessionView } from "@/components/focus/focus-session-view";
 import { FocusSetupView } from "@/components/focus/focus-setup-view";
 import { SESSION_COMPLETED_KEY } from "@/components/focus/focus-onboarding-coachmark";
 import { type OverlayType } from "@/components/focus/focus-session-overlay-controls";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import type { Category } from "@/types/timer";
@@ -46,6 +55,7 @@ export default function FocusPage() {
   const [showComplete, setShowComplete] = useState(false);
   const [waitingForNext, setWaitingForNext] = useState<"break" | "work" | null>(null);
   const [timerSettingsOpen, setTimerSettingsOpen] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const [taskDescription, setTaskDescription] = useState("");
   const [aiCatSuggesting, setAiCatSuggesting] = useState(false);
   const aiCatDebounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -259,7 +269,18 @@ export default function FocusPage() {
     if (selectedSound && audioEnabled) await playAudio();
   }
 
-  function handleReset() { reset(); pauseAudio(); setWaitingForNext(null); }
+  function handleReset() {
+    if (phase !== "idle") {
+      setConfirmReset(true);
+      return;
+    }
+    reset(); pauseAudio(); setWaitingForNext(null);
+  }
+
+  function confirmAndReset() {
+    setConfirmReset(false);
+    reset(); pauseAudio(); setWaitingForNext(null);
+  }
   function handlePause() { pause(); pauseAudio(); }
   async function handleResume() { resume(); if (selectedSound && audioEnabled) await playAudio(); }
 
@@ -285,24 +306,41 @@ export default function FocusPage() {
   // Active session view
   if (phase !== "idle") {
     return (
-      <FocusSessionView
-        phase={phase} cycle={cycle} totalCycles={totalCycles} formatted={formatted}
-        progress={progress} isWork={isWork} isRunning={isRunning}
-        showComplete={showComplete} waitingForNext={waitingForNext}
-        background={background} videoEmbedUrl={videoEmbedUrl} overlay={overlay}
-        videoMuted={videoMuted} bgOpacity={bgOpacity}
-        selectedSound={selectedSound} isPlaying={isPlaying} volume={volume}
-        isFullscreen={isFullscreen} showControls={showControls}
-        timerSettingsOpen={timerSettingsOpen} timerSettings={timerSettings}
-        onPause={handlePause} onResume={handleResume} onReset={handleReset}
-        onStartNextPhase={handleStartNextPhase} onToggleFullscreen={toggleFullscreen}
-        onSetVideoMuted={setVideoMuted} onVolumeChange={setVolume}
-        onPlayAudio={playAudio} onPauseAudio={pauseAudio}
-        onSetOverlay={setOverlay} onSetBgOpacity={setBgOpacity}
-        onOpenTimerSettings={() => setTimerSettingsOpen(true)}
-        onCloseTimerSettings={() => setTimerSettingsOpen(false)}
-        onSaveTimerSettings={handleTimerSettingsSave}
-      />
+      <>
+        <FocusSessionView
+          phase={phase} cycle={cycle} totalCycles={totalCycles} formatted={formatted}
+          progress={progress} isWork={isWork} isRunning={isRunning}
+          showComplete={showComplete} waitingForNext={waitingForNext}
+          background={background} videoEmbedUrl={videoEmbedUrl} overlay={overlay}
+          videoMuted={videoMuted} bgOpacity={bgOpacity}
+          selectedSound={selectedSound} isPlaying={isPlaying} volume={volume}
+          isFullscreen={isFullscreen} showControls={showControls}
+          timerSettingsOpen={timerSettingsOpen} timerSettings={timerSettings}
+          onPause={handlePause} onResume={handleResume} onReset={handleReset}
+          onStartNextPhase={handleStartNextPhase} onToggleFullscreen={toggleFullscreen}
+          onSetVideoMuted={setVideoMuted} onVolumeChange={setVolume}
+          onPlayAudio={playAudio} onPauseAudio={pauseAudio}
+          onSetOverlay={setOverlay} onSetBgOpacity={setBgOpacity}
+          onOpenTimerSettings={() => setTimerSettingsOpen(true)}
+          onCloseTimerSettings={() => setTimerSettingsOpen(false)}
+          onSaveTimerSettings={handleTimerSettingsSave}
+        />
+        {/* Confirm reset dialog */}
+        <Dialog open={confirmReset} onOpenChange={setConfirmReset}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>End session?</DialogTitle>
+              <DialogDescription>
+                Your current session progress won&apos;t be saved. Are you sure you want to stop?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setConfirmReset(false)}>Cancel</Button>
+              <Button variant="destructive" onClick={confirmAndReset}>End session</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
