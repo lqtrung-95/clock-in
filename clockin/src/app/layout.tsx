@@ -24,6 +24,11 @@ const APP_DESCRIPTION =
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
 
+  // Google Search Console verification
+  verification: {
+    google: "quogKEBl0tS57vhj6FTxrSWPX8MCnrRX66NTmHHUGQI",
+  },
+
   // Title
   title: {
     default: `${APP_NAME} — Focus & Flow`,
