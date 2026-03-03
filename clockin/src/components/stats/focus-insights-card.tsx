@@ -82,7 +82,7 @@ export function FocusInsightsCard({ userId, entries }: FocusInsightsCardProps) {
   const { data, isLoading, isError } = useQuery<FocusInsights>({
     queryKey: ["focus-insights", userId],
     queryFn: () => fetchFocusInsights(userId, recentEntries),
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
     enabled: hasEnoughData,
     retry: 1,
   });

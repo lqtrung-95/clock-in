@@ -22,10 +22,29 @@ export function AiSessionSuggestion({ onApply, isAuthenticated }: AiSessionSugge
 
   useEffect(() => {
     if (!isAuthenticated || dismissed) return;
+
+    // Cache suggestion in sessionStorage for 30 minutes to avoid repeated API calls
+    const CACHE_KEY = "ai-session-suggestion";
+    const TTL_MS = 30 * 60 * 1000;
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached) as { data: Suggestion | null; ts: number };
+        if (Date.now() - ts < TTL_MS) {
+          setSuggestion(data);
+          return;
+        }
+      }
+    } catch { /* ignore */ }
+
     setLoading(true);
     fetch("/api/ai/suggest-session", { method: "POST" })
       .then(r => r.json())
-      .then((d: { suggestion: Suggestion | null }) => setSuggestion(d.suggestion ?? null))
+      .then((d: { suggestion: Suggestion | null }) => {
+        const result = d.suggestion ?? null;
+        setSuggestion(result);
+        try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: result, ts: Date.now() })); } catch { /* ignore */ }
+      })
       .catch(() => null)
       .finally(() => setLoading(false));
   }, [isAuthenticated, dismissed]);

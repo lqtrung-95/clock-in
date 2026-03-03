@@ -24,6 +24,7 @@ import {
   Pie,
   Cell,
   CartesianGrid,
+  Rectangle,
 } from "recharts";
 import { format, subDays, parseISO } from "date-fns";
 import { Clock, Flame, Calendar, BarChart3, Grid3X3, TrendingUp } from "lucide-react";
@@ -275,23 +276,23 @@ export default function AnalyticsPage() {
                           <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.8} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeDasharray="3 3" strokeOpacity={0.5} />
+                      <CartesianGrid vertical={false} stroke="rgba(148,163,184,0.2)" strokeDasharray="3 3" />
                       <XAxis
                         dataKey="date"
-                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                        tick={{ fontSize: 11, fill: "#94a3b8" }}
                         axisLine={false}
                         tickLine={false}
                         dy={8}
                       />
                       <YAxis
-                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                        tick={{ fontSize: 11, fill: "#94a3b8" }}
                         axisLine={false}
                         tickLine={false}
                         tickFormatter={(v) => `${v}m`}
                         width={36}
                       />
                       <Tooltip
-                        cursor={{ fill: "hsl(var(--muted))", radius: 6 }}
+                        cursor={{ fill: "rgba(148, 163, 184, 0.12)", radius: 6 }}
                         contentStyle={{
                           backgroundColor: "hsl(var(--card))",
                           border: "1px solid hsl(var(--border))",
@@ -303,7 +304,7 @@ export default function AnalyticsPage() {
                         itemStyle={{ color: "hsl(var(--foreground))" }}
                         formatter={(value) => [`${value} min`, "Focus time"]}
                       />
-                      <Bar dataKey="minutes" fill="url(#barGradient)" radius={[6, 6, 0, 0]} maxBarSize={48} activeBar={{ fill: "url(#barGradient)", opacity: 0.75 }} />
+                      <Bar dataKey="minutes" fill="url(#barGradient)" radius={[6, 6, 0, 0]} maxBarSize={48} activeBar={<Rectangle fill="url(#barGradient)" fillOpacity={0.75} radius={[6, 6, 0, 0]} />} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
