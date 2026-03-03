@@ -4,6 +4,7 @@ import { FeaturesSection } from "@/components/landing/features-section";
 import { FocusShowcaseSection } from "@/components/landing/focus-showcase-section";
 import { LandingCtaSection } from "@/components/landing/landing-cta-section";
 import { JsonLdSchema } from "@/components/shared/json-ld-schema";
+import { PricingCards } from "@/components/billing/pricing-cards";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://effortful.app";
 
@@ -40,6 +41,22 @@ export default function LandingPage() {
       <HeroSection />
       <FeaturesSection />
       <FocusShowcaseSection />
+
+      {/* Pricing section */}
+      <section id="pricing" className="py-20 px-4">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Simple pricing
+            </h2>
+            <p className="mt-3 text-base text-white/50">
+              Free forever. Upgrade when you&apos;re ready.
+            </p>
+          </div>
+          <PricingCards currentPlan="free" userId={null} />
+        </div>
+      </section>
+
       <LandingCtaSection />
       <footer className="border-t border-white/5 py-8 text-center text-sm text-white/25">
         © {new Date().getFullYear()} Effortful - Built for makers, dreamers, and doers.
