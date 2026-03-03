@@ -14,7 +14,6 @@ import {
   Trophy,
   Tags,
   Settings,
-  CreditCard,
   LogOut,
   LogIn,
   X,
@@ -38,7 +37,6 @@ const secondaryNavItems = [
   { href: "/achievements", label: "Achievements", icon: Trophy },
   { href: "/categories", label: "Categories", icon: Tags },
   { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/settings/billing", label: "Billing", icon: CreditCard },
   { href: "/install", label: "Install App", icon: Download },
 ];
 
@@ -176,7 +174,7 @@ export function MobileBottomNav() {
                   const Icon = item.icon;
                   // Use exact match for settings routes to avoid dual-active on subroutes
                   const isActive =
-                    item.href === "/settings" || item.href === "/settings/billing"
+                    item.href === "/settings"
                       ? pathname === item.href
                       : pathname.startsWith(item.href);
                   return (

@@ -19,7 +19,6 @@ import {
   Tags,
   Trophy,
   Users,
-  CreditCard,
 } from "lucide-react";
 
 const navItems = [
@@ -32,7 +31,6 @@ const navItems = [
   { href: "/social", label: "Social", icon: Users },
   { href: "/categories", label: "Categories", icon: Tags },
   { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/settings/billing", label: "Billing", icon: CreditCard },
 ];
 
 export function AppSidebar() {
@@ -92,8 +90,6 @@ export function AppSidebar() {
             } else if (item.href === '/social') {
               // Match /social and /focus-room paths
               isActive = pathname.startsWith('/social') || pathname.startsWith('/focus-room');
-            } else if (item.href === '/settings/billing') {
-              isActive = pathname === '/settings/billing';
             } else if (item.href === '/settings') {
               isActive = pathname === '/settings';
             } else {
