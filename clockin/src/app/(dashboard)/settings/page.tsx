@@ -171,9 +171,8 @@ export default function SettingsPage() {
 
       // Upload to Supabase Storage
       const fileName = `${user.id}/${Date.now()}.jpg`;
-      console.log("Uploading avatar:", fileName);
 
-      const { error: uploadError, data: uploadData } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("avatars")
         .upload(fileName, compressedBlob, {
           contentType: "image/jpeg",
@@ -185,21 +184,10 @@ export default function SettingsPage() {
         throw uploadError;
       }
 
-      console.log("Upload success:", uploadData);
-
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from("avatars")
         .getPublicUrl(fileName);
-
-      console.log("Public URL:", publicUrl);
-
-      // Verify the file exists
-      const { data: fileData, error: fileError } = await supabase.storage
-        .from("avatars")
-        .list(user.id, { limit: 1 });
-
-      console.log("Files in bucket:", fileData, "Error:", fileError);
 
       setAvatarUrl(publicUrl);
       setCustomAvatarUrl(publicUrl); // Track as custom avatar
@@ -348,30 +336,12 @@ export default function SettingsPage() {
         updated_at: new Date().toISOString(),
       };
 
-      let profileError;
-
-      // Try insert first, if duplicate key error, then update
-      const { error: insertError } = await supabase
+      const { error: profileError } = await supabase
         .from("profiles")
-        .insert({
-          ...profileData,
-          created_at: new Date().toISOString(),
-        } as never);
-
-      if (insertError) {
-        // If duplicate key error, try update instead
-        if (insertError.message?.includes("duplicate key") || insertError.code === "23505") {
-          const { error: updateError } = await supabase
-            .from("profiles")
-            .update(profileData as never)
-            .eq("user_id", user.id);
-          profileError = updateError;
-        } else {
-          profileError = insertError;
-        }
-      } else {
-        profileError = null;
-      }
+        .upsert(
+          { ...profileData, created_at: new Date().toISOString() } as never,
+          { onConflict: "user_id" }
+        );
 
       if (authError || profileError) {
         toast.error(authError?.message || profileError?.message || "Failed to update");
