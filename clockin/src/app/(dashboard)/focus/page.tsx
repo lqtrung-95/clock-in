@@ -20,6 +20,7 @@ import { guestStorage } from "@/lib/guest-storage";
 import { POMODORO_PRESETS } from "@/lib/constants";
 import { FocusSessionView } from "@/components/focus/focus-session-view";
 import { FocusSetupView } from "@/components/focus/focus-setup-view";
+import { SESSION_COMPLETED_KEY } from "@/components/focus/focus-onboarding-coachmark";
 import { type OverlayType } from "@/components/focus/focus-session-overlay-controls";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
@@ -181,6 +182,8 @@ export default function FocusPage() {
       if (milestoneReached) toast.success("🎉 Milestone reached in your Dream Goal!");
       toast.success("Time saved locally!");
     }
+    // Mark onboarding banner as done after first completed session
+    localStorage.setItem(SESSION_COMPLETED_KEY, "true");
   }, [selectedCategory, timerSettings.workMinutes, selectedPreset, isAuthenticated, userId, addProgress, queryClient]);
 
   // Auto-complete: advance phase or wait for user confirmation

@@ -9,6 +9,7 @@ import { FocusTimerSettingsModal } from "@/components/focus/focus-timer-settings
 import { AiSessionSuggestion } from "@/components/ai/ai-session-suggestion";
 import { FocusTodayStats } from "@/components/focus/focus-today-stats";
 import { FocusActiveGoals } from "@/components/focus/focus-active-goals";
+import { FocusOnboardingCoachmark } from "@/components/focus/focus-onboarding-coachmark";
 import { POMODORO_PRESETS } from "@/lib/constants";
 import { type FocusTimerSettings } from "@/hooks/use-focus-timer-settings";
 import { type CustomVideo } from "@/hooks/use-focus-custom-videos";
@@ -115,7 +116,7 @@ export function FocusSetupView({
           )}
 
           {/* Preset picker */}
-          <div className="mb-8">
+          <div id="coachmark-preset" className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
                 <Clock className="h-4 w-4 text-blue-400" />
@@ -173,7 +174,7 @@ export function FocusSetupView({
           </div>
 
           {/* Category picker */}
-          <div className="mb-8">
+          <div id="coachmark-category" className="mb-8">
             <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
               <Tag className="h-4 w-4 text-emerald-400" />
               What are you working on?
@@ -223,10 +224,10 @@ export function FocusSetupView({
 
           {/* Atmosphere */}
           <div className="mb-8">
-            <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-4">
+            <div id="coachmark-atmosphere" className="flex items-center gap-2 text-sm font-semibold text-foreground mb-4">
               <Sparkles className="h-4 w-4 text-purple-400" />
               Atmosphere
-            </label>
+            </div>
             <FocusSetupAtmosphere
               background={background}
               videoEmbedUrl={videoEmbedUrl}
@@ -246,7 +247,7 @@ export function FocusSetupView({
           </div>
 
           {/* Start button */}
-          <Button
+          <Button id="coachmark-start"
             onClick={onStart}
             disabled={!selectedCategory}
             className="w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
@@ -270,6 +271,8 @@ export function FocusSetupView({
           ))}
         </div>
       </div>
+
+      <FocusOnboardingCoachmark />
 
       <FocusAddVideoDialog
         open={showAddVideoDialog}
