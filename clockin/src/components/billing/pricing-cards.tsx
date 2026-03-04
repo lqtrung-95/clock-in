@@ -62,6 +62,14 @@ const TIERS: PricingTier[] = [
     productIdEnvKey: "",
   },
   {
+    id: "pro",
+    label: "Pro Monthly",
+    price: "$2.99",
+    period: "per month",
+    features: PRO_FEATURES,
+    productIdEnvKey: "NEXT_PUBLIC_POLAR_PRO_MONTHLY_PRODUCT_ID",
+  },
+  {
     id: "pro_annual",
     label: "Pro Annual",
     price: "$19.99",
@@ -70,14 +78,6 @@ const TIERS: PricingTier[] = [
     productIdEnvKey: "NEXT_PUBLIC_POLAR_PRO_ANNUAL_PRODUCT_ID",
     badge: "Best Value",
     highlight: true,
-  },
-  {
-    id: "pro",
-    label: "Pro Monthly",
-    price: "$2.99",
-    period: "per month",
-    features: PRO_FEATURES,
-    productIdEnvKey: "NEXT_PUBLIC_POLAR_PRO_MONTHLY_PRODUCT_ID",
   },
   {
     id: "lifetime",
