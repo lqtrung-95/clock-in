@@ -121,6 +121,15 @@ export default function SocialPage() {
           />
         </div>
 
+        {/* Leaderboard — free for all authenticated users */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-yellow-500" />
+            <h2 className="text-lg font-semibold">Leaderboard</h2>
+          </div>
+          <Leaderboard userId={userId} />
+        </div>
+
         {/* AI Insights — Pro only */}
         {isPro ? (
           <AiInsightsCard />
@@ -130,15 +139,6 @@ export default function SocialPage() {
             description="Generate personalized productivity insights from your 30-day focus history."
           />
         )}
-
-        {/* Leaderboard — free for all authenticated users */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-yellow-500" />
-            <h2 className="text-lg font-semibold">Leaderboard</h2>
-          </div>
-          <Leaderboard userId={userId} />
-        </div>
 
         {/* Friends + Focus Rooms — Pro only */}
         {isPro ? (

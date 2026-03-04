@@ -153,8 +153,8 @@ export function Leaderboard({ userId }: LeaderboardProps) {
 
   if (loading) {
     return (
-      <Card className="p-6 h-full">
-        <div className="flex items-center justify-center py-12 h-full">
+      <Card className="p-6 h-full min-h-[420px]">
+        <div className="flex items-center justify-center h-full min-h-[380px]">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       </Card>
