@@ -68,6 +68,7 @@ const TIERS: PricingTier[] = [
     period: "per month",
     features: PRO_FEATURES,
     productIdEnvKey: "NEXT_PUBLIC_POLAR_PRO_MONTHLY_PRODUCT_ID",
+    highlight: true,
   },
   {
     id: "pro_annual",
@@ -77,7 +78,6 @@ const TIERS: PricingTier[] = [
     features: PRO_ANNUAL_FEATURES,
     productIdEnvKey: "NEXT_PUBLIC_POLAR_PRO_ANNUAL_PRODUCT_ID",
     badge: "Best Value",
-    highlight: true,
   },
   {
     id: "lifetime",
