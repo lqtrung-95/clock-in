@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useAuthState } from "@/hooks/use-auth-state";
 
 export function LandingCtaSection() {
+  const { isAuthenticated } = useAuthState();
+
   return (
     <section className="relative py-32 px-4 overflow-hidden">
       {/* Glow */}
@@ -24,15 +29,17 @@ export function LandingCtaSection() {
             href="/focus"
             className="group inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-lg shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 transition-all duration-300"
           >
-            Start Tracking
+            {isAuthenticated ? "Open App" : "Start Tracking"}
             <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
           </Link>
-          <Link
-            href="/auth/login"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white/5 border border-white/10 text-white/70 font-medium text-lg hover:bg-white/10 hover:text-white transition-all duration-300"
-          >
-            Sign in
-          </Link>
+          {!isAuthenticated && (
+            <Link
+              href="/auth/login"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white/5 border border-white/10 text-white/70 font-medium text-lg hover:bg-white/10 hover:text-white transition-all duration-300"
+            >
+              Sign in
+            </Link>
+          )}
         </div>
 
         <p className="mt-6 text-sm text-white/30">
