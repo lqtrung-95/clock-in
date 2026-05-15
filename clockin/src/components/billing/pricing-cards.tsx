@@ -1,9 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
+import { toast } from "sonner";
 import { useCheckout } from "@/hooks/use-checkout";
 import type { PlanType } from "@/types/subscription";
 import { cn } from "@/lib/utils";
@@ -112,6 +114,19 @@ interface PricingCardsProps {
 
 export function PricingCards({ currentPlan, userId }: PricingCardsProps) {
   const { checkout, isLoading } = useCheckout();
+  const router = useRouter();
+
+  function handleUpgrade(productId: string) {
+    if (!userId) {
+      router.push("/login");
+      return;
+    }
+    if (!productId) {
+      toast.error("This plan is temporarily unavailable. Please try again later.");
+      return;
+    }
+    checkout(productId);
+  }
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -162,11 +177,11 @@ export function PricingCards({ currentPlan, userId }: PricingCardsProps) {
               </Button>
             ) : (
               <Button
-                onClick={() => productId && checkout(productId)}
-                disabled={isLoading || !productId || !userId}
+                onClick={() => handleUpgrade(productId)}
+                disabled={isLoading}
                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:opacity-90"
               >
-                {isLoading ? "Redirecting..." : "Upgrade"}
+                {isLoading ? "Redirecting..." : userId ? "Upgrade" : "Sign in to upgrade"}
               </Button>
             )}
           </Card>

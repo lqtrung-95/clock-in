@@ -30,7 +30,23 @@
       "Bash(npx skills add coreyhaines31/marketingskills@seo-audit -g -y 2>&1)",
       "Bash(cd \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin\" && npx tsc --noEmit 2>&1; echo \"exit:$?\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" --max-time 5 \"https://effortful.app\" 2>&1)",
-      "Bash(cd \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin\" && \\\\\ngrep -rl \"clockin\\\\|Clockin\" --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.json\" src/ public/manifest.json 2>/dev/null | while IFS= read -r f; do\n  sed -i '' 's/Clockin/Effortful/g; s/clockin\\\\.app/effortful.app/g; s/clockin/effortful/g' \"$f\"\n  echo \"Updated: $f\"\ndone)"
+      "Bash(cd \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin\" && \\\\\ngrep -rl \"clockin\\\\|Clockin\" --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.json\" src/ public/manifest.json 2>/dev/null | while IFS= read -r f; do\n  sed -i '' 's/Clockin/Effortful/g; s/clockin\\\\.app/effortful.app/g; s/clockin/effortful/g' \"$f\"\n  echo \"Updated: $f\"\ndone)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" --max-time 10 \"https://effortful.app/sitemap.xml\" 2>&1)",
+      "Skill(ai-multimodal)",
+      "Bash(grep -rn \"—\" --include=\"*.ts\" --include=\"*.tsx\" \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin/src/\" 2>/dev/null | grep -v node_modules)",
+      "Bash(npx skills find \"app promotion marketing\" 2>/dev/null; npx skills find \"social media marketing\" 2>/dev/null; npx skills find \"copywriting content\" 2>/dev/null)",
+      "Bash(ls \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin/src/app/\\(dashboard\\)/\")",
+      "Bash(cat \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin/src/app/\\(dashboard\\)/focus/page.tsx\" | head -80)",
+      "Bash(cat \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin/src/app/\\(dashboard\\)/dashboard/page.tsx\" 2>/dev/null | head -60)",
+      "Bash(cd \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin\" && npx next lint 2>&1 | tail -30)",
+      "Bash(cd \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin\" && npx next lint --dir src 2>&1 | tail -40)",
+      "Bash(cat \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin/src/app/\\(dashboard\\)/layout.tsx\")",
+      "Bash(cat \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin/src/app/\\(dashboard\\)/dashboard/page.tsx\" | grep -n \"weekday\\\\|entryDay\\\\|EEE\\\\|dayData\\\\|weekly\\\\|chart\" | head -30)",
+      "Bash(npx skills find \"product hunt launch\" 2>/dev/null | grep -v \"^$\" | head -20)",
+      "Bash(npx skills add davila7/claude-code-templates@copywriting -g -y 2>/dev/null && echo \"copywriting: installed\" && npx skills add dengineproblem/agents-monorepo@social-media-marketing -g -y 2>/dev/null && echo \"social-media-marketing: installed\")",
+      "Bash(npx skills add inference-sh-9/skills@product-hunt-launch -g -y 2>/dev/null && echo \"product-hunt: installed\")",
+      "Bash(cat \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin/src/app/\\(dashboard\\)/social/page.tsx\")",
+      "Bash(ls \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin/src/app/\\(dashboard\\)/focus-room/\" && cat \"/Users/lequoctrung/Documents/Personal Projects/EffortCounter/clockin/src/components/social/focus-rooms.tsx\")"
     ]
   }
 }
