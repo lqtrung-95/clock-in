@@ -5,11 +5,11 @@ import { Target } from "lucide-react";
 
 /** Renders up to 2 active goals with slim progress bars. */
 export function FocusActiveGoals() {
-  const { goals, isLoading, isAuthenticated } = useFocusActiveGoals();
+  const { goals, ready, isAuthenticated } = useFocusActiveGoals();
 
   // The Focus page gates the whole setup behind a skeleton, so by the time this
   // renders the data is ready. Render nothing while loading or when empty.
-  if (!isAuthenticated || isLoading || goals.length === 0) return null;
+  if (!isAuthenticated || !ready || goals.length === 0) return null;
 
   return (
     <div className="mb-6 rounded-xl border border-border bg-muted/30 px-4 py-3 space-y-2.5">

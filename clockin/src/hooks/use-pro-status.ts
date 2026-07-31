@@ -26,7 +26,7 @@ async function fetchBilling(): Promise<BillingResponse> {
 }
 
 export function useProStatus(userId: string | null) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isPending } = useQuery({
     queryKey: ["subscription", userId],
     queryFn: fetchBilling,
     enabled: !!userId,
@@ -44,6 +44,9 @@ export function useProStatus(userId: string | null) {
     aiInsightsUsedThisMonth: resolved.aiInsightsUsedThisMonth,
     // Only show loading when there's a real fetch in flight (not for guests)
     isLoading: !!userId && isLoading,
+    // Stays true until the first fetch resolves — unlike isLoading, it does not
+    // briefly flip false during the query's enabled-transition. Use for gating.
+    isPending: !!userId && isPending,
   };
 }
 

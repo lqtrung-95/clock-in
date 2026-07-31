@@ -51,5 +51,7 @@ export function useFocusTodayStats() {
     staleTime: 1000 * 60 * 2,
   });
 
-  return { data: query.data, isLoading: authLoading || query.isLoading };
+  // isPending (not isLoading) stays true through the query's enabled-transition,
+  // so the Focus page's loading gate never releases a render early.
+  return { data: query.data, ready: !authLoading && !query.isPending };
 }

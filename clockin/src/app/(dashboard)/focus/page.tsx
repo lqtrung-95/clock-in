@@ -66,13 +66,15 @@ export default function FocusPage() {
 
   // Auth & categories
   const { isAuthenticated, userId, isLoading: authLoading } = useAuthState();
-  const { isPro, isLoading: proLoading } = useProStatus(userId);
+  const { isPro, isPending: proPending } = useProStatus(userId);
   const { addProgress } = useDreamGoal(userId);
 
   // Prefetch the dynamic setup data so the one-shot loading gate can wait for
   // it — these share query keys with the child widgets (cache hit on render).
-  const { isLoading: todayStatsLoading } = useFocusTodayStats();
-  const { isLoading: activeGoalsLoading } = useFocusActiveGoals();
+  // Use their `ready` flags (isPending-based) so the gate never releases during
+  // a query's enabled-transition, which would let a widget pop in late.
+  const { ready: todayStatsReady } = useFocusTodayStats();
+  const { ready: activeGoalsReady } = useFocusActiveGoals();
 
   // Extracted hooks
   const [selectedSound, setSelectedSound] = useState("");
@@ -136,7 +138,7 @@ export default function FocusPage() {
   }, [isAuthenticated]);
 
   // Load categories (shared TanStack Query cache)
-  const { data: queriedCategories = [], isLoading: categoriesQueryLoading } = useQuery({
+  const { data: queriedCategories = [], isPending: categoriesPending } = useQuery({
     queryKey: ["categories", userId],
     queryFn: async () => {
       if (isAuthenticated && userId) {
@@ -357,10 +359,10 @@ export default function FocusPage() {
   // (active goals, today stats, category chips, plan) never pop in and shift.
   const setupReady =
     !authLoading &&
-    !categoriesQueryLoading &&
-    !todayStatsLoading &&
-    !activeGoalsLoading &&
-    !proLoading;
+    !categoriesPending &&
+    todayStatsReady &&
+    activeGoalsReady &&
+    !proPending;
 
   if (!setupReady) {
     return <FocusSetupSkeleton />;

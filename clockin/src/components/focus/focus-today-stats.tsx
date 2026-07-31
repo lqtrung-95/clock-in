@@ -11,11 +11,11 @@ function formatMinutes(minutes: number): string {
 }
 
 export function FocusTodayStats() {
-  const { data, isLoading } = useFocusTodayStats();
+  const { data, ready } = useFocusTodayStats();
 
   // The Focus page gates the whole setup behind a skeleton, so by the time this
   // renders the data is ready. Render nothing while loading or when empty.
-  if (isLoading || !data || (data.sessions === 0 && data.streak === 0)) return null;
+  if (!ready || !data || (data.sessions === 0 && data.streak === 0)) return null;
 
   return (
     <div className="flex items-center justify-center gap-6 mb-8">

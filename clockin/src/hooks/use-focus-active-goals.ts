@@ -35,8 +35,10 @@ export function useFocusActiveGoals() {
 
   return {
     goals: query.data ?? [],
-    // A disabled (guest) query reports isLoading=false, so guests are "ready".
-    isLoading: query.isLoading && !!isAuthenticated && !!userId,
+    // Guests never have goals, so they're ready immediately. For authed users,
+    // wait until the query actually resolves. isPending (not isLoading) stays
+    // true through the enabled-transition, so the gate never releases early.
+    ready: !isAuthenticated ? true : !!userId && !query.isPending,
     isAuthenticated,
   };
 }
