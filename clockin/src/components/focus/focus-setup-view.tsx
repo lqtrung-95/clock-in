@@ -15,6 +15,8 @@ import { type FocusTimerSettings } from "@/hooks/use-focus-timer-settings";
 import { type CustomVideo } from "@/hooks/use-focus-custom-videos";
 import { type OverlayType } from "@/components/focus/focus-session-overlay-controls";
 import type { Category } from "@/types/timer";
+import type { GoalWithProgress } from "@/hooks/use-focus-active-goals";
+import type { FocusTodayStats as FocusTodayStatsData } from "@/hooks/use-focus-today-stats";
 import {
   Brain, CheckCircle2, Clock, Coffee, Play, SlidersHorizontal, Sparkles, Tag, Wand2,
 } from "lucide-react";
@@ -36,6 +38,9 @@ interface FocusSetupViewProps {
   showAddVideoDialog: boolean;
   newVideoUrl: string;
   newVideoTitle: string;
+  // Prefetched dynamic data (resolved before the page renders this view)
+  todayStats?: FocusTodayStatsData;
+  activeGoals: GoalWithProgress[];
   // Category
   selectedCategory: string;
   categories: Category[];
@@ -71,6 +76,7 @@ export function FocusSetupView({
   timerSettings, effectivePreset, timerSettingsOpen,
   background, videoEmbedUrl, overlay, selectedSound, isPlaying, customVideos,
   showAddVideoDialog, newVideoUrl, newVideoTitle,
+  todayStats, activeGoals,
   selectedCategory, categories, isAuthenticated, isPro, taskDescription, aiCatSuggesting,
   onPresetSelect, onOpenTimerSettings, onCloseTimerSettings, onSaveTimerSettings,
   onSetBackground, onSetVideoEmbedUrl, onSetOverlay, onSetSelectedSound,
@@ -103,9 +109,9 @@ export function FocusSetupView({
           </p>
         </div>
 
-        <FocusTodayStats />
+        <FocusTodayStats data={todayStats} />
 
-        <FocusActiveGoals />
+        <FocusActiveGoals goals={activeGoals} />
 
         <Card className="border border-border bg-card/80 backdrop-blur-xl p-6 sm:p-8 shadow-xl">
           {isPro && (

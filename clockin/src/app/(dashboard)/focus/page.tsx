@@ -73,8 +73,8 @@ export default function FocusPage() {
   // it — these share query keys with the child widgets (cache hit on render).
   // Use their `ready` flags (isPending-based) so the gate never releases during
   // a query's enabled-transition, which would let a widget pop in late.
-  const { ready: todayStatsReady } = useFocusTodayStats();
-  const { ready: activeGoalsReady } = useFocusActiveGoals();
+  const { ready: todayStatsReady, data: todayStats } = useFocusTodayStats();
+  const { ready: activeGoalsReady, goals: activeGoals } = useFocusActiveGoals();
 
   // Extracted hooks
   const [selectedSound, setSelectedSound] = useState("");
@@ -379,6 +379,7 @@ export default function FocusPage() {
       showAddVideoDialog={customVideoHook.showAddVideoDialog}
       newVideoUrl={customVideoHook.newVideoUrl}
       newVideoTitle={customVideoHook.newVideoTitle}
+      todayStats={todayStats} activeGoals={activeGoals}
       selectedCategory={selectedCategory} categories={queriedCategories as unknown as Category[]}
       isAuthenticated={!!isAuthenticated} isPro={isPro} taskDescription={taskDescription}
       aiCatSuggesting={aiCatSuggesting}

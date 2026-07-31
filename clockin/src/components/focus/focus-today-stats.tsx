@@ -1,7 +1,7 @@
 "use client";
 
-import { useFocusTodayStats } from "@/hooks/use-focus-today-stats";
 import { Flame, Clock } from "lucide-react";
+import type { FocusTodayStats as FocusTodayStatsData } from "@/hooks/use-focus-today-stats";
 
 function formatMinutes(minutes: number): string {
   if (minutes < 60) return `${minutes}m`;
@@ -10,12 +10,13 @@ function formatMinutes(minutes: number): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-export function FocusTodayStats() {
-  const { data, ready } = useFocusTodayStats();
-
-  // The Focus page gates the whole setup behind a skeleton, so by the time this
-  // renders the data is ready. Render nothing while loading or when empty.
-  if (!ready || !data || (data.sessions === 0 && data.streak === 0)) return null;
+/**
+ * Presentational — receives already-resolved stats from the Focus page.
+ * Prop-driven (vs. its own query) so it renders its final state on page swap
+ * with no independent async that would pop in late and shift the layout.
+ */
+export function FocusTodayStats({ data }: { data?: FocusTodayStatsData }) {
+  if (!data || (data.sessions === 0 && data.streak === 0)) return null;
 
   return (
     <div className="flex items-center justify-center gap-6 mb-8">
