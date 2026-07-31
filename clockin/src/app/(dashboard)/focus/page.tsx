@@ -128,7 +128,7 @@ export default function FocusPage() {
   }, [isAuthenticated]);
 
   // Load categories (shared TanStack Query cache)
-  const { data: queriedCategories = [] } = useQuery({
+  const { data: queriedCategories = [], isLoading: categoriesQueryLoading } = useQuery({
     queryKey: ["categories", userId],
     queryFn: async () => {
       if (isAuthenticated && userId) {
@@ -356,6 +356,7 @@ export default function FocusPage() {
       newVideoUrl={customVideoHook.newVideoUrl}
       newVideoTitle={customVideoHook.newVideoTitle}
       selectedCategory={selectedCategory} categories={queriedCategories as unknown as Category[]}
+      categoriesLoading={authLoading || categoriesQueryLoading}
       isAuthenticated={!!isAuthenticated} isPro={isPro} taskDescription={taskDescription}
       aiCatSuggesting={aiCatSuggesting}
       onPresetSelect={handlePresetSelect}

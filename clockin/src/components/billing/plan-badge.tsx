@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useProStatus } from "@/hooks/use-pro-status";
 import type { PlanType } from "@/types/subscription";
 import { cn } from "@/lib/utils";
@@ -31,7 +32,10 @@ interface PlanBadgeProps {
 export function PlanBadge({ userId, className }: PlanBadgeProps) {
   const { plan, isLoading } = useProStatus(userId);
 
-  if (isLoading) return null;
+  // Reserve the badge's footprint while the plan resolves so it doesn't pop in.
+  if (isLoading) {
+    return <Skeleton className={cn("h-4 w-10 rounded-full", className)} />;
+  }
 
   const config = PLAN_CONFIG[plan];
 
