@@ -350,10 +350,49 @@ function BaseImage({ url }: { url: string }) {
   );
 }
 
+// YouTube error codes that mean the embed can never play here:
+// 100 = removed/private, 101 & 150 = embedding disabled by the owner,
+// 2 = invalid video id, 5 = HTML5 playback error.
+const YOUTUBE_FATAL_ERROR_CODES = new Set([2, 5, 100, 101, 150]);
+
+// Graceful fallback shown instead of YouTube's "Video unavailable" screen when
+// an ambient scene's embed is dead or embedding-disabled.
+function VideoUnavailableFallback() {
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900" />
+      <div className="absolute inset-0 animate-pulse bg-[radial-gradient(ellipse_at_top,rgba(99,102,241,0.25),transparent_60%)]" />
+    </div>
+  );
+}
+
 // YouTube Background Component - uses postMessage to control playback/mute without re-mounting
 function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUrl: string; muted?: boolean; isRunning?: boolean }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  // Reset error state when switching to a different scene.
+  useEffect(() => { setHasError(false); }, [embedUrl]);
+
+  // Listen for YouTube iframe API events. A fatal onError means the embed can
+  // never play, so we swap in the fallback gradient instead of the broken video.
+  useEffect(() => {
+    function onMessage(e: MessageEvent) {
+      if (typeof e.data !== "string" || !e.origin.includes("youtube.com")) return;
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.event === "onReady") setHasError(false);
+        if (msg.event === "onError" && YOUTUBE_FATAL_ERROR_CODES.has(Number(msg.info))) {
+          setHasError(true);
+        }
+      } catch {
+        // Non-JSON YouTube messages — ignore.
+      }
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
   const isIOS = useMemo(() =>
     typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent)
   , []);
@@ -387,6 +426,10 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
   // On desktop: sync state after 800ms. On iOS: wait for first user touch.
   const handleIframeLoad = () => {
     setIframeLoaded(true);
+    // Handshake required for the iframe to start emitting onReady/onError events.
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: "listening" }), "*"
+    );
     if (!isIOS) {
       setTimeout(() => {
         if (!muted) postCommand('unMute');
@@ -417,6 +460,10 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
   useEffect(() => {
     postCommand(isRunning ? 'playVideo' : 'pauseVideo');
   }, [isRunning]);
+
+  if (hasError) {
+    return <VideoUnavailableFallback />;
+  }
 
   return (
     <div className="absolute inset-0">

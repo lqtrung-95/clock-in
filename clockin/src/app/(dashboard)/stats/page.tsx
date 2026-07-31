@@ -15,6 +15,7 @@ import { FocusInsightsCard } from "@/components/stats/focus-insights-card";
 import { ShareStatsCard } from "@/components/stats/share-stats-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginPrompt } from "@/components/auth/login-prompt";
+import { StatsPageSkeleton } from "@/components/skeletons/stats-page-skeleton";
 import {
   BarChart,
   Bar,
@@ -163,11 +164,7 @@ export default function AnalyticsPage() {
   const totalEntries = entries.length;
 
   if (loading || authLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-      </div>
-    );
+    return <StatsPageSkeleton />;
   }
 
   if (!isAuthenticated) {

@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import { ArrowLeft, Target, Clock, Trophy, Sparkles } from "lucide-react";
+import { DreamPageSkeleton } from "@/components/skeletons/list-page-skeletons";
 import { format } from "date-fns";
 
 export default function DreamGoalPage() {
@@ -35,11 +36,7 @@ export default function DreamGoalPage() {
   }, [isAuthenticated]);
 
   if (authLoading || isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-      </div>
-    );
+    return <DreamPageSkeleton />;
   }
 
   if (!isAuthenticated && !dreamGoal) {

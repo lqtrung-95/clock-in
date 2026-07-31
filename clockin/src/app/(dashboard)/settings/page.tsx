@@ -23,6 +23,7 @@ import { useIsPro } from "@/hooks/use-pro-status";
 import { PlanBadge } from "@/components/billing/plan-badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SettingsPageSkeleton } from "@/components/skeletons/list-page-skeletons";
 
 const GUEST_PREFS_KEY = "effortful-guest-preferences";
 
@@ -362,11 +363,7 @@ export default function SettingsPage() {
   }
 
   if (loading || authLoading || profileLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-      </div>
-    );
+    return <SettingsPageSkeleton />;
   }
 
   return (

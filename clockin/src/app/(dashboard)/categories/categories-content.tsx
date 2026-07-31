@@ -15,6 +15,7 @@ import { useAuthState } from "@/hooks/use-auth-state";
 import { useProStatus } from "@/hooks/use-pro-status";
 import type { Category } from "@/types/timer";
 import { Plus, Tags } from "lucide-react";
+import { CategoriesPageSkeleton } from "@/components/skeletons/list-page-skeletons";
 import { toast } from "sonner";
 
 const FREE_CATEGORY_LIMIT = 5;
@@ -157,11 +158,7 @@ export default function CategoriesContent() {
   }
 
   if (isLoading || authLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-      </div>
-    );
+    return <CategoriesPageSkeleton />;
   }
 
   const formLoading = createMutation.isPending || updateMutation.isPending;

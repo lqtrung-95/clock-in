@@ -11,6 +11,7 @@ import { BadgeCard } from "@/components/gamification/badge-card";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import { EvolvedCrystal } from "@/components/focus/evolved-crystal";
 import { Trophy, Target, Award, TrendingUp } from "lucide-react";
+import { AchievementsPageSkeleton } from "@/components/skeletons/achievements-page-skeleton";
 import type { BadgeDefinition } from "@/types/gamification";
 
 export default function AchievementsContent() {
@@ -28,11 +29,7 @@ export default function AchievementsContent() {
   });
 
   if (authLoading || isLoading || badgesLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-      </div>
-    );
+    return <AchievementsPageSkeleton />;
   }
 
   if (!isAuthenticated) {

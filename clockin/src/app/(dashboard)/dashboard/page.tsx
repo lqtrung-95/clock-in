@@ -21,6 +21,7 @@ import { FirstTimeSetupBanner } from "@/components/onboarding/first-time-setup-b
 import { DreamCrystalMini } from "@/components/focus/dream-crystal-mini";
 import { EvolvedCrystal } from "@/components/focus/evolved-crystal";
 import { XPProgressBar } from "@/components/gamification/xp-progress-bar";
+import { DashboardPageSkeleton } from "@/components/skeletons/dashboard-page-skeleton";
 import {
   Clock,
   Flame,
@@ -196,11 +197,7 @@ export default function DashboardPage() {
   const maxHours = Math.max(...weeklyData.map((d) => d.hours), 1);
 
   if (dataLoading || authLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-      </div>
-    );
+    return <DashboardPageSkeleton />;
   }
 
   return (

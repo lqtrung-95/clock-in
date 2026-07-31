@@ -1,0 +1,83 @@
+name: Check ambient video backgrounds
+
+# Ambient scene YouTube embeds can silently die (videos removed, embedding
+# disabled). This runs the oEmbed checker weekly so a dead scene surfaces as a
+# GitHub issue instead of a "Video unavailable" screen in Focus mode.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # every Monday 06:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-videos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run ambient scene checker
+        id: check
+        working-directory: clockin
+        run: node scripts/check-video-backgrounds.mjs | tee video-check.log
+        continue-on-error: true
+
+      - name: Open or update issue when a scene is broken
+        if: steps.check.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const log = fs.readFileSync('clockin/video-check.log', 'utf8');
+            const title = 'Broken ambient video background detected';
+            const body = [
+              'The scheduled ambient-scene checker found one or more broken YouTube embeds.',
+              '',
+              'Fix by removing or replacing them in `clockin/src/data/video-backgrounds.ts`.',
+              '',
+              '<details><summary>Checker output</summary>',
+              '',
+              '```',
+              log.trim(),
+              '```',
+              '',
+              '</details>',
+            ].join('\n');
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'ambient-videos',
+            });
+            const found = existing.data.find((i) => i.title === title);
+
+            if (found) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: found.number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['ambient-videos'],
+              });
+            }
+
+      - name: Fail the job if a scene is broken
+        if: steps.check.outcome == 'failure'
+        run: |
+          echo "Ambient scene check failed — see the opened issue."
+          exit 1

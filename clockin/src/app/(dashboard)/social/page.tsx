@@ -12,6 +12,7 @@ import { LoginPrompt } from "@/components/auth/login-prompt";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { Users, Trophy, MessageSquare, Share2 } from "lucide-react";
 import { AiInsightsCard } from "@/components/ai/ai-insights-card";
+import { SocialPageSkeleton } from "@/components/skeletons/social-page-skeleton";
 
 export default function SocialPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
@@ -75,11 +76,7 @@ export default function SocialPage() {
 
 
   if (authLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    );
+    return <SocialPageSkeleton />;
   }
 
   if (!isAuthenticated) {
@@ -97,11 +94,7 @@ export default function SocialPage() {
   }
 
   if (!userId) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    );
+    return <SocialPageSkeleton />;
   }
 
   return (

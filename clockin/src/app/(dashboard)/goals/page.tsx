@@ -32,6 +32,7 @@ import { useDreamGoal } from "@/hooks/use-dream-goal";
 import { DreamGoalProgressRing } from "@/components/dream-goal/dream-goal-progress-ring";
 import { MountainProgressView } from "@/components/dream-goal/mountain-progress-view";
 import { syncDreamGoalWithHistory } from "@/services/dream-goal-service";
+import { GoalsPageSkeleton } from "@/components/skeletons/goals-page-skeleton";
 import { toast } from "sonner";
 import type { Goal } from "@/types/gamification";
 import type { Category } from "@/types/timer";
@@ -181,13 +182,7 @@ export default function GoalsPage() {
   }
 
   if (loading || authLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center"
-      >
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"
-        />
-      </div>
-    );
+    return <GoalsPageSkeleton />;
   }
 
   if (!isAuthenticated) {

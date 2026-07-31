@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { List, Download, Lock } from "lucide-react";
 import { exportEntriesToCsv } from "@/lib/export-csv";
+import { HistoryPageSkeleton } from "@/components/skeletons/list-page-skeletons";
 import type { TimeEntry, Category } from "@/types/timer";
 
 export default function HistoryPage() {
@@ -62,11 +63,7 @@ export default function HistoryPage() {
   }
 
   if (isLoading || authLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-      </div>
-    );
+    return <HistoryPageSkeleton />;
   }
 
   return (

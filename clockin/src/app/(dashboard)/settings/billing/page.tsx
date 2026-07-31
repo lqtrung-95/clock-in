@@ -8,6 +8,7 @@ import { CheckoutSuccessHandler } from "@/components/billing/checkout-success-ha
 import { ManageSubscriptionButton } from "@/components/billing/manage-subscription-button";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const AI_INSIGHTS_MONTHLY_LIMIT = 3;
 
@@ -102,8 +103,31 @@ export default function BillingPage() {
         </Suspense>
 
         {authLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+          <div className="space-y-8">
+            {/* Current plan summary placeholder */}
+            <div className="space-y-4 rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-56" />
+              <Skeleton className="h-10 w-40 rounded-md" />
+            </div>
+            {/* Pricing cards placeholder */}
+            <div className="grid gap-4 md:grid-cols-2">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="space-y-4 rounded-2xl border border-border bg-card p-6">
+                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-9 w-32" />
+                  <div className="space-y-2">
+                    {Array.from({ length: 4 }).map((_, j) => (
+                      <Skeleton key={j} className="h-4 w-full" />
+                    ))}
+                  </div>
+                  <Skeleton className="h-10 w-full rounded-md" />
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <BillingContent userId={userId} />

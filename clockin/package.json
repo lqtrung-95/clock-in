@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:videos": "node scripts/check-video-backgrounds.mjs"
   },
   "dependencies": {
     "@polar-sh/sdk": "^0.46.0",

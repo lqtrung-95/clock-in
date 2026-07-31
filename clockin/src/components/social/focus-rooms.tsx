@@ -216,8 +216,8 @@ export function FocusRooms({ userId }: FocusRoomsProps) {
 
   if (loading) {
     return (
-      <Card className="p-6">
-        <div className="flex items-center justify-center py-8">
+      <Card className="min-h-[180px] p-6">
+        <div className="flex h-full items-center justify-center py-8">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       </Card>
