@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useFriends, useFriendSearch } from "@/hooks/use-social";
 import { UserPlus, Search, Check, X, UserMinus, Clock } from "lucide-react";
 import type { Friendship } from "@/types/social";
@@ -175,8 +176,17 @@ export function FriendsList({ userId }: FriendsListProps) {
   if (loading) {
     return (
       <Card className="min-h-[180px] p-6 h-full">
-        <div className="flex items-center justify-center py-8 h-full">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <Skeleton className="mb-4 h-10 w-full rounded-md" />
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+            </div>
+          ))}
         </div>
       </Card>
     );

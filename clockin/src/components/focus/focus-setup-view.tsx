@@ -200,8 +200,8 @@ export function FocusSetupView({
               // Placeholder chips so the section keeps its height instead of
               // flashing the "No categories yet" empty state while loading.
               <div className="flex gap-2 flex-wrap">
-                {[64, 88, 72, 96, 60].map((w, i) => (
-                  <Skeleton key={i} className="h-9 rounded-xl" style={{ width: w }} />
+                {[92, 110, 84, 120, 96, 100].map((w, i) => (
+                  <Skeleton key={i} className="h-10 rounded-xl" style={{ width: w }} />
                 ))}
               </div>
             ) : categories.length > 0 ? (

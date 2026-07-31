@@ -39,12 +39,12 @@ export function FocusActiveGoals() {
       <div className="mb-6 rounded-xl border border-border bg-muted/30 px-4 py-3 space-y-2.5 animate-pulse">
         <div className="flex items-center gap-1.5 mb-1">
           <div className="h-3.5 w-3.5 rounded-full bg-muted-foreground/20" />
-          <div className="h-3 w-24 rounded bg-muted-foreground/20" />
+          <div className="h-4 w-24 rounded bg-muted-foreground/20" />
         </div>
         <div className="space-y-1">
           <div className="flex justify-between">
-            <div className="h-3 w-40 rounded bg-muted-foreground/20" />
-            <div className="h-3 w-8 rounded bg-muted-foreground/20" />
+            <div className="h-4 w-40 rounded bg-muted-foreground/20" />
+            <div className="h-4 w-8 rounded bg-muted-foreground/20" />
           </div>
           <div className="h-1.5 w-full rounded-full bg-muted" />
         </div>

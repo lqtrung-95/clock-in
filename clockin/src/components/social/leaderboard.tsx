@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useLeaderboard, useGlobalLeaderboard } from "@/hooks/use-social";
 import { Trophy, Medal, Award, Clock, Users, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -154,8 +155,30 @@ export function Leaderboard({ userId }: LeaderboardProps) {
   if (loading) {
     return (
       <Card className="p-6 h-full min-h-[420px]">
-        <div className="flex items-center justify-center h-full min-h-[380px]">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        {/* Header */}
+        <div className="mb-4 flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-3.5 w-32" />
+          </div>
+          <Skeleton className="h-8 w-8 rounded-full" />
+        </div>
+        {/* Scope + period tab bars */}
+        <Skeleton className="mb-4 h-10 w-full rounded-md" />
+        <Skeleton className="mb-4 h-10 w-full rounded-md" />
+        {/* Ranked rows */}
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 p-4">
+              <Skeleton className="h-6 w-6 rounded-md" />
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+              <Skeleton className="h-4 w-16" />
+            </div>
+          ))}
         </div>
       </Card>
     );

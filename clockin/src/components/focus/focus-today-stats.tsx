@@ -18,7 +18,7 @@ function formatMinutes(minutes: number): string {
 export function FocusTodayStats() {
   const { isAuthenticated, userId, isLoading: authLoading } = useAuthState();
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["focus-today-stats", userId],
     queryFn: async () => {
       if (isAuthenticated && userId) {
@@ -47,6 +47,16 @@ export function FocusTodayStats() {
     enabled: !authLoading,
     staleTime: 1000 * 60 * 2,
   });
+
+  // Reserve the pill row height while loading so nothing below jumps.
+  if (authLoading || isLoading) {
+    return (
+      <div className="flex items-center justify-center gap-6 mb-8">
+        <div className="h-9 w-32 rounded-full bg-muted animate-pulse" />
+        <div className="h-9 w-32 rounded-full bg-muted animate-pulse" />
+      </div>
+    );
+  }
 
   if (!data || (data.sessions === 0 && data.streak === 0)) return null;
 

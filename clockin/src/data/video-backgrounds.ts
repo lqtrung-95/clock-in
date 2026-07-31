@@ -10,13 +10,6 @@ export interface VideoBackground {
 // Note: These are popular ambient videos that are typically available long-term
 export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
-    id: "lofi-girl",
-    name: "Lofi Girl",
-    embedUrl: "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=1&loop=1&playlist=jfKfPfyJRdk&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/jfKfPfyJRdk/mqdefault.jpg",
-    category: "ambient",
-  },
-  {
     id: "rain-window",
     name: "Rain on Window",
     embedUrl: "https://www.youtube.com/embed/mPZkdNFkNps?autoplay=1&mute=1&loop=1&playlist=mPZkdNFkNps&controls=0&rel=0&modestbranding=1",
