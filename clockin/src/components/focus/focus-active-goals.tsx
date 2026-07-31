@@ -1,58 +1,15 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { goalService } from "@/services/goal-service";
-import { useAuthState } from "@/hooks/use-auth-state";
+import { useFocusActiveGoals } from "@/hooks/use-focus-active-goals";
 import { Target } from "lucide-react";
-import type { Goal } from "@/types/gamification";
 
-interface GoalWithProgress extends Goal {
-  progress: { current: number; target: number; percentage: number };
-}
-
-/** Fetches up to 2 active goals with progress and renders slim progress bars */
+/** Renders up to 2 active goals with slim progress bars. */
 export function FocusActiveGoals() {
-  const { isAuthenticated, userId } = useAuthState();
+  const { goals, isLoading, isAuthenticated } = useFocusActiveGoals();
 
-  const { data: goals = [], isLoading } = useQuery({
-    queryKey: ["goals", userId],
-    queryFn: async (): Promise<GoalWithProgress[]> => {
-      if (!userId) return [];
-      const activeGoals = await goalService.getGoals(userId);
-      const withProgress = await Promise.all(
-        activeGoals.slice(0, 2).map(async (goal) => {
-          const progress = await goalService.calculateProgress(userId, goal);
-          return { ...goal, progress };
-        })
-      );
-      return withProgress;
-    },
-    enabled: !!isAuthenticated && !!userId,
-    staleTime: 1000 * 60 * 5,
-  });
-
-  if (!isAuthenticated) return null;
-
-  // Reserve space while loading to prevent layout shift
-  if (isLoading) {
-    return (
-      <div className="mb-6 rounded-xl border border-border bg-muted/30 px-4 py-3 space-y-2.5 animate-pulse">
-        <div className="flex items-center gap-1.5 mb-1">
-          <div className="h-3.5 w-3.5 rounded-full bg-muted-foreground/20" />
-          <div className="h-4 w-24 rounded bg-muted-foreground/20" />
-        </div>
-        <div className="space-y-1">
-          <div className="flex justify-between">
-            <div className="h-4 w-40 rounded bg-muted-foreground/20" />
-            <div className="h-4 w-8 rounded bg-muted-foreground/20" />
-          </div>
-          <div className="h-1.5 w-full rounded-full bg-muted" />
-        </div>
-      </div>
-    );
-  }
-
-  if (goals.length === 0) return null;
+  // The Focus page gates the whole setup behind a skeleton, so by the time this
+  // renders the data is ready. Render nothing while loading or when empty.
+  if (!isAuthenticated || isLoading || goals.length === 0) return null;
 
   return (
     <div className="mb-6 rounded-xl border border-border bg-muted/30 px-4 py-3 space-y-2.5">

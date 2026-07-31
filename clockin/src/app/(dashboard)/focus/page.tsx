@@ -12,7 +12,10 @@ import { useFocusTimerSettings, type FocusTimerSettings } from "@/hooks/use-focu
 import { useFocusNotifications } from "@/hooks/use-focus-notifications";
 import { useDreamGoal } from "@/hooks/use-dream-goal";
 import { useAuthState } from "@/hooks/use-auth-state";
-import { useIsPro } from "@/hooks/use-pro-status";
+import { useProStatus } from "@/hooks/use-pro-status";
+import { useFocusTodayStats } from "@/hooks/use-focus-today-stats";
+import { useFocusActiveGoals } from "@/hooks/use-focus-active-goals";
+import { FocusSetupSkeleton } from "@/components/skeletons/focus-setup-skeleton";
 import { timeEntryService } from "@/services/time-entry-service";
 import { trackFocusTime } from "@/services/gamification-service";
 import { createClient } from "@/lib/supabase/client";
@@ -63,8 +66,13 @@ export default function FocusPage() {
 
   // Auth & categories
   const { isAuthenticated, userId, isLoading: authLoading } = useAuthState();
-  const isPro = useIsPro(userId);
+  const { isPro, isLoading: proLoading } = useProStatus(userId);
   const { addProgress } = useDreamGoal(userId);
+
+  // Prefetch the dynamic setup data so the one-shot loading gate can wait for
+  // it — these share query keys with the child widgets (cache hit on render).
+  const { isLoading: todayStatsLoading } = useFocusTodayStats();
+  const { isLoading: activeGoalsLoading } = useFocusActiveGoals();
 
   // Extracted hooks
   const [selectedSound, setSelectedSound] = useState("");
@@ -344,6 +352,20 @@ export default function FocusPage() {
     );
   }
 
+  // One-shot loading gate: keep the whole setup as a skeleton until every piece
+  // of async data is ready, then render the real view once — so dynamic blocks
+  // (active goals, today stats, category chips, plan) never pop in and shift.
+  const setupReady =
+    !authLoading &&
+    !categoriesQueryLoading &&
+    !todayStatsLoading &&
+    !activeGoalsLoading &&
+    !proLoading;
+
+  if (!setupReady) {
+    return <FocusSetupSkeleton />;
+  }
+
   // Setup view
   return (
     <FocusSetupView
@@ -356,7 +378,6 @@ export default function FocusPage() {
       newVideoUrl={customVideoHook.newVideoUrl}
       newVideoTitle={customVideoHook.newVideoTitle}
       selectedCategory={selectedCategory} categories={queriedCategories as unknown as Category[]}
-      categoriesLoading={authLoading || categoriesQueryLoading}
       isAuthenticated={!!isAuthenticated} isPro={isPro} taskDescription={taskDescription}
       aiCatSuggesting={aiCatSuggesting}
       onPresetSelect={handlePresetSelect}

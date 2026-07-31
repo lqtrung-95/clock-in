@@ -1,12 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useAuthState } from "@/hooks/use-auth-state";
-import { timeEntryService } from "@/services/time-entry-service";
-import { streakService } from "@/services/streak-service";
-import { guestStorage } from "@/lib/guest-storage";
+import { useFocusTodayStats } from "@/hooks/use-focus-today-stats";
 import { Flame, Clock } from "lucide-react";
-import type { TimeEntry } from "@/types/timer";
 
 function formatMinutes(minutes: number): string {
   if (minutes < 60) return `${minutes}m`;
@@ -16,49 +11,11 @@ function formatMinutes(minutes: number): string {
 }
 
 export function FocusTodayStats() {
-  const { isAuthenticated, userId, isLoading: authLoading } = useAuthState();
+  const { data, isLoading } = useFocusTodayStats();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["focus-today-stats", userId],
-    queryFn: async () => {
-      if (isAuthenticated && userId) {
-        const [entries, streak] = await Promise.all([
-          timeEntryService.getEntries(userId, 1),
-          streakService.getStreak(userId),
-        ]);
-        const todayEntries = (entries as TimeEntry[]).filter(
-          (e) => e.notes?.includes("Focus session")
-        );
-        const todayMinutes = Math.round(
-          todayEntries.reduce((sum, e) => sum + (e.duration_seconds ?? 0), 0) / 60
-        );
-        return { streak: streak?.current_streak ?? 0, todayMinutes, sessions: todayEntries.length };
-      }
-      // Guest mode: read from localStorage
-      const entries = (guestStorage.getEntries() as unknown as TimeEntry[]).filter((e) => {
-        const today = new Date().toDateString();
-        return new Date(e.started_at).toDateString() === today && e.notes?.includes("Focus session");
-      });
-      const todayMinutes = Math.round(
-        entries.reduce((sum, e) => sum + (e.duration_seconds ?? 0), 0) / 60
-      );
-      return { streak: 0, todayMinutes, sessions: entries.length };
-    },
-    enabled: !authLoading,
-    staleTime: 1000 * 60 * 2,
-  });
-
-  // Reserve the pill row height while loading so nothing below jumps.
-  if (authLoading || isLoading) {
-    return (
-      <div className="flex items-center justify-center gap-6 mb-8">
-        <div className="h-9 w-32 rounded-full bg-muted animate-pulse" />
-        <div className="h-9 w-32 rounded-full bg-muted animate-pulse" />
-      </div>
-    );
-  }
-
-  if (!data || (data.sessions === 0 && data.streak === 0)) return null;
+  // The Focus page gates the whole setup behind a skeleton, so by the time this
+  // renders the data is ready. Render nothing while loading or when empty.
+  if (isLoading || !data || (data.sessions === 0 && data.streak === 0)) return null;
 
   return (
     <div className="flex items-center justify-center gap-6 mb-8">

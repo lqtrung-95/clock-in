@@ -3,7 +3,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { FocusSetupAtmosphere } from "@/components/focus/focus-setup-atmosphere";
 import { FocusAddVideoDialog } from "@/components/focus/focus-add-video-dialog";
 import { FocusTimerSettingsModal } from "@/components/focus/focus-timer-settings-modal";
@@ -40,7 +39,6 @@ interface FocusSetupViewProps {
   // Category
   selectedCategory: string;
   categories: Category[];
-  categoriesLoading: boolean;
   isAuthenticated: boolean;
   isPro: boolean;
   taskDescription: string;
@@ -73,7 +71,7 @@ export function FocusSetupView({
   timerSettings, effectivePreset, timerSettingsOpen,
   background, videoEmbedUrl, overlay, selectedSound, isPlaying, customVideos,
   showAddVideoDialog, newVideoUrl, newVideoTitle,
-  selectedCategory, categories, categoriesLoading, isAuthenticated, isPro, taskDescription, aiCatSuggesting,
+  selectedCategory, categories, isAuthenticated, isPro, taskDescription, aiCatSuggesting,
   onPresetSelect, onOpenTimerSettings, onCloseTimerSettings, onSaveTimerSettings,
   onSetBackground, onSetVideoEmbedUrl, onSetOverlay, onSetSelectedSound,
   onPlayAudio, onPauseAudio, onAddVideoClick, onDeleteCustomVideo,
@@ -196,15 +194,7 @@ export function FocusSetupView({
                 />
               </div>
             )}
-            {categoriesLoading ? (
-              // Placeholder chips so the section keeps its height instead of
-              // flashing the "No categories yet" empty state while loading.
-              <div className="flex gap-2 flex-wrap">
-                {[92, 110, 84, 120, 96, 100].map((w, i) => (
-                  <Skeleton key={i} className="h-10 rounded-xl" style={{ width: w }} />
-                ))}
-              </div>
-            ) : categories.length > 0 ? (
+            {categories.length > 0 ? (
               <div className="flex gap-2 flex-wrap">
                 {categories.map((cat) => (
                   <button
