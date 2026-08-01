@@ -152,7 +152,7 @@ export default function HomePage() {
             userName=""
             onStartFocus={() => router.push("/focus")}
             onAddCategories={() => router.push("/categories")}
-            onSetGoal={() => router.push("/goals")}
+            onSetGoal={() => router.push("/progress/goals")}
             onBrowseScenes={() => router.push("/focus")}
           />
         </div>
@@ -193,9 +193,9 @@ export default function HomePage() {
           <HomeStreakCard streak={streak?.current_streak ?? 0} weekActiveDays={weekActiveDays} />
 
           <div className="lg:col-span-2">
-            <HomeWeeklyGlance data={weeklyData} onViewInsights={() => router.push("/stats")} />
+            <HomeWeeklyGlance data={weeklyData} onViewInsights={() => router.push("/insights")} />
           </div>
-          <HomeActiveGoals goals={goals} onViewAll={() => router.push("/goals")} />
+          <HomeActiveGoals goals={goals} onViewAll={() => router.push("/progress/goals")} />
 
           {/* Recent sessions */}
           <Card className="border border-border bg-card p-6 lg:col-span-2">
@@ -205,7 +205,7 @@ export default function HomePage() {
                 <p className="mt-0.5 text-[13px] text-muted-foreground">Your latest tracking</p>
               </div>
               <button
-                onClick={() => router.push("/history")}
+                onClick={() => router.push("/insights/history")}
                 className="flex items-center gap-0.5 text-[13px] font-semibold text-cyan-600 dark:text-cyan-400"
               >
                 History <ChevronRight className="h-3.5 w-3.5" />
@@ -221,8 +221,8 @@ export default function HomePage() {
               xpPct={levelInfo?.progressPercentage ?? 0}
               hasDream={!!dreamGoal}
               dreamPct={dreamProgress?.percentage ?? 0}
-              onOpenLevel={() => router.push("/achievements")}
-              onOpenDream={() => router.push("/dream")}
+              onOpenLevel={() => router.push("/progress/badges")}
+              onOpenDream={() => router.push("/progress/dream")}
             />
           )}
         </div>

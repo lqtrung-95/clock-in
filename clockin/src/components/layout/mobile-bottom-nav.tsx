@@ -7,12 +7,9 @@ import {
   Home,
   Brain,
   Users,
-  Target,
   MoreHorizontal,
-  List,
   BarChart3,
   Trophy,
-  Tags,
   Settings,
   LogOut,
   LogIn,
@@ -26,16 +23,13 @@ import { createClient } from "@/lib/supabase/client";
 const primaryNavItems = [
   { href: "/focus", label: "Focus", icon: Brain },
   { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/social", label: "Social", icon: Users },
-  { href: "/goals", label: "Goals", icon: Target },
+  { href: "/insights", label: "Insights", icon: BarChart3 },
+  { href: "/progress", label: "Progress", icon: Trophy },
 ];
 
 // Secondary items shown in the "More" sheet
 const secondaryNavItems = [
-  { href: "/history", label: "History", icon: List },
-  { href: "/stats", label: "Stats", icon: BarChart3 },
-  { href: "/achievements", label: "Achievements", icon: Trophy },
-  { href: "/categories", label: "Categories", icon: Tags },
+  { href: "/social", label: "Social", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
   { href: "/install", label: "Install App", icon: Download },
 ];

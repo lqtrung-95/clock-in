@@ -9,28 +9,23 @@ import { PlanBadge } from "@/components/billing/plan-badge";
 import {
   Home,
   Brain,
-  List,
   BarChart3,
-  Target,
   Settings,
   LogOut,
   LogIn,
   Flame,
-  Tags,
   Trophy,
   Users,
 } from "lucide-react";
 
+// Consolidated primary nav (Insights folds Stats+History, Progress folds
+// Goals+Achievements+Dream). Categories moved into Settings.
 const navItems = [
   { href: "/focus", label: "Focus", icon: Brain },
   { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/history", label: "History", icon: List },
-  { href: "/stats", label: "Stats", icon: BarChart3 },
-  { href: "/goals", label: "Goals", icon: Target },
-  { href: "/achievements", label: "Achievements", icon: Trophy },
+  { href: "/insights", label: "Insights", icon: BarChart3 },
+  { href: "/progress", label: "Progress", icon: Trophy },
   { href: "/social", label: "Social", icon: Users },
-  { href: "/categories", label: "Categories", icon: Tags },
-  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -127,6 +122,34 @@ export function AppSidebar() {
             );
           })}
         </nav>
+
+        {/* Settings (secondary) */}
+        <div className="px-4 pb-1">
+          <Link
+            href="/settings"
+            className={cn(
+              "group relative flex items-center gap-3.5 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300",
+              pathname.startsWith("/settings")
+                ? "text-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            {pathname.startsWith("/settings") && (
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-blue-500/10" />
+            )}
+            <span
+              className={cn(
+                "relative z-10 flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-300",
+                pathname.startsWith("/settings")
+                  ? "bg-gradient-to-br from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30"
+                  : "bg-muted text-muted-foreground group-hover:text-foreground"
+              )}
+            >
+              <Settings className="h-[18px] w-[18px]" />
+            </span>
+            <span className="relative z-10 tracking-wide">Settings</span>
+          </Link>
+        </div>
 
         {/* Auth Section */}
         <div className="border-t border-border p-4">

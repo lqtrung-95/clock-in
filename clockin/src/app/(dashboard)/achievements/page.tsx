@@ -1,9 +1,5 @@
-import AchievementsContent from "./achievements-content";
+import { redirect } from "next/navigation";
 
-// Force dynamic rendering to avoid static generation issues
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
-export default function AchievementsPage() {
-  return <AchievementsContent />;
+export default function Page() {
+  redirect("/progress/badges");
 }
