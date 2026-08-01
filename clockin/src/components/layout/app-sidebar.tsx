@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { useAuthState } from "@/hooks/use-auth-state";
 import { PlanBadge } from "@/components/billing/plan-badge";
 import {
   Home,
@@ -36,18 +36,7 @@ const navItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function checkAuth() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsAuthenticated(!!user);
-      setUserId(user?.id ?? null);
-    }
-    checkAuth();
-  }, []);
+  const { isAuthenticated, userId } = useAuthState();
 
   async function handleSignOut() {
     const supabase = createClient();
