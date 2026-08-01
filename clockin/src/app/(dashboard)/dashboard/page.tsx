@@ -11,6 +11,7 @@ import { goalService } from "@/services/goal-service";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useGamification } from "@/hooks/use-gamification";
 import { useDreamGoal } from "@/hooks/use-dream-goal";
+import { createClient } from "@/lib/supabase/client";
 import { guestStorage } from "@/lib/guest-storage";
 import { Card } from "@/components/ui/card";
 import { EntryList } from "@/components/entries/entry-list";
@@ -53,11 +54,14 @@ export default function HomePage() {
     queryKey: ["dashboard", userId],
     queryFn: async () => {
       if (isAuthenticated && userId) {
-        const [cats, ents, streakData, goalsData] = await Promise.all([
+        const supabase = createClient();
+        const [cats, ents, streakData, goalsData, everTracked] = await Promise.all([
           categoryService.getCategories(userId),
           timeEntryService.getEntries(userId, 7),
           streakService.getStreak(userId),
           goalService.getGoals(userId),
+          // Lifetime existence check — cheap head count, no rows returned.
+          supabase.from("time_entries").select("id", { count: "exact", head: true }).eq("user_id", userId),
         ]);
         const goalsWithProgress = await Promise.all(
           goalsData.map(async (goal) => {
@@ -65,13 +69,21 @@ export default function HomePage() {
             return { ...goal, progress: p } as GoalWithProgress;
           })
         );
-        return { categories: cats as Category[], entries: ents as TimeEntry[], streak: streakData, goals: goalsWithProgress };
+        return {
+          categories: cats as Category[],
+          entries: ents as TimeEntry[],
+          streak: streakData,
+          goals: goalsWithProgress,
+          hasEverTracked: (everTracked.count ?? 0) > 0,
+        };
       }
+      const guestEntries = guestStorage.getEntries();
       return {
         categories: guestStorage.getCategories() as unknown as Category[],
-        entries: guestStorage.getEntries() as unknown as TimeEntry[],
+        entries: guestEntries as unknown as TimeEntry[],
         streak: null as { current_streak: number } | null,
         goals: [] as GoalWithProgress[],
+        hasEverTracked: guestEntries.length > 0,
       };
     },
     enabled: !authLoading,
@@ -81,6 +93,7 @@ export default function HomePage() {
   const entries = dashboardData?.entries ?? [];
   const streak = dashboardData?.streak ?? null;
   const goals = dashboardData?.goals ?? [];
+  const hasEverTracked = dashboardData?.hasEverTracked ?? false;
 
   function invalidateDashboard() {
     queryClient.invalidateQueries({ queryKey: ["dashboard", userId] });
@@ -128,8 +141,10 @@ export default function HomePage() {
     return <DashboardPageSkeleton />;
   }
 
-  // First-run: authenticated but nothing tracked yet — guide, don't show empties.
-  if (isAuthenticated && entries.length === 0 && goals.length === 0) {
+  // First-run: authenticated, never tracked a session, and no goals set — guide
+  // them in. Uses a lifetime check so returning users idle >7 days aren't sent
+  // back to onboarding.
+  if (isAuthenticated && !hasEverTracked && goals.length === 0) {
     return (
       <div className="p-4 md:p-8 lg:p-10">
         <div className="mx-auto max-w-6xl">
