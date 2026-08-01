@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { usePomodoro } from "@/hooks/use-pomodoro";
 import { usePomodoroStore } from "@/stores/pomodoro-store";
 import { useFocusAudio } from "@/hooks/use-focus-audio";
@@ -156,6 +156,28 @@ export default function FocusPage() {
     enabled: !authLoading,
     staleTime: 1000 * 60 * 5,
   });
+
+  // Preselect category + preset when arriving from Home's quick-start
+  // (/focus?cat=…&preset=…). Applied once, after categories resolve.
+  const searchParams = useSearchParams();
+  const appliedQuickStart = useRef(false);
+  useEffect(() => {
+    if (appliedQuickStart.current || categoriesPending) return;
+    const cat = searchParams.get("cat");
+    const preset = searchParams.get("preset") as keyof typeof POMODORO_PRESETS | null;
+    if (!cat && !preset) return;
+    appliedQuickStart.current = true;
+    if (cat && (queriedCategories as unknown as Category[]).some((c) => c.id === cat)) {
+      setSelectedCategory(cat);
+    }
+    if (preset && preset in POMODORO_PRESETS) {
+      setSelectedPreset(preset);
+      updateTimerSettings({
+        workMinutes: POMODORO_PRESETS[preset].work,
+        shortBreakMinutes: POMODORO_PRESETS[preset].break,
+      });
+    }
+  }, [searchParams, categoriesPending, queriedCategories, updateTimerSettings]);
 
 
   // Save completed work session to database / localStorage

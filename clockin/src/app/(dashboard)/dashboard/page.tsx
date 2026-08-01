@@ -10,110 +10,45 @@ import { streakService } from "@/services/streak-service";
 import { goalService } from "@/services/goal-service";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useGamification } from "@/hooks/use-gamification";
+import { useDreamGoal } from "@/hooks/use-dream-goal";
 import { guestStorage } from "@/lib/guest-storage";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { EntryList } from "@/components/entries/entry-list";
 import { TimerWidget } from "@/components/dashboard/timer-widget";
-import { LoginBanner, LoginPrompt } from "@/components/auth/login-prompt";
-import { FirstTimeSetupBanner } from "@/components/onboarding/first-time-setup-banner";
-import { DreamCrystalMini } from "@/components/focus/dream-crystal-mini";
-import { EvolvedCrystal } from "@/components/focus/evolved-crystal";
-import { XPProgressBar } from "@/components/gamification/xp-progress-bar";
+import { LoginBanner } from "@/components/auth/login-prompt";
+import { HomeStatStrip } from "@/components/home/home-stat-strip";
+import { HomeQuickStart } from "@/components/home/home-quick-start";
+import { HomeStreakCard } from "@/components/home/home-streak-card";
+import { HomeWeeklyGlance } from "@/components/home/home-weekly-glance";
+import { HomeActiveGoals } from "@/components/home/home-active-goals";
+import { HomeMomentumCard } from "@/components/home/home-momentum-card";
+import { HomeEmptyState } from "@/components/home/home-empty-state";
 import { DashboardPageSkeleton } from "@/components/skeletons/dashboard-page-skeleton";
-import {
-  Clock,
-  Flame,
-  Target,
-  TrendingUp,
-  Calendar,
-  Brain,
-  ChevronRight,
-  Sparkles,
-  Trophy,
-} from "lucide-react";
-import { format, subDays, parseISO } from "date-fns";
+import { Sparkles, ChevronRight } from "lucide-react";
+import { format, subDays, parseISO, startOfWeek, addDays, isSameDay } from "date-fns";
+import type { POMODORO_PRESETS } from "@/lib/constants";
 import type { TimeEntry, Category } from "@/types/timer";
-import type { Goal, ChallengeProgress } from "@/types/gamification";
+import type { Goal } from "@/types/gamification";
 
 interface GoalWithProgress extends Goal {
-  progress: {
-    current: number;
-    target: number;
-    percentage: number;
-  } | null;
+  progress: { current: number; target: number; percentage: number } | null;
 }
 
-// Enhanced Stat Card Component
-function StatCard({
-  icon: Icon,
-  value,
-  label,
-  gradient,
-  delay = 0,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  value: string | number;
-  label: string;
-  gradient: string;
-  delay?: number;
-}) {
-  return (
-    <Card
-      className="group relative overflow-hidden border border-border bg-card p-5 transition-all duration-500 hover:-translate-y-1 hover:border-border/80 hover:bg-secondary"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      {/* Background Gradient */}
-      <div
-        className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`}
-      />
-
-      {/* Glass Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-
-      <div className="relative flex items-start gap-4">
-        <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg transition-transform duration-500 group-hover:scale-110`}
-        >
-          <Icon className="h-6 w-6" />
-        </div>
-        <div>
-          <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
-          <p className="text-xs font-medium text-muted-foreground">{label}</p>
-        </div>
-      </div>
-    </Card>
-  );
+function greetingFor(date: Date): string {
+  const h = date.getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
 }
 
-// Glass Card Component for sections
-function GlassCard({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <Card
-      className={`border border-border bg-card backdrop-blur-sm ${className}`}
-    >
-      {children}
-    </Card>
-  );
-}
-
-export default function DashboardPage() {
+export default function HomePage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading, userId } = useAuthState();
   const queryClient = useQueryClient();
   const { status } = useTimerStore();
+  const { userStats, levelInfo } = useGamification(userId);
+  const { dreamGoal, progress: dreamProgress } = useDreamGoal(userId);
 
-  // Gamification — userId comes directly from useAuthState
-  const { userStats, levelInfo, challenges, crystalConfig } = useGamification(userId);
-
-  // Fetch dashboard data once userId and auth are resolved
   const { data: dashboardData, isLoading: dataLoading } = useQuery({
     queryKey: ["dashboard", userId],
     queryFn: async () => {
@@ -124,29 +59,18 @@ export default function DashboardPage() {
           streakService.getStreak(userId),
           goalService.getGoals(userId),
         ]);
-
         const goalsWithProgress = await Promise.all(
           goalsData.map(async (goal) => {
-            const progress = await goalService.calculateProgress(userId, goal);
-            return { ...goal, progress } as GoalWithProgress;
+            const p = await goalService.calculateProgress(userId, goal);
+            return { ...goal, progress: p } as GoalWithProgress;
           })
         );
-
-        return {
-          categories: cats as Category[],
-          entries: ents as TimeEntry[],
-          streak: streakData,
-          goals: goalsWithProgress,
-        };
+        return { categories: cats as Category[], entries: ents as TimeEntry[], streak: streakData, goals: goalsWithProgress };
       }
-
-      // Guest data
-      const cats = guestStorage.getCategories();
-      const ents = guestStorage.getEntries();
       return {
-        categories: cats as unknown as Category[],
-        entries: ents as unknown as TimeEntry[],
-        streak: null,
+        categories: guestStorage.getCategories() as unknown as Category[],
+        entries: guestStorage.getEntries() as unknown as TimeEntry[],
+        streak: null as { current_streak: number } | null,
         goals: [] as GoalWithProgress[],
       };
     },
@@ -162,331 +86,131 @@ export default function DashboardPage() {
     queryClient.invalidateQueries({ queryKey: ["dashboard", userId] });
   }
 
-  // Today's stats
+  function beginFocus(categoryId: string, preset: keyof typeof POMODORO_PRESETS) {
+    router.push(`/focus?cat=${encodeURIComponent(categoryId)}&preset=${encodeURIComponent(preset)}`);
+  }
+
   const todayStats = useMemo(() => {
     const today = format(new Date(), "yyyy-MM-dd");
-    const todayEntries = entries.filter((e) =>
-      e.started_at.startsWith(today)
-    );
-    const totalMinutes = todayEntries.reduce(
-      (sum, e) => sum + (e.duration_seconds || 0) / 60,
-      0
-    );
-    return {
-      hours: Math.round((totalMinutes / 60) * 10) / 10,
-      sessions: todayEntries.length,
-    };
+    const todays = entries.filter((e) => e.started_at.startsWith(today));
+    const minutes = todays.reduce((s, e) => s + (e.duration_seconds || 0) / 60, 0);
+    return { hours: Math.round((minutes / 60) * 10) / 10, sessions: todays.length };
   }, [entries]);
 
-  // Weekly chart data
+  const weekHours = useMemo(
+    () => Math.round(entries.reduce((s, e) => s + (e.duration_seconds || 0), 0) / 3600),
+    [entries]
+  );
+
   const weeklyData = useMemo(() => {
     const data: { day: string; date: string; hours: number }[] = [];
     for (let i = 6; i >= 0; i--) {
       const d = subDays(new Date(), i);
       data.push({ day: format(d, "EEE"), date: format(d, "yyyy-MM-dd"), hours: 0 });
     }
-    entries.forEach((entry) => {
-      if (!entry.duration_seconds) return;
-      const entryDate = format(parseISO(entry.started_at), "yyyy-MM-dd");
-      const dayData = data.find((d) => d.date === entryDate);
-      if (dayData) dayData.hours += entry.duration_seconds / 3600;
+    entries.forEach((e) => {
+      if (!e.duration_seconds) return;
+      const d = data.find((x) => x.date === format(parseISO(e.started_at), "yyyy-MM-dd"));
+      if (d) d.hours += e.duration_seconds / 3600;
     });
-    return data;
+    return data.map(({ day, hours }) => ({ day, hours }));
   }, [entries]);
 
-  const maxHours = Math.max(...weeklyData.map((d) => d.hours), 1);
+  const weekActiveDays = useMemo(() => {
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    return Array.from({ length: 7 }, (_, i) => {
+      const day = addDays(weekStart, i);
+      return entries.some((e) => isSameDay(parseISO(e.started_at), day));
+    });
+  }, [entries]);
 
   if (dataLoading || authLoading) {
     return <DashboardPageSkeleton />;
   }
 
+  // First-run: authenticated but nothing tracked yet — guide, don't show empties.
+  if (isAuthenticated && entries.length === 0 && goals.length === 0) {
+    return (
+      <div className="p-4 md:p-8 lg:p-10">
+        <div className="mx-auto max-w-6xl">
+          <HomeEmptyState
+            userName=""
+            onStartFocus={() => router.push("/focus")}
+            onAddCategories={() => router.push("/categories")}
+            onSetGoal={() => router.push("/goals")}
+            onBrowseScenes={() => router.push("/focus")}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-8 lg:p-10">
-      <div className="mx-auto max-w-6xl space-y-8">
+      <div className="mx-auto max-w-6xl space-y-6">
         {!isAuthenticated && <LoginBanner feature="sync" />}
 
-        <FirstTimeSetupBanner
-          entries={entries}
-          categories={categories}
-          isAuthenticated={!!isAuthenticated}
-        />
-
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
-              <p className="text-sm font-medium text-cyan-600 dark:text-cyan-400">
-                Welcome back
-              </p>
-            </div>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-              Dashboard
-            </h1>
-            <p className="text-muted-foreground">{format(new Date(), "EEEE, MMMM d")}</p>
-          </div>
-          <Button
-            onClick={() => router.push("/focus")}
-            className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
-          >
-            <Brain className="mr-2 h-4 w-4" />
-            Focus Mode
-          </Button>
+        <div>
+          <span className="flex items-center gap-1.5 text-xs font-bold text-cyan-600 dark:text-cyan-400">
+            <Sparkles className="h-3.5 w-3.5" /> {format(new Date(), "EEEE, MMMM d")}
+          </span>
+          <h1 className="mt-1.5 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+            {greetingFor(new Date())}
+          </h1>
+          <p className="mt-1 text-muted-foreground">Resume in one tap, or open Focus to fine-tune your setup.</p>
         </div>
 
-        {/* Timer Widget - Show when tracking */}
         {status !== "idle" && <TimerWidget />}
 
-        {/* Stats Grid with 3D Crystal */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <StatCard
-            icon={Clock}
-            value={todayStats.hours}
-            label="Hours Today"
-            gradient="from-blue-500 to-cyan-500"
-            delay={0}
-          />
-          <StatCard
-            icon={Calendar}
-            value={todayStats.sessions}
-            label="Sessions Today"
-            gradient="from-purple-500 to-pink-500"
-            delay={100}
-          />
-          <StatCard
-            icon={Flame}
-            value={streak?.current_streak || 0}
-            label="Day Streak"
-            gradient="from-orange-500 to-red-500"
-            delay={200}
-          />
-          <StatCard
-            icon={TrendingUp}
-            value={Math.round(
-              entries.reduce((sum, e) => sum + (e.duration_seconds || 0), 0) / 3600
-            )}
-            label="Hours This Week"
-            gradient="from-emerald-500 to-teal-500"
-            delay={300}
-          />
-          {/* 3D Crystal Card */}
-          <Card className="group relative overflow-hidden border border-border bg-card p-4 transition-all duration-500 hover:-translate-y-1 hover:border-border/80 hover:bg-secondary flex items-center justify-center min-h-[120px] cursor-pointer"
-            style={{ animationDelay: '400ms' }}
-            onClick={() => router.push("/achievements")}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-            <div className="relative flex flex-col items-center gap-1">
-              {isAuthenticated && crystalConfig ? (
-                <>
-                  <EvolvedCrystal
-                    level={userStats?.current_level || 1}
-                    progress={levelInfo?.progressPercentage || 0}
-                    shape={crystalConfig.active_shape}
-                    color={crystalConfig.active_color}
-                    theme={crystalConfig.active_theme}
-                    size="sm"
-                    animate={false}
-                  />
-                  <span className="text-[10px] font-medium text-muted-foreground">Level {userStats?.current_level || 1}</span>
-                </>
-              ) : (
-                <>
-                  <DreamCrystalMini progress={Math.min(todayStats.hours * 10, 100)} size="sm" animate />
-                  <span className="text-xs font-medium text-muted-foreground">Daily Energy</span>
-                </>
-              )}
-            </div>
-          </Card>
-        </div>
+        <HomeStatStrip
+          hoursToday={todayStats.hours}
+          sessionsToday={todayStats.sessions}
+          streak={streak?.current_streak ?? 0}
+          weekHours={weekHours}
+        />
 
-        {/* Main Content Grid */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Weekly Activity Chart */}
-          <GlassCard className="lg:col-span-2 p-6">
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">
-                  Weekly Activity
-                </h2>
-                <p className="text-sm text-muted-foreground">Your focus time this week</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push("/stats")}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                View Stats
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex h-48 items-end justify-between gap-3">
-              {weeklyData.map((day) => (
-                <div key={day.day} className="flex flex-1 flex-col items-center gap-3">
-                  <div className="w-full relative">
-                    <div
-                      className="w-full rounded-t-lg bg-gradient-to-t from-blue-500 to-cyan-400 transition-all duration-700"
-                      style={{
-                        height: `${(day.hours / maxHours) * 140}px`,
-                        minHeight: day.hours > 0 ? "4px" : "0",
-                        opacity: day.hours > 0 ? 1 : 0.2,
-                      }}
-                    />
-                    {/* Glow effect for bars with data */}
-                    {day.hours > 0 && (
-                      <div
-                        className="absolute inset-0 rounded-t-lg bg-cyan-400/30 blur-lg"
-                        style={{
-                          height: `${(day.hours / maxHours) * 140}px`,
-                          minHeight: "4px",
-                        }}
-                      />
-                    )}
-                  </div>
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {day.day}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </GlassCard>
-
-          {/* Goals Preview */}
-          <GlassCard className="p-6">
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">Active Goals</h2>
-                <p className="text-sm text-muted-foreground">Track your progress</p>
-              </div>
-              {isAuthenticated && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push("/goals")}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Target className="mr-1 h-4 w-4" />
-                  All
-                </Button>
-              )}
-            </div>
-            <div className="space-y-5">
-              {!isAuthenticated ? (
-                <LoginPrompt feature="goals" />
-              ) : (
-                <>
-                  {goals.slice(0, 3).map((goal) => (
-                    <div key={goal.id} className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium capitalize text-foreground">
-                          {goal.period} Goal
-                        </span>
-                        <span className="text-cyan-600 dark:text-cyan-400">
-                          {goal.progress?.percentage || 0}%
-                        </span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-700"
-                          style={{ width: `${goal.progress?.percentage || 0}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground/70">
-                        {goal.progress?.current || 0}m /{" "}
-                        {goal.progress?.target || goal.target_minutes}m
-                      </p>
-                    </div>
-                  ))}
-                  {goals.length === 0 && (
-                    <div className="py-8 text-center">
-                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-                        <Target className="h-7 w-7 text-muted-foreground" />
-                      </div>
-                      <p className="mt-3 text-sm text-muted-foreground">No goals yet</p>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        onClick={() => router.push("/goals")}
-                        className="mt-1 text-cyan-600 dark:text-cyan-400"
-                      >
-                        Create your first goal
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </GlassCard>
-        </div>
-
-        {/* Weekly Challenges Preview */}
-        {isAuthenticated && challenges.length > 0 && (
-          <GlassCard className="p-6">
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">Weekly Challenges</h2>
-                <p className="text-sm text-muted-foreground">Complete to earn bonus XP</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push("/achievements")}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <Trophy className="mr-1 h-4 w-4" />
-                View All
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {challenges.slice(0, 3).map((challenge) => (
-                <Card key={challenge.id} className="border border-border bg-card/50 p-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">
-                        {challenge.challenge?.name || "Challenge"}
-                      </span>
-                      <span className="text-xs text-cyan-500">+{challenge.challenge?.xp_reward || 0} XP</span>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-700"
-                        style={{ width: `${Math.min((challenge.progress_current / challenge.progress_target) * 100, 100)}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {challenge.progress_current} / {challenge.progress_target}
-                    </p>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </GlassCard>
-        )}
-
-        {/* Recent Entries */}
-        <GlassCard className="p-6">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Recent Entries</h2>
-              <p className="text-sm text-muted-foreground">Your latest time tracking sessions</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push("/history")}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              View History
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
+        {/* Bento */}
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <HomeQuickStart categories={categories} onBegin={beginFocus} onFullSetup={() => router.push("/focus")} />
           </div>
-          <EntryList
-            entries={entries.slice(0, 5)}
-            onDelete={invalidateDashboard}
-            isGuest={!isAuthenticated}
-          />
-        </GlassCard>
+          <HomeStreakCard streak={streak?.current_streak ?? 0} weekActiveDays={weekActiveDays} />
+
+          <div className="lg:col-span-2">
+            <HomeWeeklyGlance data={weeklyData} onViewInsights={() => router.push("/stats")} />
+          </div>
+          <HomeActiveGoals goals={goals} onViewAll={() => router.push("/goals")} />
+
+          {/* Recent sessions */}
+          <Card className="border border-border bg-card p-6 lg:col-span-2">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-foreground">Recent sessions</h3>
+                <p className="mt-0.5 text-[13px] text-muted-foreground">Your latest tracking</p>
+              </div>
+              <button
+                onClick={() => router.push("/history")}
+                className="flex items-center gap-0.5 text-[13px] font-semibold text-cyan-600 dark:text-cyan-400"
+              >
+                History <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <EntryList entries={entries.slice(0, 5)} onDelete={invalidateDashboard} isGuest={!isAuthenticated} />
+          </Card>
+
+          {isAuthenticated && (
+            <HomeMomentumCard
+              level={userStats?.current_level ?? 1}
+              totalXp={userStats?.total_xp ?? 0}
+              xpPct={levelInfo?.progressPercentage ?? 0}
+              hasDream={!!dreamGoal}
+              dreamPct={dreamProgress?.percentage ?? 0}
+              onOpenLevel={() => router.push("/achievements")}
+              onOpenDream={() => router.push("/dream")}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
