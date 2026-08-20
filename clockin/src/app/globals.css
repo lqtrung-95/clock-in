@@ -1,159 +1,242 @@
 @import "tailwindcss";
-
-html {
-  scroll-behavior: smooth;
-}
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
+/* ==========================================================================
+   Ember token set.
+
+   Two vocabularies live here and they are NOT interchangeable:
+
+   1. The app vocabulary  — surface / ink / line / accent-* / data-*.
+      This is what application code writes: bg-surface-raised, text-ink-muted,
+      border-line, text-data-focus. Prefer it everywhere.
+
+   2. The shadcn vocabulary — background / card / muted / primary / border ...
+      Vendor primitives in src/components/ui/* are generated against these
+      names, so they are kept as aliases pointing at the same raw values.
+      Do not author new app code against them.
+
+   Names are deliberately distinct (ink-muted, not muted) because shadcn's
+   --muted is a SURFACE and --muted-foreground is the text. Reusing the name
+   would make bg-muted and text-muted resolve to unrelated colors.
+   ========================================================================== */
+
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+
+  /* ---- app vocabulary ---------------------------------------------- */
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-overlay: var(--surface-overlay);
+
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-accent-solid: var(--accent-solid);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ring: var(--accent-ring);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  /* Metric-semantic, not positional. A chart series, a stat tile and a
+     progress meter for the same metric must agree. */
+  --color-data-focus: var(--data-focus);
+  --color-data-streak: var(--data-streak);
+  --color-data-goal: var(--data-goal);
+  --color-data-xp: var(--data-xp);
+  --color-data-dream: var(--data-dream);
+  --color-data-neutral: var(--data-neutral);
+
+  /* ---- shadcn aliases (vendor primitives compile against these) ----- */
+  --color-background: var(--surface);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface-raised);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--surface-overlay);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--accent-solid);
+  --color-primary-foreground: var(--accent-fg);
+  --color-secondary: var(--surface-sunken);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--surface-sunken);
+  --color-muted-foreground: var(--ink-muted);
+  /* shadcn's --accent means "subtle hover surface", NOT brand. Brand is
+     --accent-solid. bg-accent is banned in app code by lint. */
+  --color-accent: var(--surface-sunken);
+  --color-accent-foreground: var(--ink);
+  --color-destructive: var(--danger);
+  --color-border: var(--line);
+  --color-input: var(--line);
+  --color-ring: var(--accent-ring);
+
+  --color-chart-1: var(--data-focus);
+  --color-chart-2: var(--data-goal);
+  --color-chart-3: var(--data-streak);
+  --color-chart-4: var(--data-xp);
+  --color-chart-5: var(--data-dream);
+
+  /* ---- radius -------------------------------------------------------
+     Literal values, not a calc() chain. One rule: radius grows exactly one
+     step per nesting level outward — control (sm) inside card (md) inside
+     dialog (lg). xl/2xl/3xl exist only so stray legacy classes still
+     resolve; lint bans them in app code. */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 16px;
+  --radius-2xl: 16px;
+  --radius-3xl: 16px;
+
+  /* ---- page widths — PageShell is the only consumer -----------------
+     --container-* is the Tailwind v4 namespace for max-w-* utilities. */
+  --container-prose: 42rem;
+  --container-content: 56rem;
+  --container-wide: 72rem;
 }
 
-/* Light Theme (Default) */
+/* ==========================================================================
+   Light
+   ========================================================================== */
 :root {
-  --radius: 0.75rem;
-  /* Light Base */
-  --background: #FFFFFF;
-  --foreground: #0F172A;
-  /* Cards */
-  --card: #FFFFFF;
-  --card-foreground: #0F172A;
-  --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
-  /* Primary Blue */
-  --primary: #3B82F6;
-  --primary-foreground: #FFFFFF;
-  /* Secondary - light gray */
-  --secondary: #F1F5F9;
-  --secondary-foreground: #334155;
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;
-  /* Accent Orange */
-  --accent: #F97316;
-  --accent-foreground: #FFFFFF;
-  --destructive: #EF4444;
-  /* Borders */
-  --border: #E2E8F0;
-  --input: #E2E8F0;
-  --ring: #3B82F6;
-  /* Chart colors */
-  --chart-1: #3B82F6;
-  --chart-2: #8B5CF6;
-  --chart-3: #10B981;
-  --chart-4: #F97316;
-  --chart-5: #EC4899;
-  /* Sidebar */
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #0F172A;
-  --sidebar-primary: #3B82F6;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F1F5F9;
-  --sidebar-accent-foreground: #0F172A;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #3B82F6;
+  --surface: #fcfbfa;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f4f2f0;
+  --surface-overlay: #ffffff;
+
+  --ink: #1a1817;
+  --ink-muted: #57534e;
+  --ink-subtle: #6e6660;
+
+  --line: #e7e4e1;
+  --line-strong: #d0cbc7;
+
+  --accent-solid: #b45309;
+  --accent-hover: #92400e;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(180, 83, 9, 0.1);
+  --accent-ring: rgba(180, 83, 9, 0.4);
+
+  --success: #1a7f4b;
+  --success-soft: rgba(26, 127, 75, 0.1);
+  --warn: #9a6300;
+  --warn-soft: rgba(154, 99, 0, 0.1);
+  --danger: #c0332b;
+  --danger-soft: rgba(192, 51, 43, 0.1);
+
+  --data-focus: #b45309;
+  --data-streak: #a64b22;
+  --data-goal: #4a7c59;
+  --data-xp: #6b5b7b;
+  --data-dream: #46707c;
+  --data-neutral: #a8a29e;
+
+  /* Shadows carry the ground's hue rather than pure black. */
+  --shadow-card: 0 1px 2px rgba(26, 24, 23, 0.05), 0 1px 3px rgba(26, 24, 23, 0.04);
+  --shadow-overlay: 0 12px 32px rgba(26, 24, 23, 0.12);
+
+  /* Stacking order, declared once. The focus session and the sidebar both
+     sat at z-50 before this existed. */
+  --z-sidebar: 30;
+  --z-topbar: 40;
+  --z-tabbar: 40;
+  --z-overlay: 60;
+  --z-immersive: 70;
+  --z-toast: 80;
+
+  /* Plain custom properties, not registered under @theme — use them via
+     inline style (transitionDuration: "var(--dur)") or JS, not a Tailwind
+     duration-* utility class. For class-based transitions use Tailwind's
+     built-in duration-150/300/500 + ease-out, which already read calm. */
+  --dur-fast: 120ms;
+  --dur: 180ms;
+  --dur-slow: 320ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Dark Theme */
+/* ==========================================================================
+   Dark
+   ========================================================================== */
 .dark {
-  --radius: 0.75rem;
-  /* Deep blue-black base — matches landing page */
-  --background: #060614;
-  --foreground: #F0F4FF;
-  /* Glassmorphic cards with blue tint */
-  --card: #0b0c1e;
-  --card-foreground: #F0F4FF;
-  --popover: #0d0e22;
-  --popover-foreground: #F0F4FF;
-  /* Primary Blue */
-  --primary: #3B82F6;
-  --primary-foreground: #FFFFFF;
-  /* Secondary - deep blue-tinted surface */
-  --secondary: #0f1025;
-  --secondary-foreground: #CBD5E1;
-  --muted: #0f1025;
-  --muted-foreground: #64748B;
-  /* Accent */
-  --accent: #06B6D4;
-  --accent-foreground: #FFFFFF;
-  --destructive: #EF4444;
-  /* Borders - glassmorphic white/5 */
-  --border: rgba(255, 255, 255, 0.07);
-  --input: rgba(255, 255, 255, 0.07);
-  --ring: #3B82F6;
-  /* Chart colors */
-  --chart-1: #3B82F6;
-  --chart-2: #8B5CF6;
-  --chart-3: #10B981;
-  --chart-4: #F97316;
-  --chart-5: #EC4899;
-  /* Sidebar - same deep base */
-  --sidebar: #060614;
-  --sidebar-foreground: #F0F4FF;
-  --sidebar-primary: #3B82F6;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: rgba(59, 130, 246, 0.08);
-  --sidebar-accent-foreground: #F0F4FF;
-  --sidebar-border: rgba(255, 255, 255, 0.05);
-  --sidebar-ring: #3B82F6;
+  --surface: #12100f;
+  --surface-raised: #1a1817;
+  --surface-sunken: #161413;
+  --surface-overlay: #201d1c;
+
+  --ink: #f5f2f0;
+  --ink-muted: #a8a29e;
+  --ink-subtle: #8e8884;
+
+  /* Solid, not rgba(255,255,255,.07) — a translucent border disappears
+     entirely over the focus session's video backgrounds. */
+  --line: #2a2624;
+  --line-strong: #3d3835;
+
+  --accent-solid: #f0a868;
+  --accent-hover: #f5bb85;
+  --accent-fg: #12100f;
+  --accent-soft: rgba(240, 168, 104, 0.14);
+  --accent-ring: rgba(240, 168, 104, 0.45);
+
+  --success: #57c98a;
+  --success-soft: rgba(87, 201, 138, 0.14);
+  --warn: #d9a441;
+  --warn-soft: rgba(217, 164, 65, 0.14);
+  --danger: #f0736a;
+  --danger-soft: rgba(240, 115, 106, 0.14);
+
+  --data-focus: #f0a868;
+  --data-streak: #e89b72;
+  --data-goal: #7fb98a;
+  --data-xp: #a896b8;
+  --data-dream: #7fb3c0;
+  --data-neutral: #5c5652;
+
+  /* In dark, elevation reads through surface lightness, not shadow. */
+  --shadow-card: none;
+  --shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.55);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-surface text-ink antialiased;
   }
-  /* Subtle grid pattern for dark mode — matches landing page aesthetic */
-  .dark body {
-    background-image:
-      linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
-    background-size: 64px 64px;
+
+  /* Digits that sit in columns must not jitter between frames. */
+  .tabular,
+  [data-tabular] {
+    font-variant-numeric: tabular-nums;
   }
-  /* Scrollbar styling */
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--ink);
+  }
+
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -162,90 +245,15 @@ html {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #CBD5E1;
-    border-radius: 3px;
+    background: var(--line-strong);
+    border-radius: 999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #94A3B8;
+    background: var(--ink-subtle);
   }
-}
-
-/* Dark mode scrollbar */
-.dark ::-webkit-scrollbar-track {
-  background: #000000;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: #1E1E1E;
-}
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #2A2A2A;
 }
 
 @layer utilities {
-  /* Glassmorphism card - works with both themes */
-  .glass {
-    @apply backdrop-blur-xl border;
-    background: rgba(255, 255, 255, 0.5);
-    border-color: rgba(0, 0, 0, 0.1);
-  }
-  .dark .glass {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .glass-strong {
-    @apply backdrop-blur-2xl border;
-    background: rgba(255, 255, 255, 0.7);
-    border-color: rgba(0, 0, 0, 0.15);
-  }
-  .dark .glass-strong {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.15);
-  }
-
-  .glass-hover {
-    @apply transition-all duration-300;
-  }
-  .glass-hover:hover {
-    background: rgba(255, 255, 255, 0.8);
-    border-color: rgba(0, 0, 0, 0.2);
-  }
-  .dark .glass-hover:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.15);
-  }
-
-  /* Glow effects */
-  .glow-primary {
-    box-shadow: 0 0 30px rgba(59, 130, 246, 0.25);
-  }
-  .glow-accent {
-    box-shadow: 0 0 30px rgba(249, 115, 22, 0.25);
-  }
-  .glow-cyan {
-    box-shadow: 0 0 30px rgba(34, 211, 238, 0.25);
-  }
-
-  /* Gradient text */
-  .gradient-text {
-    @apply bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent;
-  }
-  .gradient-text-purple {
-    @apply bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent;
-  }
-  .gradient-text-orange {
-    @apply bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent;
-  }
-
-  /* Animated gradient border */
-  .gradient-border {
-    position: relative;
-    background: linear-gradient(var(--card), var(--card)) padding-box,
-                linear-gradient(135deg, rgba(59, 130, 246, 0.5), rgba(34, 211, 238, 0.5)) border-box;
-    border: 1px solid transparent;
-  }
-
-  /* Hide scrollbar */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -254,35 +262,27 @@ html {
     display: none;
   }
 
-  /* Pulse animation for live indicators */
-  @keyframes pulse-glow {
-    0%, 100% { opacity: 1; box-shadow: 0 0 10px currentColor; }
-    50% { opacity: 0.5; box-shadow: 0 0 20px currentColor; }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
   }
-  .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
+  .shadow-overlay {
+    box-shadow: var(--shadow-overlay);
   }
+}
 
-  /* Float animation */
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+/* Motion restraint: honour the OS setting globally rather than per-component. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 1ms;
+    --dur: 1ms;
+    --dur-slow: 1ms;
   }
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-
-  /* Shimmer effect for loading states */
-  @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-  }
-  .animate-shimmer {
-    background: linear-gradient(90deg, transparent, rgba(0,0,0,0.05), transparent);
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite;
-  }
-  .dark .animate-shimmer {
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
   }
 }
