@@ -5,12 +5,15 @@ export const alt = "Effortful - Turn effort into momentum";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+// Static hex, not CSS vars — Satori (next/og's edge renderer) has no
+// stylesheet to resolve custom properties against, so this mirrors the
+// ember dark-mode palette's literal values by hand.
 const features = [
-  { color: "#3b82f6", label: "Pomodoro Timer", desc: "25, 50 & 90 min sessions" },
-  { color: "#8b5cf6", label: "AI Coach", desc: "Personalized insights" },
-  { color: "#f97316", label: "Streaks", desc: "Build daily consistency" },
-  { color: "#eab308", label: "Leaderboard", desc: "Compete with friends" },
-  { color: "#22c55e", label: "Focus Rooms", desc: "Study together, silently" },
+  { color: "#F0A868", label: "Pomodoro Timer", desc: "25, 50 & 90 min sessions" },
+  { color: "#A896B8", label: "AI Coach", desc: "Personalized insights" },
+  { color: "#E89B72", label: "Streaks", desc: "Build daily consistency" },
+  { color: "#7FB98A", label: "Leaderboard", desc: "Compete with friends" },
+  { color: "#7FB3C0", label: "Focus Rooms", desc: "Study together, silently" },
 ];
 
 export default async function OgImage() {
@@ -22,7 +25,7 @@ export default async function OgImage() {
           height: 630,
           display: "flex",
           flexDirection: "column",
-          background: "#060614",
+          background: "#12100F",
           padding: "44px 48px 36px",
           position: "relative",
           overflow: "hidden",
@@ -30,8 +33,8 @@ export default async function OgImage() {
         }}
       >
         {/* Ambient orbs */}
-        <div style={{ position: "absolute", top: -140, left: -140, width: 420, height: 420, borderRadius: "50%", background: "rgba(37, 99, 235, 0.18)", filter: "blur(90px)" }} />
-        <div style={{ position: "absolute", bottom: -100, right: -100, width: 380, height: 380, borderRadius: "50%", background: "rgba(6, 182, 212, 0.13)", filter: "blur(90px)" }} />
+        <div style={{ position: "absolute", top: -140, left: -140, width: 420, height: 420, borderRadius: "50%", background: "rgba(240, 168, 104, 0.16)", filter: "blur(90px)" }} />
+        <div style={{ position: "absolute", bottom: -100, right: -100, width: 380, height: 380, borderRadius: "50%", background: "rgba(127, 179, 192, 0.12)", filter: "blur(90px)" }} />
 
         {/* Header: Logo left, tagline right */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
@@ -42,7 +45,7 @@ export default async function OgImage() {
                 width: 52,
                 height: 52,
                 borderRadius: 14,
-                background: "linear-gradient(135deg, #3b82f6, #06b6d4)",
+                background: "#F0A868",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -59,16 +62,7 @@ export default async function OgImage() {
           {/* Tagline */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
             <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 20, fontWeight: 400 }}>Turn effort into</span>
-            <span
-              style={{
-                fontSize: 32,
-                fontWeight: 800,
-                letterSpacing: "-0.5px",
-                background: "linear-gradient(90deg, #60a5fa, #67e8f9)",
-                backgroundClip: "text",
-                color: "transparent",
-              }}
-            >
+            <span style={{ fontSize: 32, fontWeight: 800, letterSpacing: "-0.5px", color: "#F0A868" }}>
               momentum
             </span>
           </div>

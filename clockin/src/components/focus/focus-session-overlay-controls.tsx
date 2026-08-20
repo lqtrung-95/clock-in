@@ -86,7 +86,7 @@ export function FocusSessionOverlayControls({
                 className={cn(
                   "px-2.5 py-1 rounded-lg text-xs transition-all duration-200 capitalize",
                   overlay === fx
-                    ? "bg-cyan-500 text-white shadow-lg shadow-cyan-500/30"
+                    ? "bg-[#F0A868] text-[#12100F] shadow-lg shadow-[#F0A868]/30"
                     : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
                 )}
               >

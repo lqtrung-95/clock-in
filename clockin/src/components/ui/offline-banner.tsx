@@ -34,9 +34,9 @@ export function OfflineBanner() {
       role="status"
       aria-live="polite"
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center gap-2",
-        "bg-amber-500/90 backdrop-blur-sm px-4 py-2 text-sm font-medium text-amber-950",
-        "shadow-lg border-t border-amber-400/50",
+        "fixed right-0 bottom-0 left-0 z-50 flex items-center justify-center gap-2",
+        "bg-warn/90 px-4 py-2 text-sm font-medium text-accent-fg backdrop-blur-sm",
+        "border-t border-warn shadow-lg",
         // On mobile, sit above the bottom nav (typically 56–64px tall)
         "pb-[calc(0.5rem+env(safe-area-inset-bottom))]",
       )}

@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import { DreamCrystalMini } from "@/components/focus/dream-crystal-mini";
-import { Plus, Flame, Target, Trash2, Mountain } from "lucide-react";
+import { Plus, Target, Trash2, Mountain } from "lucide-react";
 import { useDreamGoal } from "@/hooks/use-dream-goal";
 import { DreamGoalProgressRing } from "@/components/dream-goal/dream-goal-progress-ring";
 import { MountainProgressView } from "@/components/dream-goal/mountain-progress-view";
@@ -35,8 +35,7 @@ import type { Goal } from "@/types/gamification";
 import type { Category } from "@/types/timer";
 import { PageShell } from "@/components/ui-app/page-shell";
 import { DataCard } from "@/components/ui-app/data-card";
-import { StatRow } from "@/components/ui-app/stat-row";
-import { Stat } from "@/components/ui-app/stat";
+import { HeroStat, DividedStatStrip, DividedStat } from "@/components/ui-app/hero-stat";
 import { EmptyState } from "@/components/ui-app/empty-state";
 import { ProgressMeter } from "@/components/ui-app/progress-meter";
 import { Field } from "@/components/ui-app/field";
@@ -171,21 +170,30 @@ export default function GoalsPage() {
 
   return (
     <PageShell title="Progress" segments={SEGMENTS.progress} width="prose">
-        {/* Streak Cards with 3D Crystal */}
+        {/* Streak — dominant figure, with the crystal as a visual echo, not another tile */}
         {streak && (
-          <StatRow className="grid-cols-3 md:grid-cols-3">
-            <Stat label="Current streak" value={streak.current_streak} icon={Flame} metric="streak" size="md" />
-            <Stat label="Longest streak" value={streak.longest_streak} icon={Target} metric="goal" size="md" />
-            <div className="flex flex-col items-center justify-center gap-2 border-l border-line pl-4">
+          <div className="flex items-end justify-between gap-6">
+            <HeroStat
+              label="Current streak"
+              value={streak.current_streak}
+              unit="days"
+              metric="streak"
+              secondary={
+                <DividedStatStrip>
+                  <DividedStat label="Longest streak" value={streak.longest_streak} unit="days" metric="goal" />
+                </DividedStatStrip>
+              }
+            />
+            <div className="flex shrink-0 flex-col items-center gap-1.5">
               <DreamCrystalMini
                 progress={Math.min((streak.current_streak / Math.max(streak.longest_streak, 1)) * 100, 100)}
                 size="sm"
                 color="#EC4899"
                 animate
               />
-              <span className="text-xs font-medium text-ink-muted">Streak power</span>
+              <span className="text-label text-ink-subtle">Streak power</span>
             </div>
-          </StatRow>
+          </div>
         )}
 
         {/* Dream Goal Section */}
@@ -194,7 +202,7 @@ export default function GoalsPage() {
             <div className="flex items-center justify-between border-b border-line p-4">
               <div className="flex items-center gap-2">
                 <Mountain className="h-5 w-5 text-data-dream" />
-                <h2 className="text-base font-semibold text-ink">Dream goal</h2>
+                <h2 className="text-section text-ink">Dream goal</h2>
               </div>
               <span className="text-sm text-ink-muted">
                 {progress?.percentage.toFixed(1)}% · {dreamGoal.current_hours.toFixed(1)}h / {dreamGoal.target_hours}h
@@ -231,7 +239,7 @@ export default function GoalsPage() {
 
         {/* Goals Section */}
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-ink">Your goals</h2>
+          <h2 className="text-section text-ink">Your goals</h2>
           <Dialog open={formOpen} onOpenChange={setFormOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -289,45 +297,46 @@ export default function GoalsPage() {
           </Dialog>
         </div>
 
-        {/* Goals List */}
-        <div className="space-y-3">
-          {goals.map((goal) => (
-            <DataCard key={goal.id}>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium capitalize text-ink">{goal.period}</span>
-                    {goal.category_id && (
-                      <span className="text-sm text-ink-muted">
-                        · {categories.find((c) => c.id === goal.category_id)?.name || "Unknown"}
-                      </span>
+        {/* Goals list */}
+        {goals.length > 0 ? (
+          <DataCard>
+            <div className="flex flex-col divide-y divide-line">
+              {goals.map((goal) => (
+                <div key={goal.id} className="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium capitalize text-ink">{goal.period}</span>
+                      {goal.category_id && (
+                        <span className="text-sm text-ink-muted">
+                          · {categories.find((c) => c.id === goal.category_id)?.name || "Unknown"}
+                        </span>
+                      )}
+                    </div>
+                    {goal.progress && (
+                      <ProgressMeter
+                        value={goal.progress.current}
+                        target={goal.progress.target}
+                        metric="goal"
+                        showValues
+                        className="mt-3"
+                      />
                     )}
                   </div>
-                  {goal.progress && (
-                    <ProgressMeter
-                      value={goal.progress.current}
-                      target={goal.progress.target}
-                      metric="goal"
-                      showValues
-                      className="mt-3"
-                    />
-                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-ink-muted hover:bg-danger-soft hover:text-danger"
+                    onClick={() => handleDeleteGoal(goal.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-ink-muted hover:bg-danger-soft hover:text-danger"
-                  onClick={() => handleDeleteGoal(goal.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </DataCard>
-          ))}
-          {goals.length === 0 && (
-            <EmptyState icon={Target} title="No goals yet" description="Create one to start tracking!" />
-          )}
-        </div>
+              ))}
+            </div>
+          </DataCard>
+        ) : (
+          <EmptyState icon={Target} title="No goals yet" description="Create one to start tracking!" />
+        )}
     </PageShell>
   );
 }

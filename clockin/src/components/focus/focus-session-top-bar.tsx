@@ -44,8 +44,8 @@ export function FocusSessionTopBar({
           className={cn(
             "flex items-center gap-2 px-4 py-2.5 rounded-full backdrop-blur-md shadow-lg",
             isWork
-              ? "bg-gradient-to-r from-blue-600/80 to-cyan-600/80 border border-blue-400/50 shadow-blue-500/20"
-              : "bg-gradient-to-r from-orange-600/80 to-amber-600/80 border border-orange-400/50 shadow-orange-500/20"
+              ? "bg-[#F0A868]/80 border border-[#F0A868]/50 shadow-[#F0A868]/20"
+              : "bg-[#7FB98A]/80 border border-[#7FB98A]/50 shadow-[#7FB98A]/20"
           )}
         >
           {isWork ? (

@@ -19,8 +19,7 @@ import { StatsPageSkeleton } from "@/components/skeletons/stats-page-skeleton";
 import { PageShell } from "@/components/ui-app/page-shell";
 import { Section } from "@/components/ui-app/section";
 import { DataCard } from "@/components/ui-app/data-card";
-import { Stat } from "@/components/ui-app/stat";
-import { StatRow } from "@/components/ui-app/stat-row";
+import { HeroStat, DividedStatStrip, DividedStat } from "@/components/ui-app/hero-stat";
 import { EmptyState } from "@/components/ui-app/empty-state";
 import { MetricChart } from "@/components/ui-app/metric-chart";
 import { SEGMENTS } from "@/lib/navigation";
@@ -32,7 +31,7 @@ import {
   Tooltip,
 } from "recharts";
 import { format, subDays, parseISO } from "date-fns";
-import { Clock, Flame, Calendar, BarChart3 } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import type { TimeEntry } from "@/types/timer";
 import type { DailyStats } from "@/services/stats-service";
 
@@ -162,17 +161,23 @@ export default function AnalyticsPage() {
       segments={SEGMENTS.insights}
       actions={<ShareStatsCard entries={entries} streak={streak?.current_streak ?? 0} />}
     >
-      <StatRow>
-        <Stat label="Total hours" value={Math.round(totalHours * 10) / 10} icon={Clock} metric="focus" />
-        <Stat label="Sessions" value={totalEntries} icon={Calendar} metric="goal" />
-        <Stat label="Day streak" value={streak?.current_streak || 0} icon={Flame} metric="streak" />
-        <Stat
-          label="Avg minutes"
-          value={totalEntries > 0 ? Math.round((totalHours * 60) / totalEntries) : 0}
-          icon={BarChart3}
-          metric="xp"
-        />
-      </StatRow>
+      <HeroStat
+        label="Total hours"
+        value={Math.round(totalHours * 10) / 10}
+        unit="h"
+        metric="focus"
+        secondary={
+          <DividedStatStrip>
+            <DividedStat label="Sessions" value={totalEntries} metric="goal" />
+            <DividedStat label="Day streak" value={streak?.current_streak || 0} metric="streak" />
+            <DividedStat
+              label="Avg minutes"
+              value={totalEntries > 0 ? Math.round((totalHours * 60) / totalEntries) : 0}
+              metric="xp"
+            />
+          </DividedStatStrip>
+        }
+      />
 
       {/* AI Focus Insights — free users get 3/month, Pro gets unlimited */}
       {userId && (

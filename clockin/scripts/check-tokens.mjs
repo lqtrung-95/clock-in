@@ -17,26 +17,21 @@ const SRC_DIR = resolve(__dirname, "../src");
 const RAW_PALETTE =
   /\b(?:bg|text|border|from|via|to|ring|fill|stroke|shadow|divide|outline|decoration)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|[1-9]00|950)\b/g;
 
-const EXEMPT_PREFIXES = [
-  "components/ui/",
-  "components/focus/",
-  "components/dream-goal/",
-  "components/landing/",
-  "components/billing/pricing-page-content.tsx",
-  "app/opengraph-image.tsx",
-  "app/page.tsx",
-  "app/pricing/",
-];
+// Vendor shadcn primitives — generated code, not app-authored.
+const EXEMPT_PREFIXES = ["components/ui/"];
 
-// Exact route-level immersive views (not prefix-matched — see EXEMPT_PREFIXES).
+// The app is fully on the ember token system now — this is down to the
+// handful of surfaces with an ongoing reason to sit outside the dual-mode
+// palette. See the matching EXPRESSIVE_SURFACES list in eslint.config.mjs
+// for the per-file rationale.
 const EXEMPT_FILES = new Set([
-  "app/(app)/progress/dream/page.tsx",
-  // Rasterized by html-to-image — must not depend on CSS custom properties.
+  "components/dream-goal/dream-goal-canvas.tsx",
+  "components/focus/animated-background.tsx",
   "components/stats/share-stats-card.tsx",
   "components/social/share-card.tsx",
-  // Only ever rendered inside FocusSetupView (an exempt expressive surface).
-  "components/ai/ai-session-suggestion.tsx",
 ]);
+// Route-level immersive room view — its header <h1> sits over ambient video.
+// `[^/]+` stands in for the `[id]` dynamic segment.
 const EXEMPT_REGEX = [/^app\/\(app\)\/focus\/rooms\/[^/]+\/page\.tsx$/];
 
 async function walk(dir) {

@@ -105,7 +105,7 @@ function ParticipantCard({
       className={cn(
         "flex items-center gap-3 p-3 rounded-xl transition-all duration-300",
         participant.is_focused
-          ? "bg-green-500/20 border border-green-500/30"
+          ? "bg-success-soft border border-success/30"
           : "bg-white/5 border border-white/10 hover:bg-white/10"
       )}
     >
@@ -122,17 +122,17 @@ function ParticipantCard({
               }}
             />
           ) : null}
-          <AvatarFallback className="bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white text-sm">
+          <AvatarFallback className="bg-data-xp/15 text-data-xp text-sm">
             {participant.user?.display_name?.charAt(0).toUpperCase() || "?"}
           </AvatarFallback>
         </Avatar>
         {isHost && (
-          <div className="absolute -top-1 -right-1 bg-amber-500 rounded-full p-0.5 ring-2 ring-black">
-            <Crown className="h-2.5 w-2.5 text-white" />
+          <div className="absolute -top-1 -right-1 bg-accent-solid rounded-full p-0.5 ring-2 ring-black">
+            <Crown className="h-2.5 w-2.5 text-accent-fg" />
           </div>
         )}
         {participant.is_focused && (
-          <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full ring-2 ring-black" />
+          <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-success rounded-full ring-2 ring-black" />
         )}
       </div>
       <div className="flex-1 min-w-0">
@@ -141,7 +141,7 @@ function ParticipantCard({
         </p>
         <p className="text-xs text-white/50">
           {participant.is_focused ? (
-            <span className="text-green-400 flex items-center gap-1">
+            <span className="text-success flex items-center gap-1">
               <Play className="h-3 w-3" /> Focusing
             </span>
           ) : (
@@ -160,11 +160,11 @@ function GuestPrompt({ roomId }: { roomId: string }) {
   const router = useRouter();
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] items-center justify-center p-4 bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+    <div className="flex h-[calc(100vh-4rem)] items-center justify-center p-4 bg-surface">
       <div className="max-w-md w-full p-8 text-center space-y-6 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl">
         <div className="flex justify-center">
-          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/30">
-            <MessageSquare className="h-8 w-8 text-white" />
+          <div className="h-16 w-16 rounded-2xl bg-accent-solid flex items-center justify-center shadow-lg">
+            <MessageSquare className="h-8 w-8 text-accent-fg" />
           </div>
         </div>
         <div className="space-y-2">
@@ -175,7 +175,7 @@ function GuestPrompt({ roomId }: { roomId: string }) {
         </div>
         <div className="space-y-3">
           <Button
-            className="w-full bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white border-0"
+            className="w-full"
             onClick={() => router.push(`/login?redirect=/focus/rooms/${roomId}`)}
           >
             <LogIn className="h-4 w-4 mr-2" />
@@ -371,8 +371,8 @@ function FocusRoomPageInner() {
   // to avoid a flash of the sign-in screen for already-authenticated users
   if (authLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-950">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" />
+      <div className="flex h-screen items-center justify-center bg-surface">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-solid border-t-transparent" />
       </div>
     );
   }
@@ -383,15 +383,15 @@ function FocusRoomPageInner() {
 
   if (!currentUserId) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-950">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
+      <div className="flex h-screen items-center justify-center bg-surface">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-solid border-t-transparent" />
       </div>
     );
   }
 
   return (
     <div className={cn(
-      "flex flex-col relative overflow-hidden bg-slate-950 h-screen",
+      "flex flex-col relative overflow-hidden bg-surface h-screen",
       isFullscreen ? "h-screen fixed inset-0 z-50" : ""
     )}>
       {/* Background Atmosphere */}
@@ -420,7 +420,7 @@ function FocusRoomPageInner() {
           <div className="px-4 py-2 rounded-xl bg-black/40 border border-white/10">
             <h1 className="font-bold text-white text-lg tracking-tight">Focus Room</h1>
             <p className="text-sm text-white/70 flex items-center gap-1.5 font-medium">
-              <Users className="h-4 w-4 text-violet-400" />
+              <Users className="h-4 w-4 text-accent-solid" />
               {activeParticipants.length} active
             </p>
           </div>
@@ -465,7 +465,7 @@ function FocusRoomPageInner() {
                 <Button
                   size="sm"
                   onClick={handleStartSession}
-                  className="gap-2 px-6 bg-emerald-500/90 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30"
+                  className="gap-2 px-6 bg-[#7FB98A] hover:bg-[#7FB98A]/90 text-[#12100F] shadow-lg shadow-[#7FB98A]/30"
                 >
                   <Play className="h-4 w-4" />
                   Start Session
@@ -498,7 +498,7 @@ function FocusRoomPageInner() {
                   <Button
                     size="sm"
                     onClick={handleStartSession}
-                    className="gap-2 px-6 bg-emerald-500/90 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30"
+                    className="gap-2 px-6 bg-[#7FB98A] hover:bg-[#7FB98A]/90 text-[#12100F] shadow-lg shadow-[#7FB98A]/30"
                   >
                     <Play className="h-4 w-4" />
                     Resume
@@ -518,7 +518,7 @@ function FocusRoomPageInner() {
                 <Button
                   size="sm"
                   onClick={handleCompleteSession}
-                  className="gap-2 px-6 bg-violet-500/90 hover:bg-violet-600 text-white shadow-lg shadow-violet-500/30"
+                  className="gap-2 px-6 bg-[#F0A868] hover:bg-[#F0A868]/90 text-[#12100F] shadow-lg shadow-[#F0A868]/30"
                 >
                   <Square className="h-4 w-4" />
                   Complete
@@ -528,8 +528,8 @@ function FocusRoomPageInner() {
           ) : (
             <div className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium",
-              sessionState === 'active' ? "bg-emerald-500/20 text-emerald-400" :
-              sessionState === 'paused' ? "bg-amber-500/20 text-amber-400" :
+              sessionState === 'active' ? "bg-[#7FB98A]/20 text-[#7FB98A]" :
+              sessionState === 'paused' ? "bg-[#F0A868]/20 text-[#F0A868]" :
               "bg-white/5 text-white/60"
             )}>
               {sessionState === 'active' ? 'Session Active' :
@@ -563,7 +563,7 @@ function FocusRoomPageInner() {
                     className={cn(
                       "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                       selectedDuration === preset.minutes
-                        ? "bg-violet-500 text-white shadow-lg shadow-violet-500/30"
+                        ? "bg-accent-solid text-accent-fg shadow-sm"
                         : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white",
                       sessionState !== 'idle' && "opacity-50 cursor-not-allowed"
                     )}
@@ -586,12 +586,12 @@ function FocusRoomPageInner() {
               </div>
               {/* Show active custom duration if not a standard preset */}
               {![25, 50, 90].includes(timerSettings.workMinutes) && (
-                <p className="text-xs text-cyan-400">
+                <p className="text-xs text-accent-solid">
                   Custom: {timerSettings.workMinutes}m work · {timerSettings.shortBreakMinutes}m break
                 </p>
               )}
               {sessionState !== 'idle' && (
-                <p className="text-xs text-amber-400">
+                <p className="text-xs text-warn">
                   Cannot change duration while session is {sessionState}
                 </p>
               )}
@@ -610,7 +610,7 @@ function FocusRoomPageInner() {
                     className={cn(
                       "px-3 py-2 rounded-lg text-sm transition-all duration-200",
                       selectedVideo?.id === video.id
-                        ? "bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/30"
+                        ? "bg-accent-solid text-accent-fg shadow-sm"
                         : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
                     )}
                   >
@@ -641,7 +641,7 @@ function FocusRoomPageInner() {
                     className={cn(
                       "px-3 py-2 rounded-lg text-sm transition-all duration-200",
                       selectedOverlay === overlay.value
-                        ? "bg-cyan-500 text-white shadow-lg shadow-cyan-500/30"
+                        ? "bg-accent-solid text-accent-fg shadow-sm"
                         : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
                     )}
                   >
@@ -661,7 +661,7 @@ function FocusRoomPageInner() {
           <div className="w-72 flex flex-col">
             <div className="flex items-center justify-between mb-4 p-3 rounded-xl bg-black/40 border border-white/10">
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-violet-400" />
+                <Users className="h-4 w-4 text-accent-solid" />
                 <h3 className="text-sm font-semibold text-white">
                   Participants
                 </h3>
@@ -721,7 +721,7 @@ function FocusRoomPageInner() {
             {/* Glow effect */}
             <div className={cn(
               "absolute inset-0 rounded-full blur-3xl transition-all duration-1000",
-              sessionState === 'active' ? "bg-emerald-500/20" : "bg-violet-500/20"
+              sessionState === 'active' ? "bg-[#7FB98A]/20" : "bg-[#F0A868]/20"
             )} />
 
             <div className="relative w-80 h-80 rounded-full bg-black/40 backdrop-blur-3xl border border-white/10 flex flex-col items-center justify-center">
@@ -747,7 +747,7 @@ function FocusRoomPageInner() {
                   strokeDasharray={`${displayProgress * 2.89} 289`}
                   className={cn(
                     "transition-all duration-1000",
-                    sessionState === 'active' ? "text-emerald-400" : "text-violet-400"
+                    sessionState === 'active' ? "text-[#7FB98A]" : "text-[#F0A868]"
                   )}
                 />
               </svg>
@@ -757,9 +757,9 @@ function FocusRoomPageInner() {
                 <div className={cn(
                   "w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center transition-all duration-500",
                   sessionState === 'active'
-                    ? "bg-emerald-500/20 text-emerald-400 shadow-lg shadow-emerald-500/20"
+                    ? "bg-[#7FB98A]/20 text-[#7FB98A] shadow-lg shadow-[#7FB98A]/20"
                     : sessionState === 'paused'
-                    ? "bg-amber-500/20 text-amber-400 shadow-lg shadow-amber-500/20"
+                    ? "bg-[#F0A868]/20 text-[#F0A868] shadow-lg shadow-[#F0A868]/20"
                     : "bg-white/5 text-white/40"
                 )}>
                   {sessionState === 'active' ? <Play className="h-8 w-8 fill-current" /> :
@@ -803,7 +803,7 @@ function FocusRoomPageInner() {
           <div className="w-80 flex flex-col">
             <div className="flex items-center justify-between mb-4 p-3 rounded-xl bg-black/40 border border-white/10">
               <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-fuchsia-400" />
+                <MessageSquare className="h-4 w-4 text-accent-solid" />
                 <h3 className="text-sm font-semibold text-white">
                   Room Chat
                 </h3>
@@ -832,7 +832,7 @@ function FocusRoomPageInner() {
                       )}
                     >
                       {msg.message_type !== "system" && (
-                        <span className="text-violet-400 font-medium">
+                        <span className="text-accent-solid font-medium">
                           {msg.user?.display_name}:
                         </span>
                       )}{" "}
@@ -847,13 +847,13 @@ function FocusRoomPageInner() {
                   placeholder="Send a message..."
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
-                  className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-violet-500/50"
+                  className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-accent-solid/50"
                 />
                 <Button
                   type="submit"
                   size="icon"
                   disabled={!messageInput.trim()}
-                  className="bg-violet-500 hover:bg-violet-600 text-white disabled:opacity-50"
+                  className="bg-accent-solid hover:bg-accent-hover text-accent-fg disabled:opacity-50"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
@@ -879,7 +879,7 @@ function FocusRoomPageInner() {
         <DialogContent className="border border-border bg-card max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-foreground">
-              <AlertTriangle className="h-5 w-5 text-orange-400" />
+              <AlertTriangle className="h-5 w-5 text-warn" />
               Delete this room?
             </DialogTitle>
             <DialogDescription className="text-muted-foreground pt-1">
@@ -895,8 +895,9 @@ function FocusRoomPageInner() {
               Stay
             </Button>
             <Button
+              variant="destructive"
               onClick={confirmLeave}
-              className="flex-1 bg-red-500 hover:bg-red-600 text-white border-0"
+              className="flex-1"
             >
               Delete &amp; Leave
             </Button>

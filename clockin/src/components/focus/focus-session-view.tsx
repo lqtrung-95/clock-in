@@ -135,7 +135,7 @@ export function FocusSessionView({
                 className={cn(
                   "h-2.5 rounded-full transition-all duration-300 shadow-sm",
                   i < cycle
-                    ? "w-8 bg-gradient-to-r from-blue-500 to-cyan-400 shadow-blue-500/30"
+                    ? "w-8 bg-[#F0A868] shadow-[#F0A868]/30"
                     : i === cycle - 1
                     ? "w-8 bg-white/50 animate-pulse shadow-white/20"
                     : "w-2.5 bg-white/30"
@@ -153,8 +153,8 @@ export function FocusSessionView({
                 className={cn(
                   "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold",
                   waitingForNext === "break"
-                    ? "bg-orange-500/20 border border-orange-400/50 text-orange-300"
-                    : "bg-blue-500/20 border border-blue-400/50 text-blue-300"
+                    ? "bg-[#7FB98A]/20 border border-[#7FB98A]/50 text-[#7FB98A]"
+                    : "bg-[#F0A868]/20 border border-[#F0A868]/50 text-[#F0A868]"
                 )}
               >
                 {waitingForNext === "break" ? <Coffee className="h-4 w-4" /> : <Brain className="h-4 w-4" />}
@@ -169,8 +169,8 @@ export function FocusSessionView({
                   className={cn(
                     "h-12 px-8 rounded-full font-semibold text-white border-0 cursor-pointer",
                     waitingForNext === "break"
-                      ? "bg-gradient-to-r from-orange-500 to-amber-500 shadow-[0_0_24px_rgba(249,115,22,0.5)]"
-                      : "bg-gradient-to-r from-blue-500 to-cyan-500 shadow-[0_0_24px_rgba(59,130,246,0.5)]"
+                      ? "bg-[#7FB98A] shadow-[0_0_24px_rgba(127,185,138,0.5)]"
+                      : "bg-[#F0A868] shadow-[0_0_24px_rgba(240,168,104,0.5)]"
                   )}
                 >
                   {waitingForNext === "break" ? "Start Break" : "Start Next Session"}
@@ -208,7 +208,7 @@ export function FocusSessionView({
             <Button
               size="sm"
               onClick={onResume}
-              className="h-10 px-5 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-medium text-sm shadow-[0_0_20px_rgba(59,130,246,0.5)] hover:shadow-[0_0_30px_rgba(59,130,246,0.7)] hover:scale-105 transition-all duration-300 border-0 gap-2"
+              className="h-10 px-5 rounded-full bg-[#F0A868] text-[#12100F] font-medium text-sm shadow-[0_0_20px_rgba(240,168,104,0.5)] hover:shadow-[0_0_30px_rgba(240,168,104,0.7)] hover:scale-105 transition-all duration-300 border-0 gap-2"
             >
               <Play className="h-4 w-4 fill-current" />
               Resume
@@ -218,7 +218,7 @@ export function FocusSessionView({
             variant="outline"
             size="sm"
             onClick={onReset}
-            className="h-10 px-5 rounded-full bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-xl border-2 border-red-400/50 text-white font-medium text-sm shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:from-red-500/30 hover:to-orange-500/30 hover:border-red-400/70 hover:shadow-[0_0_30px_rgba(239,68,68,0.4)] hover:scale-105 transition-all duration-300 gap-2"
+            className="h-10 px-5 rounded-full bg-[#F0736A]/20 backdrop-blur-xl border-2 border-[#F0736A]/50 text-white font-medium text-sm shadow-[0_0_20px_rgba(240,115,106,0.2)] hover:bg-[#F0736A]/30 hover:border-[#F0736A]/70 hover:shadow-[0_0_30px_rgba(240,115,106,0.4)] hover:scale-105 transition-all duration-300 gap-2"
           >
             <RotateCcw className="h-4 w-4" />
             Stop

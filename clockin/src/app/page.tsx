@@ -35,7 +35,7 @@ const webAppSchema = {
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-[#060614] text-white overflow-x-hidden">
+    <main className="min-h-screen overflow-x-hidden bg-surface text-ink">
       <JsonLdSchema schema={webAppSchema} />
       <LandingNav />
       <HeroSection />
@@ -43,23 +43,19 @@ export default function LandingPage() {
       <FocusShowcaseSection />
 
       {/* Pricing section */}
-      <section id="pricing" className="py-20 px-4">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Simple pricing
-            </h2>
-            <p className="mt-3 text-base text-white/50">
-              Free forever. Upgrade when you&apos;re ready.
-            </p>
+      <section id="pricing" className="px-4 py-24 sm:py-32">
+        <div className="mx-auto max-w-wide">
+          <div className="mb-12 border-b border-line pb-6 text-center">
+            <h2 className="text-title text-ink">Simple pricing</h2>
+            <p className="mt-2 text-base text-ink-muted">Free forever. Upgrade when you&apos;re ready.</p>
           </div>
           <PricingCards currentPlan="free" userId={null} />
         </div>
       </section>
 
       <LandingCtaSection />
-      <footer className="border-t border-white/5 py-8 text-center text-sm text-white/25">
-        © {new Date().getFullYear()} Effortful - Built for makers, dreamers, and doers.
+      <footer className="border-t border-line py-8 text-center text-sm text-ink-subtle">
+        © {new Date().getFullYear()} Effortful — built for makers, dreamers, and doers.
       </footer>
     </main>
   );

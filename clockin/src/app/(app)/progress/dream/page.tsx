@@ -70,25 +70,25 @@ export default function DreamGoalPage() {
         variant="ghost"
         size="sm"
         onClick={() => router.push("/today")}
-        className="absolute left-4 top-4 z-10 bg-background/80 backdrop-blur-sm"
+        className="absolute left-4 top-4 z-10 bg-surface/80 backdrop-blur-sm"
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back
       </Button>
 
       {/* Progress Overlay */}
-      <Card className="absolute bottom-4 left-4 right-4 z-10 border border-border bg-card/90 p-4 backdrop-blur-md md:bottom-8 md:left-8 md:right-auto md:w-80">
+      <Card className="absolute bottom-4 left-4 right-4 z-10 border border-line bg-surface-raised/90 p-4 backdrop-blur-md md:bottom-8 md:left-8 md:right-auto md:w-80">
         <div className="space-y-4">
           {/* Title */}
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
-              <Target className="h-4 w-4 text-white" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-accent-solid">
+              <Target className="h-4 w-4 text-accent-fg" />
             </div>
             <div>
-              <h2 className="font-semibold text-foreground">
+              <h2 className="font-semibold text-ink">
                 {dreamGoal?.title || "My Dream Goal"}
               </h2>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-muted">
                 {dreamGoal?.theme === "mountain" && "Mountain Climb"}
                 {dreamGoal?.theme === "castle" && "Castle Builder"}
                 {dreamGoal?.theme === "tree" && "Magical Tree"}
@@ -100,13 +100,13 @@ export default function DreamGoalPage() {
           {/* Progress */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Progress</span>
-              <span className="font-medium text-foreground">
+              <span className="text-ink-muted">Progress</span>
+              <span className="font-medium text-ink">
                 {percentage.toFixed(1)}%
               </span>
             </div>
             <Progress value={percentage} className="h-2" />
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center justify-between text-xs text-ink-muted">
               <span>{dreamGoal?.current_hours?.toFixed(1) || 0}h completed</span>
               <span>{dreamGoal?.target_hours || 100}h goal</span>
             </div>
@@ -114,9 +114,9 @@ export default function DreamGoalPage() {
 
           {/* Next Milestone */}
           {hoursToNext > 0 && (
-            <div className="flex items-center gap-2 rounded-lg bg-muted p-2 text-xs">
-              <Trophy className="h-3 w-3 text-yellow-500" />
-              <span className="text-muted-foreground">
+            <div className="flex items-center gap-2 rounded-lg bg-surface-sunken p-2 text-xs">
+              <Trophy className="h-3 w-3 text-data-xp" />
+              <span className="text-ink-muted">
                 {hoursToNext.toFixed(1)}h to next milestone
               </span>
             </div>
@@ -124,7 +124,7 @@ export default function DreamGoalPage() {
 
           {/* Completed */}
           {dreamGoal?.is_completed && (
-            <div className="flex items-center gap-2 rounded-lg bg-green-500/10 p-2 text-xs text-green-600">
+            <div className="flex items-center gap-2 rounded-sm bg-success-soft p-2 text-xs text-success">
               <Sparkles className="h-3 w-3" />
               <span>Goal completed on {dreamGoal.completed_at ? format(new Date(dreamGoal.completed_at), "MMM d, yyyy") : ""}!</span>
             </div>

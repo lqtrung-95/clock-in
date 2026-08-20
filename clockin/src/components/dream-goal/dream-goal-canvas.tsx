@@ -50,8 +50,8 @@ function LoadingFallback() {
   return (
     <div className="flex h-full w-full items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
-        <p className="text-sm text-muted-foreground">Loading your dream...</p>
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-accent-solid border-t-transparent" />
+        <p className="text-sm text-ink-muted">Loading your dream...</p>
       </div>
     </div>
   );

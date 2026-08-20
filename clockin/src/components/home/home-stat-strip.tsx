@@ -1,9 +1,6 @@
 "use client";
 
-import { Clock, Calendar, Flame, TrendingUp } from "lucide-react";
-import { Stat } from "@/components/ui-app/stat";
-import { StatRow } from "@/components/ui-app/stat-row";
-import type { DataMetric } from "@/lib/data-metrics";
+import { HeroStat, DividedStatStrip, DividedStat } from "@/components/ui-app/hero-stat";
 
 interface HomeStatStripProps {
   hoursToday: number;
@@ -12,20 +9,21 @@ interface HomeStatStripProps {
   weekHours: number;
 }
 
-const METRIC: Record<"time" | "sessions" | "streak" | "week", DataMetric> = {
-  time: "focus",
-  sessions: "focus",
-  streak: "streak",
-  week: "goal",
-};
-
+/** Today's one dominant number, with sessions/streak/week as divided secondary figures underneath. */
 export function HomeStatStrip({ hoursToday, sessionsToday, streak, weekHours }: HomeStatStripProps) {
   return (
-    <StatRow>
-      <Stat label="Today" value={hoursToday} unit="h" icon={Clock} metric={METRIC.time} />
-      <Stat label="Sessions" value={sessionsToday} icon={Calendar} metric={METRIC.sessions} />
-      <Stat label="Streak" value={streak} icon={Flame} metric={METRIC.streak} />
-      <Stat label="This week" value={weekHours} unit="h" icon={TrendingUp} metric={METRIC.week} />
-    </StatRow>
+    <HeroStat
+      label="Focused today"
+      value={hoursToday}
+      unit="h"
+      metric="focus"
+      secondary={
+        <DividedStatStrip>
+          <DividedStat label="Sessions" value={sessionsToday} metric="focus" />
+          <DividedStat label="Day streak" value={streak} metric="streak" />
+          <DividedStat label="This week" value={weekHours} unit="h" metric="goal" />
+        </DividedStatStrip>
+      }
+    />
   );
 }

@@ -122,7 +122,7 @@ export function FocusOnboardingCoachmark() {
           position: "fixed", zIndex: 61, pointerEvents: "none",
           top, left, width: right - left, height: bottom - top,
           borderRadius: 12,
-          boxShadow: "0 0 0 3px rgba(59,130,246,0.9), 0 0 0 7px rgba(59,130,246,0.25)",
+          boxShadow: "0 0 0 3px var(--accent-solid), 0 0 0 7px var(--accent-ring)",
         }}
       />
 
@@ -139,12 +139,11 @@ export function FocusOnboardingCoachmark() {
         }}
       >
         <div style={{
-          background: "hsl(var(--card))",
-          border: "1px solid hsl(var(--border))",
+          background: "var(--surface-raised)",
+          border: "1px solid var(--line)",
           borderRadius: 20,
           padding: "18px 18px 14px",
-          // Blue glow ring (matches spotlight) + strong shadow for contrast in both light & dark
-          boxShadow: "0 0 0 2px rgba(59,130,246,0.45), 0 8px 40px rgba(0,0,0,0.35)",
+          boxShadow: "0 0 0 2px var(--accent-ring), 0 8px 40px rgba(0,0,0,0.35)",
         }}>
           {/* Pointer triangle */}
           <div style={{
@@ -152,18 +151,18 @@ export function FocusOnboardingCoachmark() {
             left: "50%",
             ...(showAbove ? { bottom: -6 } : { top: -6 }),
             width: 12, height: 12,
-            background: "hsl(var(--card))",
-            border: "1px solid hsl(var(--border))",
+            background: "var(--surface-raised)",
+            border: "1px solid var(--line)",
             borderRight: "none", borderBottom: "none",
             transform: showAbove
               ? "translateX(-50%) rotate(225deg)"
               : "translateX(-50%) rotate(45deg)",
           }} />
 
-          <p style={{ fontWeight: 700, fontSize: 14, color: "hsl(var(--foreground))", marginBottom: 4 }}>
+          <p style={{ fontWeight: 700, fontSize: 14, color: "var(--ink)", marginBottom: 4 }}>
             {STEPS[step].title}
           </p>
-          <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", lineHeight: 1.6 }}>
+          <p style={{ fontSize: 12, color: "var(--ink-muted)", lineHeight: 1.6 }}>
             {STEPS[step].description}
           </p>
 
@@ -174,7 +173,7 @@ export function FocusOnboardingCoachmark() {
                 <div key={i} style={{
                   borderRadius: 99,
                   width: i === step ? 16 : 8, height: 8,
-                  background: i === step ? "#3b82f6" : "rgba(148,163,184,0.3)",
+                  background: i === step ? "var(--accent-solid)" : "var(--line-strong)",
                   transition: "all 0.3s",
                 }} />
               ))}
@@ -184,9 +183,9 @@ export function FocusOnboardingCoachmark() {
               {step > 0 && (
                 <button onClick={prev} style={{
                   width: 32, height: 32, borderRadius: "50%",
-                  background: "hsl(var(--muted))", border: "none", cursor: "pointer",
+                  background: "var(--surface-sunken)", border: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  color: "hsl(var(--muted-foreground))",
+                  color: "var(--ink-muted)",
                 }}>
                   <ChevronLeft size={16} />
                 </button>
@@ -194,8 +193,8 @@ export function FocusOnboardingCoachmark() {
               <button onClick={next} style={{
                 display: "flex", alignItems: "center", gap: 4,
                 padding: "6px 16px", borderRadius: 99, border: "none", cursor: "pointer",
-                background: "linear-gradient(to right, #3b82f6, #06b6d4)",
-                color: "white", fontSize: 12, fontWeight: 600,
+                background: "var(--accent-solid)",
+                color: "var(--accent-fg)", fontSize: 12, fontWeight: 600,
               }}>
                 {isLast ? <><Check size={14} /> Got it</> : <>Next <ChevronRight size={14} /></>}
               </button>

@@ -9,30 +9,25 @@ import nextTs from "eslint-config-next/typescript";
 const RAW_PALETTE_SRC =
   "\\b(bg|text|border|from|via|to|ring|fill|stroke|shadow|divide|outline|decoration)-(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(50|[1-9]00|950)\\b";
 
-// Directories where the "calm & focused" chrome rules don't apply — the
-// immersive focus session, the dream-goal 3D scenes, and marketing surfaces
-// are where the app's visual drama is allowed to live.
+// The app went fully onto the ember token system — this list is now down to
+// the handful of surfaces that have a real, ongoing reason to sit outside
+// the dual-mode palette, not a migration staging area.
 const EXPRESSIVE_SURFACES = [
-  "src/components/focus/**",
-  "src/components/dream-goal/**",
-  "src/components/landing/**",
-  "src/components/billing/pricing-page-content.tsx",
-  "src/app/opengraph-image.tsx",
-  "src/app/page.tsx",
-  "src/app/pricing/**",
-  // Route-level immersive views — full-bleed co-working room and the 3D
-  // dream-goal canvas. `*` stands in for the `[id]` dynamic segment; literal
-  // brackets are glob metacharacters in minimatch.
+  // Per-world 3D environment art direction (mountain/castle/tree/space) —
+  // genuine art direction, not chrome.
+  "src/components/dream-goal/dream-goal-canvas.tsx",
+  // Fallback shown when a video embed fails to load — a decorative filler
+  // gradient with no interactive UI on top that needs brand consistency.
+  "src/components/focus/animated-background.tsx",
+  // Route-level immersive room view — the header's <h1> (room name) sits
+  // over the ambient video, outside PageShell. `*` stands in for the `[id]`
+  // dynamic segment; literal brackets are glob metacharacters in minimatch.
   "src/app/(app)/focus/rooms/*/page.tsx",
-  "src/app/(app)/progress/dream/page.tsx",
   // Rasterized by html-to-image — must not depend on CSS custom properties,
   // which can resolve differently (or not at all) in the cloned off-screen
   // node the library captures.
   "src/components/stats/share-stats-card.tsx",
   "src/components/social/share-card.tsx",
-  // Only ever rendered inside FocusSetupView (an exempt expressive
-  // surface) — kept visually consistent with the screen it lives in.
-  "src/components/ai/ai-session-suggestion.tsx",
 ];
 
 const eslintConfig = defineConfig([

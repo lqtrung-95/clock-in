@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import { PageShell } from "@/components/ui-app/page-shell";
+import { DataCard } from "@/components/ui-app/data-card";
 import { LocalDataBanner } from "@/components/ui-app/local-data-banner";
 import { SEGMENTS } from "@/lib/navigation";
 import { toast } from "sonner";
@@ -371,13 +371,13 @@ export default function SettingsPage() {
 
   return (
     <PageShell title="Settings" segments={SEGMENTS.settings} banner={!isAuthenticated && <LocalDataBanner />}>
-        <Card className="border border-border bg-card p-6 space-y-8">
+        <DataCard className="space-y-8">
           {/* Profile */}
           {!isAuthenticated && !authLoading && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-accent-solid" />
-                <h2 className="text-lg font-semibold text-foreground">Profile</h2>
+                <h2 className="text-section text-ink">Profile</h2>
               </div>
               <LoginPrompt feature="general" />
             </div>
@@ -385,7 +385,7 @@ export default function SettingsPage() {
           {isAuthenticated && <div className="space-y-4">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-accent-solid" />
-              <h2 className="text-lg font-semibold text-foreground">Profile</h2>
+              <h2 className="text-section text-ink">Profile</h2>
             </div>
             <div className="space-y-4">
               {/* Current Avatar Display */}
@@ -397,8 +397,8 @@ export default function SettingsPage() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <Label className="text-foreground">Choose Avatar</Label>
-                  <p className="text-xs text-muted-foreground">Select a preset or upload your own</p>
+                  <Label className="text-ink">Choose Avatar</Label>
+                  <p className="text-xs text-ink-muted">Select a preset or upload your own</p>
                 </div>
               </div>
 
@@ -418,7 +418,7 @@ export default function SettingsPage() {
                     >
                       <Avatar className="h-11 w-11">
                         <AvatarImage src={url} alt="Avatar option" />
-                        <AvatarFallback className="bg-muted">
+                        <AvatarFallback className="bg-surface-sunken">
                           <Camera className="h-4 w-4" />
                         </AvatarFallback>
                       </Avatar>
@@ -437,13 +437,13 @@ export default function SettingsPage() {
                       >
                         <Avatar className="h-11 w-11">
                           <AvatarImage src={customAvatarUrl} alt="Custom avatar" />
-                          <AvatarFallback className="bg-muted">?</AvatarFallback>
+                          <AvatarFallback className="bg-surface-sunken">?</AvatarFallback>
                         </Avatar>
                       </button>
                       {/* Delete button on top-right of custom avatar */}
                       <button
                         onClick={handleDeleteAvatar}
-                        className="absolute -top-1 -right-1 h-5 w-5 bg-danger text-white rounded-full flex items-center justify-center text-xs hover:opacity-90 z-10"
+                        className="absolute -top-1 -right-1 h-5 w-5 bg-danger text-accent-fg rounded-full flex items-center justify-center text-xs hover:opacity-90 z-10"
                         title="Remove custom avatar"
                       >
                         ×
@@ -459,11 +459,11 @@ export default function SettingsPage() {
                       disabled={uploadingAvatar}
                       className="hidden"
                     />
-                    <div className="h-11 w-11 rounded-full border-2 border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 flex items-center justify-center transition-colors">
+                    <div className="h-11 w-11 rounded-full border-2 border-dashed border-ink-subtle/30 hover:border-ink-subtle/50 flex items-center justify-center transition-colors">
                       {uploadingAvatar ? (
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent-solid border-t-transparent" />
                       ) : (
-                        <Upload className="h-4 w-4 text-muted-foreground" />
+                        <Upload className="h-4 w-4 text-ink-muted" />
                       )}
                     </div>
                   </label>
@@ -471,7 +471,7 @@ export default function SettingsPage() {
               </div>
               {/* Display Name */}
               <div className="space-y-2">
-                <Label htmlFor="displayName" className="text-foreground">
+                <Label htmlFor="displayName" className="text-ink">
                   Display Name
                 </Label>
                 <Input
@@ -480,7 +480,7 @@ export default function SettingsPage() {
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Enter your name"
                   maxLength={30}
-                  className="border-border bg-card"
+                  className="border-line bg-surface-raised"
                 />
               </div>
               {/* Save Profile Button */}
@@ -502,15 +502,15 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-accent-solid" />
-              <h2 className="text-lg font-semibold text-foreground">Billing</h2>
+              <h2 className="text-section text-ink">Billing</h2>
             </div>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
-                  <Label className="text-foreground">Current Plan</Label>
+                  <Label className="text-ink">Current Plan</Label>
                   <PlanBadge userId={userId} />
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-ink-muted">
                   {isPro ? "You have access to all Pro features" : "Upgrade to unlock all features"}
                 </p>
               </div>
@@ -529,12 +529,12 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Palette className="h-4 w-4 text-accent-solid" />
-              <h2 className="text-lg font-semibold text-foreground">Appearance</h2>
+              <h2 className="text-section text-ink">Appearance</h2>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-0.5">
-                <Label className="text-foreground">Theme</Label>
-                <p className="text-sm text-muted-foreground">
+                <Label className="text-ink">Theme</Label>
+                <p className="text-sm text-ink-muted">
                   Choose your preferred theme
                 </p>
               </div>
@@ -545,7 +545,7 @@ export default function SettingsPage() {
                   onClick={() => setTheme("light")}
                   className={theme === "light"
                     ? "bg-accent-soft text-ink"
-                    : "border-border bg-card text-foreground/80 hover:bg-secondary hover:text-foreground"
+                    : "border-line bg-surface-raised text-ink-muted hover:bg-surface-sunken hover:text-ink"
                   }
                 >
                   <Sun className="mr-2 h-4 w-4" />
@@ -557,7 +557,7 @@ export default function SettingsPage() {
                   onClick={() => setTheme("dark")}
                   className={theme === "dark"
                     ? "bg-accent-soft text-ink"
-                    : "border-border bg-card text-foreground/80 hover:bg-secondary hover:text-foreground"
+                    : "border-line bg-surface-raised text-ink-muted hover:bg-surface-sunken hover:text-ink"
                   }
                 >
                   <Moon className="mr-2 h-4 w-4" />
@@ -569,7 +569,7 @@ export default function SettingsPage() {
                   onClick={() => setTheme("system")}
                   className={theme === "system"
                     ? "bg-accent-soft text-ink"
-                    : "border-border bg-card text-foreground/80 hover:bg-secondary hover:text-foreground"
+                    : "border-line bg-surface-raised text-ink-muted hover:bg-surface-sunken hover:text-ink"
                   }
                 >
                   <Monitor className="mr-2 h-4 w-4" />
@@ -586,13 +586,13 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Bell className="h-4 w-4 text-accent-solid" />
-              <h2 className="text-lg font-semibold text-foreground">Notifications</h2>
+              <h2 className="text-section text-ink">Notifications</h2>
             </div>
             {isAuthenticated ? (
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label className="text-foreground">Weekly Digest</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <Label className="text-ink">Weekly Digest</Label>
+                  <p className="text-sm text-ink-muted">
                     Receive weekly summary emails
                   </p>
                 </div>
@@ -605,8 +605,8 @@ export default function SettingsPage() {
                 />
               </div>
             ) : (
-              <div className="rounded-xl border border-border bg-white/[0.02] p-4">
-                <p className="text-sm text-muted-foreground">
+              <div className="rounded-xl border border-line bg-surface-sunken p-4">
+                <p className="text-sm text-ink-muted">
                   Sign in to configure email notifications and weekly digest settings.
                 </p>
               </div>
@@ -616,27 +616,27 @@ export default function SettingsPage() {
           {/* Quick Links — only shown on mobile (desktop has sidebar) */}
           <div className="space-y-3 md:hidden">
           <div className="h-px bg-border" />
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">More</h2>
+            <h2 className="text-label text-ink-subtle">More</h2>
             <div className="space-y-1">
               <Link
                 href="/settings/categories"
-                className="flex items-center justify-between rounded-xl border border-border bg-white/[0.02] px-4 py-3 transition-colors hover:bg-white/[0.05]"
+                className="flex items-center justify-between rounded-xl border border-line bg-surface-sunken px-4 py-3 transition-colors hover:bg-surface-sunken/70"
               >
                 <div className="flex items-center gap-3">
                   <Tag className="h-4 w-4 text-accent-solid" />
-                  <span className="text-sm font-medium text-foreground">Categories</span>
+                  <span className="text-sm font-medium text-ink">Categories</span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-4 w-4 text-ink-muted" />
               </Link>
               <Link
                 href="/progress/badges"
-                className="flex items-center justify-between rounded-xl border border-border bg-white/[0.02] px-4 py-3 transition-colors hover:bg-white/[0.05]"
+                className="flex items-center justify-between rounded-xl border border-line bg-surface-sunken px-4 py-3 transition-colors hover:bg-surface-sunken/70"
               >
                 <div className="flex items-center gap-3">
                   <Trophy className="h-4 w-4 text-accent-solid" />
-                  <span className="text-sm font-medium text-foreground">Achievements</span>
+                  <span className="text-sm font-medium text-ink">Achievements</span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-4 w-4 text-ink-muted" />
               </Link>
             </div>
           </div>
@@ -649,7 +649,7 @@ export default function SettingsPage() {
           >
             {saving ? "Saving..." : "Save Settings"}
           </Button>
-        </Card>
+        </DataCard>
     </PageShell>
   );
 }

@@ -65,6 +65,8 @@ export function MilestoneModal({ milestone, open, onClose }: MilestoneModalProps
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="text-center">
+          {/* Gold trophy color — a real-world convention, not decorative gradient slop. */}
+          {/* eslint-disable-next-line no-restricted-syntax */}
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-orange-500">
             <Trophy className="h-8 w-8 text-white" />
           </div>

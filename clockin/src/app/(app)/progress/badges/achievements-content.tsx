@@ -88,7 +88,7 @@ export default function AchievementsContent() {
           <DataCard>
             <div className="mb-2 flex items-center gap-3">
               <TrendingUp className="h-5 w-5 text-data-xp" />
-              <h2 className="text-base font-semibold text-ink">Level progress</h2>
+              <h2 className="text-section text-ink">Level progress</h2>
             </div>
             <div className="space-y-4">
               <XPProgressBar levelInfo={levelInfo} size="lg" />
@@ -103,7 +103,7 @@ export default function AchievementsContent() {
           <DataCard>
             <div className="mb-2 flex items-center gap-3">
               <Award className="h-5 w-5 text-data-xp" />
-              <h2 className="text-base font-semibold text-ink">Your crystal</h2>
+              <h2 className="text-section text-ink">Your crystal</h2>
             </div>
             <div className="flex items-center justify-center">
               <EvolvedCrystal

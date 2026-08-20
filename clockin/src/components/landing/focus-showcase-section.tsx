@@ -9,132 +9,101 @@ const SHOWCASE_ITEMS = [
 
 export function FocusShowcaseSection() {
   return (
-    <section className="relative py-32 px-4 overflow-hidden">
-      {/* Background glow — blue/cyan to match app */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/8 to-transparent" />
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full bg-blue-600/10 blur-3xl" />
-
-      <div className="relative max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-
-          {/* Left: copy */}
+    <section className="px-4 py-24 sm:py-32">
+      <div className="mx-auto max-w-content">
+        <div className="grid items-center gap-16 lg:grid-cols-2">
+          {/* Copy */}
           <div>
-            <p className="text-sm font-semibold text-blue-400 uppercase tracking-widest mb-3">Focus Mode</p>
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6 leading-tight">
-              Your office,{" "}
-              <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                reimagined
-              </span>
-            </h2>
-            <p className="text-lg text-white/55 mb-10 leading-relaxed">
+            <p className="text-label mb-3 text-accent-solid">Focus mode</p>
+            <h2 className="text-title mb-6 text-ink">Your office, reimagined</h2>
+            <p className="mb-8 max-w-[42ch] text-lg text-ink-muted">
               Step into full-screen focus mode and make distractions impossible. Pick a scene,
-              layer on effects, add ambient sound — and disappear into deep work. Your timer
-              runs quietly behind it all.
+              layer on effects, add ambient sound — your timer runs quietly behind it all.
             </p>
 
-            <div className="space-y-3">
+            <div className="flex flex-col divide-y divide-line">
               {SHOWCASE_ITEMS.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <div key={item.label} className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20">
-                      <Icon className="h-4 w-4 text-blue-400" />
-                    </div>
-                    <p className="text-sm text-white/70">{item.label}</p>
+                  <div key={item.label} className="flex items-center gap-3 py-3 first:pt-0">
+                    <Icon className="h-4 w-4 shrink-0 text-accent-solid" />
+                    <p className="text-sm text-ink-muted">{item.label}</p>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Right: mockup matching actual focus page UI */}
+          {/* Focus session device preview — a deliberately dark panel, like the
+              real session it's showing, regardless of the page's own theme. */}
           <div className="relative">
-            <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a1a] aspect-video shadow-2xl shadow-black/60">
-              {/* Background gradient matching app */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-[#0a0a1a] to-cyan-900/20" />
+            <div className="relative aspect-video overflow-hidden rounded-md border border-line shadow-overlay">
+              <div className="absolute inset-0 bg-[linear-gradient(160deg,#2b1a0f,#120b06)]" />
+              <div
+                className="absolute inset-0"
+                style={{ background: "radial-gradient(circle at 30% 20%, rgba(240,168,104,0.18), transparent 55%)" }}
+              />
 
-              {/* Top-left phase badge */}
-              <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-600/80 to-cyan-600/80 border border-blue-400/30 shadow-lg">
-                <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                <span className="text-xs font-bold text-white tracking-wide">FOCUS TIME</span>
+              <div className="absolute top-4 left-4 flex items-center gap-2 rounded-full border border-[#F0A868]/30 bg-[#2b1a0f]/80 px-3 py-1.5">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-[#F0A868]" />
+                <span className="text-label text-[#F5EDE3]">Focus time</span>
               </div>
 
-              {/* Timer display */}
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                {/* Circular ring hint */}
-                <div className="relative flex items-center justify-center w-40 h-40">
+                <div className="relative flex h-40 w-40 items-center justify-center">
                   <svg className="absolute inset-0 -rotate-90" viewBox="0 0 160 160">
-                    <circle cx="80" cy="80" r="72" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
+                    <circle cx="80" cy="80" r="72" fill="none" stroke="rgba(245,237,227,0.1)" strokeWidth="6" />
                     <circle
-                      cx="80" cy="80" r="72"
+                      cx="80"
+                      cy="80"
+                      r="72"
                       fill="none"
-                      stroke="url(#timerGrad)"
+                      stroke="#F0A868"
                       strokeWidth="6"
                       strokeLinecap="round"
                       strokeDasharray={452}
                       strokeDashoffset={452 * 0.38}
                     />
-                    <defs>
-                      <linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#3B82F6" />
-                        <stop offset="100%" stopColor="#06B6D4" />
-                      </linearGradient>
-                    </defs>
                   </svg>
                   <div className="flex flex-col items-center gap-0.5">
-                    <span className="text-4xl font-mono font-bold text-white tabular-nums tracking-tight">24:13</span>
-                    <span className="text-xs text-white/50">Cycle 2 of 4</span>
+                    <span className="text-data font-mono text-4xl text-[#F5EDE3]">24:13</span>
+                    <span className="text-xs text-[#F5EDE3]/50">Cycle 2 of 4</span>
                   </div>
                 </div>
 
-                {/* Cycle dots */}
                 <div className="flex items-center gap-2">
                   {[0, 1, 2, 3].map((i) => (
                     <div
                       key={i}
-                      className={`h-2 rounded-full ${
-                        i < 2
-                          ? "w-7 bg-gradient-to-r from-blue-500 to-cyan-400"
-                          : "w-2 bg-white/20"
-                      }`}
+                      className={`h-2 rounded-full ${i < 2 ? "w-7 bg-[#F0A868]" : "w-2 bg-[#F5EDE3]/20"}`}
                     />
                   ))}
                 </div>
               </div>
-
-              {/* Darkening overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 pointer-events-none" />
             </div>
 
-            {/* Custom video badge */}
-            <div className="absolute -bottom-4 -left-4 flex items-center gap-2.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 shadow-xl">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/30 to-cyan-500/30 border border-blue-400/20">
-                <Plus className="h-4 w-4 text-cyan-400" />
+            <div className="absolute -bottom-4 -left-4 flex items-center gap-2.5 rounded-md border border-line bg-surface-raised px-4 py-3 shadow-overlay">
+              <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-accent-soft">
+                <Plus className="h-4 w-4 text-accent-solid" />
               </div>
               <div>
-                <p className="text-xs text-white/50 leading-none mb-0.5">Custom Scene</p>
-                <p className="text-sm font-semibold text-white">Add any YouTube link</p>
+                <p className="mb-0.5 text-xs leading-none text-ink-subtle">Custom scene</p>
+                <p className="text-sm font-semibold text-ink">Add any YouTube link</p>
               </div>
             </div>
 
-            {/* Ambient sound badge */}
-            <div className="absolute -bottom-4 -right-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 shadow-xl">
-              <p className="text-xs text-white/50 mb-1.5">Ambient Sound</p>
+            <div className="absolute -right-4 -bottom-4 rounded-md border border-line bg-surface-raised px-4 py-3 shadow-overlay">
+              <p className="mb-1.5 text-xs text-ink-subtle">Ambient sound</p>
               <div className="flex items-center gap-2">
-                <div className="flex gap-0.5 items-end h-4">
+                <div className="flex h-4 items-end gap-0.5">
                   {[3, 5, 4, 6, 3, 5, 4].map((h, i) => (
-                    <div
-                      key={i}
-                      className="w-1 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full"
-                      style={{ height: `${h * 4}px` }}
-                    />
+                    <div key={i} className="w-1 rounded-full bg-accent-solid" style={{ height: `${h * 4}px` }} />
                   ))}
                 </div>
-                <span className="text-sm font-semibold text-white">Rain</span>
+                <span className="text-sm font-semibold text-ink">Rain</span>
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </section>
