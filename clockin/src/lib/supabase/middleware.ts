@@ -34,20 +34,16 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/signup") ||
     request.nextUrl.pathname.startsWith("/onboarding");
   const isCallbackPage = request.nextUrl.pathname.startsWith("/callback");
-  // Dashboard routes that support guest mode
+  // App routes that support guest mode — the 4-item nav plus settings.
+  // Legacy paths (/dashboard, /stats, /social, ...) resolve via the
+  // redirects in next.config.ts before middleware sees them, so they don't
+  // need entries here.
   const isDashboardRoute =
-    request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/stats") ||
     request.nextUrl.pathname.startsWith("/focus") ||
-    request.nextUrl.pathname.startsWith("/history") ||
-    request.nextUrl.pathname.startsWith("/categories") ||
-    request.nextUrl.pathname.startsWith("/achievements") ||
-    request.nextUrl.pathname.startsWith("/goals") ||
-    request.nextUrl.pathname.startsWith("/dream") ||
-    request.nextUrl.pathname.startsWith("/settings") ||
-    request.nextUrl.pathname.startsWith("/social") ||
-    request.nextUrl.pathname.startsWith("/focus-room") ||
-    request.nextUrl.pathname.startsWith("/install");
+    request.nextUrl.pathname.startsWith("/today") ||
+    request.nextUrl.pathname.startsWith("/insights") ||
+    request.nextUrl.pathname.startsWith("/progress") ||
+    request.nextUrl.pathname.startsWith("/settings");
 
   const isPublicPage =
     request.nextUrl.pathname === "/" ||

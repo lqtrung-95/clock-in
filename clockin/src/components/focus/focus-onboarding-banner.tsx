@@ -118,7 +118,7 @@ export function FocusOnboardingBanner({ selectedCategory, effectivePreset }: Foc
       <p className="mt-3 text-center text-[11px] text-muted-foreground/40">
         No categories yet?{" "}
         <Link
-          href="/categories"
+          href="/settings/categories"
           className="text-blue-400 hover:underline"
         >
           Create one first

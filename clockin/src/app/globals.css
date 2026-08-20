@@ -270,6 +270,15 @@
   }
 }
 
+/* Set by ImmersiveBoundary (the focus session, focus rooms) — hides the app
+   chrome via an attribute rather than the z-index coincidence the old
+   sidebar (z-50) and fullscreen focus view (also z-50) relied on. */
+[data-immersive="true"] [data-shell-sidebar],
+[data-immersive="true"] [data-shell-topbar],
+[data-immersive="true"] [data-shell-tabbar] {
+  display: none;
+}
+
 /* Motion restraint: honour the OS setting globally rather than per-component. */
 @media (prefers-reduced-motion: reduce) {
   :root {

@@ -16,7 +16,7 @@ interface FirstTimeSetupBannerProps {
 }
 
 const STEPS = [
-  { label: "Create a category", href: "/categories", description: "Organize your focus sessions" },
+  { label: "Create a category", href: "/settings/categories", description: "Organize your focus sessions" },
   { label: "Customize your timer", href: "/focus", description: "Set your preferred work duration" },
   { label: "Start your first session", href: "/focus", description: "Begin your focus journey" },
 ] as const;

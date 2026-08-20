@@ -202,7 +202,7 @@ export function FocusRooms({ userId }: FocusRoomsProps) {
   const { rooms, loading, deleteRoom } = useFocusRooms();
 
   const handleJoin = (roomId: string) => {
-    router.push(`/focus-room/${roomId}`);
+    router.push(`/focus/rooms/${roomId}`);
   };
 
   const handleDelete = async (roomId: string) => {
