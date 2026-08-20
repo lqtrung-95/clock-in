@@ -73,7 +73,7 @@ function RoomCard({
                 {room.host?.avatar_url && (
                   <img src={room.host.avatar_url} alt={room.host.display_name} className="h-full w-full object-cover" />
                 )}
-                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xs">
+                <AvatarFallback className="bg-data-xp/15 text-data-xp text-xs">
                   {room.host?.display_name?.charAt(0).toUpperCase() || "?"}
                 </AvatarFallback>
               </Avatar>
@@ -95,7 +95,7 @@ function RoomCard({
               variant="ghost"
               size="sm"
               onClick={() => onDelete(room.id)}
-              className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+              className="text-danger hover:bg-danger-soft"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -181,7 +181,7 @@ function CreateRoomDialog({
               id="private"
               checked={isPrivate}
               onChange={(e) => setIsPrivate(e.target.checked)}
-              className="rounded border-gray-300"
+              className="rounded border-line-strong"
             />
             <label htmlFor="private" className="text-sm">
               Private room

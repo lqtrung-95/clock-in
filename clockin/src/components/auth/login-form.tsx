@@ -68,7 +68,7 @@ export function LoginForm() {
         </div>
         <Button
           type="submit"
-          className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
+          className="w-full"
           disabled={loading}
         >
           {loading ? "Signing in..." : "Sign in"}

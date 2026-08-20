@@ -376,7 +376,7 @@ export default function SettingsPage() {
           {!isAuthenticated && !authLoading && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-cyan-400" />
+                <User className="h-4 w-4 text-accent-solid" />
                 <h2 className="text-lg font-semibold text-foreground">Profile</h2>
               </div>
               <LoginPrompt feature="general" />
@@ -384,15 +384,15 @@ export default function SettingsPage() {
           )}
           {isAuthenticated && <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-cyan-400" />
+              <User className="h-4 w-4 text-accent-solid" />
               <h2 className="text-lg font-semibold text-foreground">Profile</h2>
             </div>
             <div className="space-y-4">
               {/* Current Avatar Display */}
               <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16 ring-2 ring-blue-500 ring-offset-2">
+                <Avatar className="h-16 w-16 ring-2 ring-accent-solid ring-offset-2">
                   <AvatarImage src={avatarUrl} alt="Current avatar" />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-lg">
+                  <AvatarFallback className="bg-accent-soft text-accent-solid text-lg">
                     {displayName?.charAt(0).toUpperCase() || "?"}
                   </AvatarFallback>
                 </Avatar>
@@ -412,7 +412,7 @@ export default function SettingsPage() {
                       onClick={() => setAvatarUrl(url)}
                       className={`relative rounded-full p-1 transition-all ${
                         avatarUrl === url
-                          ? "ring-2 ring-blue-500 ring-offset-2"
+                          ? "ring-2 ring-accent-solid ring-offset-2"
                           : "hover:opacity-80"
                       }`}
                     >
@@ -431,7 +431,7 @@ export default function SettingsPage() {
                         onClick={() => setAvatarUrl(customAvatarUrl)}
                         className={`relative rounded-full p-1 transition-all ${
                           avatarUrl === customAvatarUrl
-                            ? "ring-2 ring-blue-500 ring-offset-2"
+                            ? "ring-2 ring-accent-solid ring-offset-2"
                             : ""
                         }`}
                       >
@@ -443,7 +443,7 @@ export default function SettingsPage() {
                       {/* Delete button on top-right of custom avatar */}
                       <button
                         onClick={handleDeleteAvatar}
-                        className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 z-10"
+                        className="absolute -top-1 -right-1 h-5 w-5 bg-danger text-white rounded-full flex items-center justify-center text-xs hover:opacity-90 z-10"
                         title="Remove custom avatar"
                       >
                         ×
@@ -451,7 +451,7 @@ export default function SettingsPage() {
                     </div>
                   )}
                   {/* Upload button */}
-                  <label className="relative rounded-full p-1 transition-all cursor-pointer hover:opacity-80 inline-flex">
+                  <label className="relative rounded-full p-1 transition-opacity cursor-pointer hover:opacity-80 inline-flex">
                     <input
                       type="file"
                       accept="image/*"
@@ -501,7 +501,7 @@ export default function SettingsPage() {
           {/* Billing */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-cyan-400" />
+              <CreditCard className="h-4 w-4 text-accent-solid" />
               <h2 className="text-lg font-semibold text-foreground">Billing</h2>
             </div>
             <div className="flex items-center justify-between">
@@ -528,7 +528,7 @@ export default function SettingsPage() {
           {/* Appearance */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Palette className="h-4 w-4 text-cyan-400" />
+              <Palette className="h-4 w-4 text-accent-solid" />
               <h2 className="text-lg font-semibold text-foreground">Appearance</h2>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -544,7 +544,7 @@ export default function SettingsPage() {
                   size="sm"
                   onClick={() => setTheme("light")}
                   className={theme === "light"
-                    ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-foreground"
+                    ? "bg-accent-soft text-ink"
                     : "border-border bg-card text-foreground/80 hover:bg-secondary hover:text-foreground"
                   }
                 >
@@ -556,7 +556,7 @@ export default function SettingsPage() {
                   size="sm"
                   onClick={() => setTheme("dark")}
                   className={theme === "dark"
-                    ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-foreground"
+                    ? "bg-accent-soft text-ink"
                     : "border-border bg-card text-foreground/80 hover:bg-secondary hover:text-foreground"
                   }
                 >
@@ -568,7 +568,7 @@ export default function SettingsPage() {
                   size="sm"
                   onClick={() => setTheme("system")}
                   className={theme === "system"
-                    ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-foreground"
+                    ? "bg-accent-soft text-ink"
                     : "border-border bg-card text-foreground/80 hover:bg-secondary hover:text-foreground"
                   }
                 >
@@ -585,7 +585,7 @@ export default function SettingsPage() {
           {/* Notifications */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-cyan-400" />
+              <Bell className="h-4 w-4 text-accent-solid" />
               <h2 className="text-lg font-semibold text-foreground">Notifications</h2>
             </div>
             {isAuthenticated ? (
@@ -601,7 +601,7 @@ export default function SettingsPage() {
                   onCheckedChange={(v) =>
                     setPreferences((p) => ({ ...p, email_digest_enabled: v }))
                   }
-                  className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-500 data-[state=checked]:to-cyan-500"
+                  className="data-[state=checked]:bg-accent-solid"
                 />
               </div>
             ) : (
@@ -623,7 +623,7 @@ export default function SettingsPage() {
                 className="flex items-center justify-between rounded-xl border border-border bg-white/[0.02] px-4 py-3 transition-colors hover:bg-white/[0.05]"
               >
                 <div className="flex items-center gap-3">
-                  <Tag className="h-4 w-4 text-cyan-400" />
+                  <Tag className="h-4 w-4 text-accent-solid" />
                   <span className="text-sm font-medium text-foreground">Categories</span>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -633,7 +633,7 @@ export default function SettingsPage() {
                 className="flex items-center justify-between rounded-xl border border-border bg-white/[0.02] px-4 py-3 transition-colors hover:bg-white/[0.05]"
               >
                 <div className="flex items-center gap-3">
-                  <Trophy className="h-4 w-4 text-cyan-400" />
+                  <Trophy className="h-4 w-4 text-accent-solid" />
                   <span className="text-sm font-medium text-foreground">Achievements</span>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -645,7 +645,7 @@ export default function SettingsPage() {
           <Button
             onClick={savePreferences}
             disabled={saving}
-            className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
+            className="w-full bg-accent-solid text-accent-fg hover:bg-accent-hover"
           >
             {saving ? "Saving..." : "Save Settings"}
           </Button>

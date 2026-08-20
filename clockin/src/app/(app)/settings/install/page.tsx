@@ -90,16 +90,16 @@ export default function InstallPage() {
     <PageShell title="Settings" description="Add Effortful to your home screen" segments={SEGMENTS.settings} width="prose">
         {/* Already installed banner */}
         {isStandalone && (
-          <div className="flex items-center gap-3 rounded-2xl border border-green-500/20 bg-green-500/10 px-4 py-3">
-            <CheckCircle2 className="h-5 w-5 shrink-0 text-green-400" />
-            <p className="text-sm font-medium text-green-400">Effortful is already installed on this device!</p>
+          <div className="flex items-center gap-3 rounded-2xl border border-success/20 bg-success-soft px-4 py-3">
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
+            <p className="text-sm font-medium text-success">Effortful is already installed on this device!</p>
           </div>
         )}
 
         {/* Benefits card */}
         <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-cyan-400" />
+            <Sparkles className="h-4 w-4 text-accent-solid" />
             <h2 className="text-sm font-semibold text-foreground">Why install?</h2>
           </div>
           <ul className="space-y-2 text-sm text-muted-foreground">
@@ -110,7 +110,7 @@ export default function InstallPage() {
               "Faster load times after first install",
             ].map((b) => (
               <li key={b} className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent-solid" />
                 {b}
               </li>
             ))}
@@ -126,7 +126,7 @@ export default function InstallPage() {
               className={cn(
                 "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors duration-200",
                 platform === tab.id
-                  ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-sm"
+                  ? "bg-accent-solid text-accent-fg shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -145,7 +145,7 @@ export default function InstallPage() {
             >
               {/* Step number + icon */}
               <div className="flex flex-col items-center gap-1 shrink-0">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20 text-cyan-400">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent-solid/20 bg-accent-soft text-accent-solid">
                   {step.icon}
                 </div>
                 <span className="text-[10px] font-bold text-muted-foreground/50">
@@ -164,8 +164,8 @@ export default function InstallPage() {
 
         {/* iOS Safari note */}
         {platform === "ios" && (
-          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
-            <p className="text-xs text-amber-400">
+          <div className="rounded-2xl border border-warn/20 bg-warn-soft px-4 py-3">
+            <p className="text-xs text-warn">
               <span className="font-semibold">Note:</span> Installation only works in Safari on iOS. If you&apos;re using Chrome or another browser, open this page in Safari first.
             </p>
           </div>

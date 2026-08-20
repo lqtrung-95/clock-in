@@ -37,7 +37,7 @@ export function XPProgressBar({
           </div>
         )}
         <div className={cn("relative overflow-hidden rounded-full bg-muted", sizeClasses[size])}>
-          <div className="h-full w-full rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20" />
+          <div className="h-full w-full rounded-full bg-data-xp/20" />
         </div>
         <p className="mt-2 text-sm text-muted-foreground text-center">
           Start focusing to earn XP!
@@ -58,12 +58,12 @@ export function XPProgressBar({
       )}
       <div className={cn("relative overflow-hidden rounded-full bg-muted", sizeClasses[size])}>
         <div
-          className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-500"
+          className="h-full rounded-full bg-data-xp transition-[width] duration-500"
           style={{ width: `${progressPercentage}%` }}
         />
         {/* Glow effect */}
         <div
-          className="absolute inset-0 rounded-full bg-cyan-400/30 blur-sm transition-all duration-500"
+          className="absolute inset-0 rounded-full bg-data-xp/30 blur-sm transition-[width] duration-500"
           style={{ width: `${progressPercentage}%` }}
         />
       </div>

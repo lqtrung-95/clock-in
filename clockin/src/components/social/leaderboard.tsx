@@ -22,8 +22,11 @@ function formatDuration(seconds: number): string {
 }
 
 function RankBadge({ rank }: { rank: number }) {
+  // Gold/silver/bronze medal colors — a real-world convention, not
+  // decorative gradient slop, so exempted from the semantic-token rule here.
   if (rank === 1) {
     return (
+      // eslint-disable-next-line no-restricted-syntax
       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-lg shadow-yellow-500/30">
         <Trophy className="h-4 w-4" />
       </div>
@@ -31,6 +34,7 @@ function RankBadge({ rank }: { rank: number }) {
   }
   if (rank === 2) {
     return (
+      // eslint-disable-next-line no-restricted-syntax
       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 text-white shadow-lg shadow-slate-400/30">
         <Medal className="h-4 w-4" />
       </div>
@@ -38,6 +42,7 @@ function RankBadge({ rank }: { rank: number }) {
   }
   if (rank === 3) {
     return (
+      // eslint-disable-next-line no-restricted-syntax
       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-600 to-orange-700 text-white shadow-lg shadow-orange-700/30">
         <Award className="h-4 w-4" />
       </div>
@@ -70,7 +75,7 @@ function LeaderboardEntry({
       className={cn(
         "flex items-center gap-4 p-4 rounded-xl transition-colors",
         entry.is_current_user
-          ? "bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20"
+          ? "bg-accent-soft border border-accent-solid/20"
           : "hover:bg-muted/50"
       )}
     >
@@ -89,12 +94,7 @@ function LeaderboardEntry({
           />
         ) : null}
         <AvatarFallback
-          className={cn(
-            "text-white text-sm",
-            entry.rank <= 3
-              ? "bg-gradient-to-br from-purple-500 to-pink-500"
-              : "bg-gradient-to-br from-blue-500 to-cyan-500"
-          )}
+          className={cn("text-sm", entry.rank <= 3 ? "bg-data-xp/20 text-data-xp" : "bg-data-focus/15 text-data-focus")}
         >
           {entry.display_name?.charAt(0).toUpperCase() || "?"}
         </AvatarFallback>
@@ -197,7 +197,7 @@ export function Leaderboard({ userId }: LeaderboardProps) {
               : "Top focusers worldwide"}
           </p>
         </div>
-        <Trophy className="h-8 w-8 text-yellow-500" />
+        <Trophy className="h-8 w-8 text-data-streak" />
       </div>
 
       {/* Scope Toggle */}

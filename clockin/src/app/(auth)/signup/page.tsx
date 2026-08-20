@@ -10,7 +10,7 @@ export default function SignupPage() {
       <div className="w-full max-w-sm space-y-6">
         {/* Logo */}
         <div className="flex flex-col items-center space-y-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 text-white shadow-lg shadow-blue-500/30">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-solid text-accent-fg">
             <Flame className="h-7 w-7 fill-current" />
           </div>
           <div className="text-center">
@@ -25,7 +25,7 @@ export default function SignupPage() {
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="text-cyan-400 hover:text-cyan-300 hover:underline">
+          <Link href="/login" className="text-accent-solid hover:opacity-80 hover:underline">
             Sign in
           </Link>
         </p>

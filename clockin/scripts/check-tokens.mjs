@@ -22,10 +22,22 @@ const EXEMPT_PREFIXES = [
   "components/focus/",
   "components/dream-goal/",
   "components/landing/",
+  "components/billing/pricing-page-content.tsx",
   "app/opengraph-image.tsx",
   "app/page.tsx",
   "app/pricing/",
 ];
+
+// Exact route-level immersive views (not prefix-matched — see EXEMPT_PREFIXES).
+const EXEMPT_FILES = new Set([
+  "app/(app)/progress/dream/page.tsx",
+  // Rasterized by html-to-image — must not depend on CSS custom properties.
+  "components/stats/share-stats-card.tsx",
+  "components/social/share-card.tsx",
+  // Only ever rendered inside FocusSetupView (an exempt expressive surface).
+  "components/ai/ai-session-suggestion.tsx",
+]);
+const EXEMPT_REGEX = [/^app\/\(app\)\/focus\/rooms\/[^/]+\/page\.tsx$/];
 
 async function walk(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
@@ -49,7 +61,10 @@ async function main() {
 
   for (const file of files) {
     const rel = relative(SRC_DIR, file).replace(/\\/g, "/");
-    const isExempt = EXEMPT_PREFIXES.some((p) => rel.startsWith(p));
+    const isExempt =
+      EXEMPT_PREFIXES.some((p) => rel.startsWith(p)) ||
+      EXEMPT_FILES.has(rel) ||
+      EXEMPT_REGEX.some((r) => r.test(rel));
     const text = await readFile(file, "utf8");
     const matches = text.match(RAW_PALETTE);
     if (!matches) continue;

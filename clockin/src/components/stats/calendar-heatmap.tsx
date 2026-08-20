@@ -17,12 +17,14 @@ interface CalendarHeatmapProps {
   year?: number;
 }
 
+// One metric color at increasing opacity, rather than a hardcoded green
+// ramp unrelated to the rest of the app's focus-time coloring.
 const LEVEL_COLORS = [
-  "bg-gray-200 dark:bg-gray-800", // 0 - no activity
-  "bg-emerald-300 dark:bg-emerald-900/60", // 1 - < 1 hour
-  "bg-emerald-400 dark:bg-emerald-700", // 2 - 1-3 hours
-  "bg-emerald-500 dark:bg-emerald-500", // 3 - 3-5 hours
-  "bg-emerald-600 dark:bg-emerald-400", // 4 - 5+ hours
+  "bg-surface-sunken", // 0 - no activity
+  "bg-data-focus/25", // 1 - < 1 hour
+  "bg-data-focus/45", // 2 - 1-3 hours
+  "bg-data-focus/70", // 3 - 3-5 hours
+  "bg-data-focus", // 4 - 5+ hours
 ];
 
 export function CalendarHeatmap({ data, year }: CalendarHeatmapProps) {
@@ -140,7 +142,7 @@ export function CalendarHeatmap({ data, year }: CalendarHeatmapProps) {
                         <TooltipTrigger asChild>
                           <div
                             className={cn(
-                              "w-full aspect-square min-h-[8px] max-h-[14px] rounded-sm cursor-pointer transition-all duration-200 hover:ring-2 hover:ring-offset-1 hover:ring-emerald-400",
+                              "w-full aspect-square min-h-[8px] max-h-[14px] rounded-xs cursor-pointer transition-colors hover:ring-2 hover:ring-offset-1 hover:ring-accent-solid",
                               LEVEL_COLORS[level]
                             )}
                           />

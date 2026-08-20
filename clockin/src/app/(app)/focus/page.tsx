@@ -13,8 +13,6 @@ import { useFocusNotifications } from "@/hooks/use-focus-notifications";
 import { useDreamGoal } from "@/hooks/use-dream-goal";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useProStatus } from "@/hooks/use-pro-status";
-import { useFocusTodayStats } from "@/hooks/use-focus-today-stats";
-import { useFocusActiveGoals } from "@/hooks/use-focus-active-goals";
 import { FocusSetupSkeleton } from "@/components/skeletons/focus-setup-skeleton";
 import { timeEntryService } from "@/services/time-entry-service";
 import { trackFocusTime } from "@/services/gamification-service";
@@ -69,13 +67,6 @@ export default function FocusPage() {
   const { isAuthenticated, userId, isLoading: authLoading } = useAuthState();
   const { isPro, isPending: proPending } = useProStatus(userId);
   const { addProgress } = useDreamGoal(userId);
-
-  // Prefetch the dynamic setup data so the one-shot loading gate can wait for
-  // it — these share query keys with the child widgets (cache hit on render).
-  // Use their `ready` flags (isPending-based) so the gate never releases during
-  // a query's enabled-transition, which would let a widget pop in late.
-  const { ready: todayStatsReady, data: todayStats } = useFocusTodayStats();
-  const { ready: activeGoalsReady, goals: activeGoals } = useFocusActiveGoals();
 
   // Extracted hooks
   const [selectedSound, setSelectedSound] = useState("");
@@ -379,13 +370,8 @@ export default function FocusPage() {
 
   // One-shot loading gate: keep the whole setup as a skeleton until every piece
   // of async data is ready, then render the real view once — so dynamic blocks
-  // (active goals, today stats, category chips, plan) never pop in and shift.
-  const setupReady =
-    !authLoading &&
-    !categoriesPending &&
-    todayStatsReady &&
-    activeGoalsReady &&
-    !proPending;
+  // (category chips, plan) never pop in and shift.
+  const setupReady = !authLoading && !categoriesPending && !proPending;
 
   if (!setupReady) {
     return <FocusSetupSkeleton />;
@@ -402,7 +388,6 @@ export default function FocusPage() {
       showAddVideoDialog={customVideoHook.showAddVideoDialog}
       newVideoUrl={customVideoHook.newVideoUrl}
       newVideoTitle={customVideoHook.newVideoTitle}
-      todayStats={todayStats} activeGoals={activeGoals}
       selectedCategory={selectedCategory} categories={queriedCategories as unknown as Category[]}
       isAuthenticated={!!isAuthenticated} isPro={isPro} taskDescription={taskDescription}
       aiCatSuggesting={aiCatSuggesting}

@@ -7,8 +7,6 @@ import { categoryService } from "@/services/category-service";
 import { streakService } from "@/services/streak-service";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +15,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -27,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import { DreamCrystalMini } from "@/components/focus/dream-crystal-mini";
-import { Plus, Flame, Target, Trash2, Trophy, Sparkles, Mountain } from "lucide-react";
+import { Plus, Flame, Target, Trash2, Mountain } from "lucide-react";
 import { useDreamGoal } from "@/hooks/use-dream-goal";
 import { DreamGoalProgressRing } from "@/components/dream-goal/dream-goal-progress-ring";
 import { MountainProgressView } from "@/components/dream-goal/mountain-progress-view";
@@ -37,6 +34,12 @@ import { toast } from "sonner";
 import type { Goal } from "@/types/gamification";
 import type { Category } from "@/types/timer";
 import { PageShell } from "@/components/ui-app/page-shell";
+import { DataCard } from "@/components/ui-app/data-card";
+import { StatRow } from "@/components/ui-app/stat-row";
+import { Stat } from "@/components/ui-app/stat";
+import { EmptyState } from "@/components/ui-app/empty-state";
+import { ProgressMeter } from "@/components/ui-app/progress-meter";
+import { Field } from "@/components/ui-app/field";
 import { SEGMENTS } from "@/lib/navigation";
 
 interface GoalWithProgress extends Goal {
@@ -45,35 +48,6 @@ interface GoalWithProgress extends Goal {
     target: number;
     percentage: number;
   } | null;
-}
-
-// Streak Card Component
-function StreakCard({
-  icon: Icon,
-  value,
-  label,
-  gradient,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  value: number;
-  label: string;
-  gradient: string;
-}) {
-  return (
-    <Card className="group relative overflow-hidden border border-border bg-card p-6 text-center transition-all duration-500 hover:border-border/80 hover:bg-secondary"
-    >
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`}
-      />
-      <div className="relative">
-        <div className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg transition-transform duration-500 group-hover:scale-110`}
-        >
-          <Icon className="h-7 w-7" />
-        </div>
-        <p className="mt-4 text-4xl font-bold text-foreground">{value}</p>
-        <p className="text-sm text-muted-foreground">{label}</p>
-      </div>
-    </Card>
-  );
 }
 
 export default function GoalsPage() {
@@ -199,44 +173,30 @@ export default function GoalsPage() {
     <PageShell title="Progress" segments={SEGMENTS.progress} width="prose">
         {/* Streak Cards with 3D Crystal */}
         {streak && (
-          <div className="grid grid-cols-3 gap-4">
-            <StreakCard
-              icon={Flame}
-              value={streak.current_streak}
-              label="Current Streak"
-              gradient="from-orange-500 to-red-500"
-            />
-            <StreakCard
-              icon={Target}
-              value={streak.longest_streak}
-              label="Longest Streak"
-              gradient="from-blue-500 to-cyan-500"
-            />
-            {/* 3D Crystal Card */}
-            <Card className="group relative overflow-hidden border border-border bg-card p-4 text-center transition-all duration-500 hover:border-border/80 hover:bg-secondary flex flex-col items-center justify-center min-h-[140px]">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-              <div className="relative flex flex-col items-center gap-2">
-                <DreamCrystalMini
-                  progress={Math.min((streak.current_streak / Math.max(streak.longest_streak, 1)) * 100, 100)}
-                  size="sm"
-                  color="#EC4899"
-                  animate
-                />
-                <span className="text-xs font-medium text-muted-foreground">Streak Power</span>
-              </div>
-            </Card>
-          </div>
+          <StatRow className="grid-cols-3 md:grid-cols-3">
+            <Stat label="Current streak" value={streak.current_streak} icon={Flame} metric="streak" size="md" />
+            <Stat label="Longest streak" value={streak.longest_streak} icon={Target} metric="goal" size="md" />
+            <div className="flex flex-col items-center justify-center gap-2 border-l border-line pl-4">
+              <DreamCrystalMini
+                progress={Math.min((streak.current_streak / Math.max(streak.longest_streak, 1)) * 100, 100)}
+                size="sm"
+                color="#EC4899"
+                animate
+              />
+              <span className="text-xs font-medium text-ink-muted">Streak power</span>
+            </div>
+          </StatRow>
         )}
 
         {/* Dream Goal Section */}
         {dreamGoal && (
-          <Card className="border border-border bg-card overflow-hidden">
-            <div className="p-4 border-b border-border flex items-center justify-between">
+          <DataCard padding="none" className="overflow-hidden">
+            <div className="flex items-center justify-between border-b border-line p-4">
               <div className="flex items-center gap-2">
-                <Mountain className="h-5 w-5 text-purple-500" />
-                <h2 className="text-lg font-semibold text-foreground">Dream Goal</h2>
+                <Mountain className="h-5 w-5 text-data-dream" />
+                <h2 className="text-base font-semibold text-ink">Dream goal</h2>
               </div>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-ink-muted">
                 {progress?.percentage.toFixed(1)}% · {dreamGoal.current_hours.toFixed(1)}h / {dreamGoal.target_hours}h
               </span>
             </div>
@@ -251,11 +211,11 @@ export default function GoalsPage() {
                 targetHours={dreamGoal.target_hours}
                 title={dreamGoal.title}
               />
-              <div className="absolute bottom-3 right-3 text-xs text-muted-foreground/60 bg-muted/40 px-2 py-1 rounded-md">
+              <div className="absolute bottom-3 right-3 rounded-sm bg-surface-sunken px-2 py-1 text-xs text-ink-subtle">
                 Click to explore
               </div>
             </div>
-          </Card>
+          </DataCard>
         )}
 
         {/* Full Screen Dream Goal Dialog */}
@@ -270,83 +230,59 @@ export default function GoalsPage() {
         )}
 
         {/* Goals Section */}
-        <div className="flex items-center justify-between"
-        >
-          <h2 className="text-lg font-semibold text-foreground">Your Goals</h2>
-          <Dialog open={formOpen} onOpenChange={setFormOpen}
-          >
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-ink">Your goals</h2>
+          <Dialog open={formOpen} onOpenChange={setFormOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                New Goal
+              <Button>
+                <Plus className="h-4 w-4" />
+                New goal
               </Button>
             </DialogTrigger>
-            <DialogContent className="border border-border bg-card"
-            >
+            <DialogContent>
               <DialogHeader>
-                <DialogTitle className="text-foreground">Create Goal</DialogTitle>
+                <DialogTitle>Create goal</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleCreateGoal} className="space-y-4"
-              >
-                <div className="space-y-2"
-                >
-                  <Label className="text-foreground/80">Target Minutes</Label>
+              <form onSubmit={handleCreateGoal} className="space-y-4">
+                <Field label="Target minutes">
                   <Input
                     type="number"
                     min={1}
                     max={1000}
                     value={targetMinutes}
                     onChange={(e) => setTargetMinutes(parseInt(e.target.value) || 0)}
-                    className="border-border bg-card text-foreground"
                     required
                   />
-                </div>
-                <div className="space-y-2"
-                >
-                  <Label className="text-foreground/80">Period</Label>
-                  <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}
-                  >
-                    <SelectTrigger className="border-border bg-card text-foreground"
-                    >
+                </Field>
+                <Field label="Period">
+                  <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="border border-border bg-card"
-                    >
-                      <SelectItem value="daily" className="text-foreground"
-                      >Daily</SelectItem>
-                      <SelectItem value="weekly" className="text-foreground"
-                      >Weekly</SelectItem>
-                      <SelectItem value="monthly" className="text-foreground"
-                      >Monthly</SelectItem>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2"
-                >
-                  <Label className="text-foreground/80">Category (optional)</Label>
-                  <Select value={categoryId || "all"} onValueChange={(v) => setCategoryId(v === "all" ? "" : v)}
-                  >
-                    <SelectTrigger className="border-border bg-card text-foreground"
-                    >
+                </Field>
+                <Field label="Category (optional)">
+                  <Select value={categoryId || "all"} onValueChange={(v) => setCategoryId(v === "all" ? "" : v)}>
+                    <SelectTrigger>
                       <SelectValue placeholder="All categories" />
                     </SelectTrigger>
-                    <SelectContent className="border border-border bg-card"
-                    >
-                      <SelectItem value="all" className="text-foreground"
-                      >All categories</SelectItem>
+                    <SelectContent>
+                      <SelectItem value="all">All categories</SelectItem>
                       {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id} className="text-foreground"
-                        >
+                        <SelectItem key={cat.id} value={cat.id}>
                           {cat.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <Button type="submit" className="w-full" disabled={saving}
-                >
-                  {saving ? "Creating..." : "Create Goal"}
+                </Field>
+                <Button type="submit" className="w-full" disabled={saving}>
+                  {saving ? "Creating..." : "Create goal"}
                 </Button>
               </form>
             </DialogContent>
@@ -354,72 +290,42 @@ export default function GoalsPage() {
         </div>
 
         {/* Goals List */}
-        <div className="space-y-3"
-        >
+        <div className="space-y-3">
           {goals.map((goal) => (
-            <Card key={goal.id} className="border border-border bg-card p-5 backdrop-blur-sm"
-            >
-              <div className="flex items-start justify-between"
-              >
-                <div className="flex-1"
-                >
-                  <div className="flex items-center gap-2"
-                  >
-                    <span className="font-medium capitalize text-foreground"
-                    >{goal.period}</span>
+            <DataCard key={goal.id}>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium capitalize text-ink">{goal.period}</span>
                     {goal.category_id && (
-                      <span className="text-sm text-muted-foreground"
-                      >
-                        ·{" "}
-                        {categories.find((c) => c.id === goal.category_id)?.name ||
-                          "Unknown"}
+                      <span className="text-sm text-ink-muted">
+                        · {categories.find((c) => c.id === goal.category_id)?.name || "Unknown"}
                       </span>
                     )}
                   </div>
                   {goal.progress && (
-                    <>
-                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.08]"
-                      >
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-700"
-                          style={{ width: `${goal.progress.percentage}%` }}
-                        />
-                      </div>
-                      <div className="mt-2 flex items-center justify-between"
-                      >
-                        <p className="text-sm text-muted-foreground"
-                        >
-                          {goal.progress.current}m / {goal.progress.target}m
-                        </p>
-                        <p className="text-sm font-medium text-cyan-400"
-                        >
-                          {goal.progress.percentage}%
-                        </p>
-                      </div>
-                    </>
+                    <ProgressMeter
+                      value={goal.progress.current}
+                      target={goal.progress.target}
+                      metric="goal"
+                      showValues
+                      className="mt-3"
+                    />
                   )}
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:bg-red-500/10 hover:text-red-400"
+                  className="h-8 w-8 text-ink-muted hover:bg-danger-soft hover:text-danger"
                   onClick={() => handleDeleteGoal(goal.id)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-            </Card>
+            </DataCard>
           ))}
           {goals.length === 0 && (
-            <div className="py-12 text-center"
-            >
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5"
-              >
-                <Target className="h-8 w-8 text-foreground/30" />
-              </div>
-              <p className="mt-4 text-muted-foreground"
-              >No goals yet. Create one to start tracking!</p>
-            </div>
+            <EmptyState icon={Target} title="No goals yet" description="Create one to start tracking!" />
           )}
         </div>
     </PageShell>

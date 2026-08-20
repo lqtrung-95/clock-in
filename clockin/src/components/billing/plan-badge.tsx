@@ -9,17 +9,15 @@ import { cn } from "@/lib/utils";
 const PLAN_CONFIG: Record<PlanType, { label: string; className: string }> = {
   free: {
     label: "FREE",
-    className: "bg-muted text-muted-foreground border-border hover:bg-muted",
+    className: "bg-surface-sunken text-ink-muted border-transparent hover:bg-surface-sunken",
   },
   pro: {
     label: "PRO",
-    className:
-      "bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-transparent hover:from-blue-600 hover:to-cyan-600",
+    className: "bg-accent-solid text-accent-fg border-transparent hover:bg-accent-hover",
   },
   lifetime: {
     label: "LIFETIME",
-    className:
-      "bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-transparent hover:from-amber-600 hover:to-yellow-500",
+    className: "bg-data-xp text-white border-transparent hover:opacity-90",
   },
 };
 

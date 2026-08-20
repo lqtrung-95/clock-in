@@ -39,8 +39,8 @@ export function TimerWidget() {
     .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 
   return (
-    <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 via-card to-cyan-500/5 p-5 shadow-lg shadow-primary/10">
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-cyan-500/10 opacity-50" />
+    <Card className="relative overflow-hidden border-accent-solid/20 bg-accent-soft p-5 shadow-card">
+      
 
       <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
@@ -67,7 +67,7 @@ export function TimerWidget() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="font-mono text-4xl font-bold tracking-tight bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent sm:text-5xl">
+          <div className="font-mono text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
             {formatted}
           </div>
 
@@ -95,7 +95,7 @@ export function TimerWidget() {
             <Button
               size="icon"
               onClick={() => router.push("/focus")}
-              className="h-12 w-12 rounded-xl bg-gradient-to-r from-primary to-cyan-500 text-white shadow-lg shadow-primary/25"
+              className="h-12 w-12 rounded-sm bg-accent-solid text-accent-fg shadow-card"
             >
               <Square className="h-5 w-5 fill-current" />
             </Button>

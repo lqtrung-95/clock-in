@@ -44,7 +44,7 @@ export function BadgeCard({
   return (
     <Card
       className={cn(
-        "group relative flex flex-col items-center text-center transition-all duration-300",
+        "group relative flex flex-col items-center text-center transition-colors duration-300",
         earned
           ? "border-border bg-card hover:border-border/80 hover:bg-secondary"
           : "border-dashed border-border/50 bg-muted/30 opacity-60",
@@ -103,7 +103,7 @@ export function BadgeCard({
 
       {/* XP reward */}
       <div className="mt-auto pt-2">
-        <span className="text-xs font-medium text-cyan-500">+{badge.xp_reward} XP</span>
+        <span className="text-xs font-medium text-data-xp">+{badge.xp_reward} XP</span>
       </div>
     </Card>
   );

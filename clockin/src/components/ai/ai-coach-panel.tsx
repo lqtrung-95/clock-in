@@ -92,7 +92,7 @@ export function AiCoachPanel() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 flex items-center justify-center rounded-2xl shadow-2xl transition-all duration-300 bg-gradient-to-br from-purple-500 to-blue-500 text-white scale-100 hover:scale-105 shadow-purple-500/30"
+          className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 flex items-center justify-center rounded-2xl shadow-2xl transition-transform duration-300 bg-accent-solid text-accent-fg scale-100 hover:scale-105"
           style={{ width: 52, height: 52 }}
           title="AI Focus Coach"
         >
@@ -105,9 +105,9 @@ export function AiCoachPanel() {
         <div className="fixed bottom-24 right-4 md:bottom-20 md:right-6 z-50 w-[340px] max-w-[calc(100vw-2rem)] flex flex-col rounded-3xl border border-border bg-card/98 backdrop-blur-2xl shadow-2xl shadow-black/40 overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
           {/* Header */}
           <div
-            className="flex items-center gap-3 px-4 py-3 border-b border-border bg-gradient-to-r from-purple-500/10 to-blue-500/10"
+            className="flex items-center gap-3 px-4 py-3 border-b border-border bg-accent-soft"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-blue-500">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-solid">
               <Bot className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1">
@@ -135,8 +135,8 @@ export function AiCoachPanel() {
           {/* Guest sign-in prompt */}
           {!minimized && !isLoading && !isAuthenticated && (
             <div className="flex flex-col items-center justify-center gap-3 p-6 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/20">
-                <Bot className="h-6 w-6 text-purple-400" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft border border-accent-solid/20">
+                <Bot className="h-6 w-6 text-accent-solid" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">Sign in to chat</p>
@@ -144,7 +144,7 @@ export function AiCoachPanel() {
               </div>
               <Link
                 href="/auth/login"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 text-white text-xs font-semibold hover:opacity-90 transition-opacity"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-sm bg-accent-solid text-accent-fg text-xs font-semibold hover:opacity-90 transition-opacity"
               >
                 <LogIn className="h-3.5 w-3.5" />
                 Sign in
@@ -155,8 +155,8 @@ export function AiCoachPanel() {
           {/* Pro upgrade prompt for authenticated free users */}
           {!minimized && !isLoading && isAuthenticated && !isPro && (
             <div className="flex flex-col items-center justify-center gap-3 p-6 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20">
-                <Lock className="h-6 w-6 text-cyan-400" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft border border-accent-solid/20">
+                <Lock className="h-6 w-6 text-accent-solid" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">Pro feature</p>
@@ -164,7 +164,7 @@ export function AiCoachPanel() {
               </div>
               <Link
                 href="/settings/billing"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white text-xs font-semibold hover:opacity-90 transition-opacity"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-sm bg-accent-solid text-accent-fg text-xs font-semibold hover:opacity-90 transition-opacity"
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 Upgrade to Pro
@@ -193,14 +193,14 @@ export function AiCoachPanel() {
               messages.map((m, i) => (
                 <div key={i} className={cn("flex gap-2", m.role === "user" && "justify-end")}>
                   {m.role === "assistant" && (
-                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 mt-0.5">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-accent-solid mt-0.5">
                       <Bot className="h-3 w-3 text-white" />
                     </div>
                   )}
                   <div className={cn(
                     "max-w-[80%] rounded-2xl px-3 py-2 text-xs leading-relaxed",
                     m.role === "user"
-                      ? "bg-gradient-to-br from-purple-500 to-blue-500 text-white rounded-br-sm"
+                      ? "bg-accent-solid text-accent-fg rounded-br-sm"
                       : "bg-muted text-foreground rounded-bl-sm"
                   )}>
                     {m.content}
@@ -224,14 +224,14 @@ export function AiCoachPanel() {
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && send()}
               placeholder="Ask your coach..."
-              className="h-9 text-xs rounded-xl bg-muted border-0 focus-visible:ring-1 focus-visible:ring-purple-500/50"
+              className="h-9 text-xs rounded-xl bg-muted border-0 focus-visible:ring-1 focus-visible:ring-accent-ring"
               disabled={streaming}
             />
             <Button
               size="icon"
               onClick={() => send()}
               disabled={!input.trim() || streaming}
-              className="h-9 w-9 shrink-0 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 text-white border-0 hover:opacity-90"
+              className="h-9 w-9 shrink-0 rounded-xl bg-accent-solid text-accent-fg border-0 hover:bg-accent-hover"
             >
               <Send className="h-3.5 w-3.5" />
             </Button>

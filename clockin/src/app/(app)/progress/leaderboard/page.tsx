@@ -1,22 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { FriendsList } from "@/components/social/friends-list";
 import { Leaderboard } from "@/components/social/leaderboard";
-import { FocusRooms } from "@/components/social/focus-rooms";
 import { ShareCard } from "@/components/social/share-card";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
-import { Users, Trophy, MessageSquare, Share2 } from "lucide-react";
+import { ChevronRight, Brain } from "lucide-react";
 import { AiInsightsCard } from "@/components/ai/ai-insights-card";
 import { SocialPageSkeleton } from "@/components/skeletons/social-page-skeleton";
 import { PageShell } from "@/components/ui-app/page-shell";
+import { Section } from "@/components/ui-app/section";
 import { SEGMENTS } from "@/lib/navigation";
 
 export default function SocialPage() {
+  const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
   const [userId, setUserId] = useState<string | null>(null);
   const { isPro } = useProStatus(userId);
@@ -101,13 +103,9 @@ export default function SocialPage() {
       actions={<ShareCard userName={userName} userAvatar={userAvatar} stats={stats} period="weekly" />}
     >
         {/* Leaderboard — free for all authenticated users */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-yellow-500" />
-            <h2 className="text-lg font-semibold">Leaderboard</h2>
-          </div>
+        <Section title="Leaderboard">
           <Leaderboard userId={userId} />
-        </div>
+        </Section>
 
         {/* AI Insights — Pro only */}
         {isPro ? (
@@ -119,24 +117,22 @@ export default function SocialPage() {
           />
         )}
 
-        {/* Friends + Focus Rooms — Pro only */}
+        {/* Friends — Pro only. Focus rooms live under Focus now. */}
         {isPro ? (
-          <>
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-500" />
-                <h2 className="text-lg font-semibold">Friends</h2>
-              </div>
-              <FriendsList userId={userId} />
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-green-500" />
-                <h2 className="text-lg font-semibold">Focus Rooms</h2>
-              </div>
-              <FocusRooms userId={userId} />
-            </div>
-          </>
+          <Section
+            title="Friends"
+            action={
+              <button
+                onClick={() => router.push("/focus/rooms")}
+                className="flex items-center gap-1 text-[13px] font-semibold text-accent-solid"
+              >
+                <Brain className="h-3.5 w-3.5" />
+                Focus rooms <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            }
+          >
+            <FriendsList userId={userId} />
+          </Section>
         ) : (
           <UpgradePrompt
             feature="Friends & Focus Rooms"

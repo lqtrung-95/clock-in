@@ -13,7 +13,6 @@ import { useGamification } from "@/hooks/use-gamification";
 import { useDreamGoal } from "@/hooks/use-dream-goal";
 import { createClient } from "@/lib/supabase/client";
 import { guestStorage } from "@/lib/guest-storage";
-import { Card } from "@/components/ui/card";
 import { EntryList } from "@/components/entries/entry-list";
 import { TimerWidget } from "@/components/dashboard/timer-widget";
 import { HomeStatStrip } from "@/components/home/home-stat-strip";
@@ -30,6 +29,7 @@ import type { POMODORO_PRESETS } from "@/lib/constants";
 import type { TimeEntry, Category } from "@/types/timer";
 import type { Goal } from "@/types/gamification";
 import { PageShell } from "@/components/ui-app/page-shell";
+import { DataCard } from "@/components/ui-app/data-card";
 import { LocalDataBanner } from "@/components/ui-app/local-data-banner";
 
 interface GoalWithProgress extends Goal {
@@ -147,9 +147,12 @@ export default function HomePage() {
   // back to onboarding.
   if (isAuthenticated && !hasEverTracked && goals.length === 0) {
     return (
-      <PageShell title="Today" width="wide">
+      <PageShell
+        title="Let's set up your focus"
+        description="A few quick steps and your dashboard fills itself in. Your stats, streak and goals appear here after your first session."
+        width="wide"
+      >
         <HomeEmptyState
-          userName=""
           onStartFocus={() => router.push("/focus")}
           onAddCategories={() => router.push("/settings/categories")}
           onSetGoal={() => router.push("/progress")}
@@ -195,21 +198,21 @@ export default function HomePage() {
           <HomeActiveGoals goals={goals} onViewAll={() => router.push("/progress")} />
 
           {/* Recent sessions */}
-          <Card className="border border-border bg-card p-6 lg:col-span-2">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-foreground">Recent sessions</h3>
-                <p className="mt-0.5 text-[13px] text-muted-foreground">Your latest tracking</p>
-              </div>
+          <DataCard
+            title="Recent sessions"
+            description="Your latest tracking"
+            className="lg:col-span-2"
+            action={
               <button
                 onClick={() => router.push("/insights/history")}
-                className="flex items-center gap-0.5 text-[13px] font-semibold text-cyan-600 dark:text-cyan-400"
+                className="flex items-center gap-0.5 text-[13px] font-semibold text-accent-solid"
               >
                 History <ChevronRight className="h-3.5 w-3.5" />
               </button>
-            </div>
+            }
+          >
             <EntryList entries={entries.slice(0, 5)} onDelete={invalidateDashboard} isGuest={!isAuthenticated} />
-          </Card>
+          </DataCard>
 
           {isAuthenticated && (
             <HomeMomentumCard

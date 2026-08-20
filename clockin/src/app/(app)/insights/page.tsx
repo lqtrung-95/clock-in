@@ -9,62 +9,41 @@ import { useAuthState } from "@/hooks/use-auth-state";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { guestStorage } from "@/lib/guest-storage";
-import { Card } from "@/components/ui/card";
 import { CalendarHeatmap } from "@/components/stats/calendar-heatmap";
 import { FocusInsightsCard } from "@/components/stats/focus-insights-card";
 import { ShareStatsCard } from "@/components/stats/share-stats-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { LoginPrompt } from "@/components/auth/login-prompt";
 import { StatsPageSkeleton } from "@/components/skeletons/stats-page-skeleton";
 import { PageShell } from "@/components/ui-app/page-shell";
+import { Section } from "@/components/ui-app/section";
+import { DataCard } from "@/components/ui-app/data-card";
+import { Stat } from "@/components/ui-app/stat";
+import { StatRow } from "@/components/ui-app/stat-row";
+import { EmptyState } from "@/components/ui-app/empty-state";
+import { MetricChart } from "@/components/ui-app/metric-chart";
 import { SEGMENTS } from "@/lib/navigation";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
-  CartesianGrid,
-  Rectangle,
+  Tooltip,
 } from "recharts";
 import { format, subDays, parseISO } from "date-fns";
-import { Clock, Flame, Calendar, BarChart3, Grid3X3, TrendingUp } from "lucide-react";
+import { Clock, Flame, Calendar, BarChart3 } from "lucide-react";
 import type { TimeEntry } from "@/types/timer";
 import type { DailyStats } from "@/services/stats-service";
 
-const COLORS = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ec4899", "#06b6d4"];
-
-// Stat Card Component
-function StatCard({
-  icon: Icon,
-  value,
-  label,
-  gradient,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  value: string | number;
-  label: string;
-  gradient: string;
-}) {
-  return (
-    <Card className="group relative overflow-hidden border border-border bg-card p-5 transition-all duration-500 hover:border-border/80 hover:bg-secondary">
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`} />
-      <div className="relative flex items-start gap-4">
-        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg transition-transform duration-500 group-hover:scale-110`}>
-          <Icon className="h-6 w-6" />
-        </div>
-        <div>
-          <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
-          <p className="text-xs font-medium text-muted-foreground">{label}</p>
-        </div>
-      </div>
-    </Card>
-  );
-}
+const CATEGORY_COLORS = [
+  "var(--data-focus)",
+  "var(--data-goal)",
+  "var(--data-streak)",
+  "var(--data-xp)",
+  "var(--data-dream)",
+  "var(--data-neutral)",
+];
 
 export default function AnalyticsPage() {
   const { isAuthenticated, userId, isLoading: authLoading } = useAuthState();
@@ -183,196 +162,120 @@ export default function AnalyticsPage() {
       segments={SEGMENTS.insights}
       actions={<ShareStatsCard entries={entries} streak={streak?.current_streak ?? 0} />}
     >
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard
-            icon={Clock}
-            value={Math.round(totalHours * 10) / 10}
-            label="Total Hours"
-            gradient="from-blue-500 to-cyan-500"
-          />
-          <StatCard
-            icon={Calendar}
-            value={totalEntries}
-            label="Sessions"
-            gradient="from-purple-500 to-pink-500"
-          />
-          <StatCard
-            icon={Flame}
-            value={streak?.current_streak || 0}
-            label="Day Streak"
-            gradient="from-orange-500 to-red-500"
-          />
-          <StatCard
-            icon={BarChart3}
-            value={totalEntries > 0 ? Math.round((totalHours * 60) / totalEntries) : 0}
-            label="Avg Minutes"
-            gradient="from-emerald-500 to-teal-500"
-          />
-        </div>
+      <StatRow>
+        <Stat label="Total hours" value={Math.round(totalHours * 10) / 10} icon={Clock} metric="focus" />
+        <Stat label="Sessions" value={totalEntries} icon={Calendar} metric="goal" />
+        <Stat label="Day streak" value={streak?.current_streak || 0} icon={Flame} metric="streak" />
+        <Stat
+          label="Avg minutes"
+          value={totalEntries > 0 ? Math.round((totalHours * 60) / totalEntries) : 0}
+          icon={BarChart3}
+          metric="xp"
+        />
+      </StatRow>
 
-        {/* AI Focus Insights — free users get 3/month, Pro gets unlimited */}
-        {userId && (
-          !isPro && aiInsightsUsedThisMonth >= 3
-            ? <UpgradePrompt
-                feature="AI Focus Insights"
-                description="You've used your 3 free AI insights this month. Upgrade to Pro for unlimited insights."
-              />
-            : <FocusInsightsCard userId={userId} entries={entries} isPro={isPro} aiInsightsUsedThisMonth={aiInsightsUsedThisMonth} />
-        )}
+      {/* AI Focus Insights — free users get 3/month, Pro gets unlimited */}
+      {userId && (
+        !isPro && aiInsightsUsedThisMonth >= 3 ? (
+          <UpgradePrompt
+            feature="AI Focus Insights"
+            description="You've used your 3 free AI insights this month. Upgrade to Pro for unlimited insights."
+          />
+        ) : (
+          <FocusInsightsCard userId={userId} entries={entries} isPro={isPro} aiInsightsUsedThisMonth={aiInsightsUsedThisMonth} />
+        )
+      )}
 
-        <Tabs defaultValue="daily" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-3 border border-white/5 bg-white/5 p-1">
-            <TabsTrigger value="daily" className="data-[state=active]:bg-white/10 data-[state=active]:text-foreground">
-              Daily Hours
-            </TabsTrigger>
-            <TabsTrigger value="heatmap" className="data-[state=active]:bg-white/10 data-[state=active]:text-foreground">
-              Heatmap
-            </TabsTrigger>
-            <TabsTrigger value="category" className="data-[state=active]:bg-white/10 data-[state=active]:text-foreground">
-              By Category
-            </TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="daily" className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsTrigger value="daily">Daily hours</TabsTrigger>
+          <TabsTrigger value="heatmap">Heatmap</TabsTrigger>
+          <TabsTrigger value="category">By category</TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="daily" className="space-y-4 mt-6">
-            <div className="flex gap-2">
-              {[7, 14, 30].map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setDays(d)}
-                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 ${
-                    days === d
-                      ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25"
-                      : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  {d} days
-                </button>
-              ))}
-            </div>
-            <Card className="border border-border bg-card p-6">
-              {dailyData.some((d) => d.minutes > 0) ? (
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={dailyData} barCategoryGap="30%">
-                      <defs>
-                        <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
-                          <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.8} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid vertical={false} stroke="rgba(148,163,184,0.2)" strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="date"
-                        tick={{ fontSize: 11, fill: "#94a3b8" }}
-                        axisLine={false}
-                        tickLine={false}
-                        dy={8}
-                      />
-                      <YAxis
-                        tick={{ fontSize: 11, fill: "#94a3b8" }}
-                        axisLine={false}
-                        tickLine={false}
-                        tickFormatter={(v) => `${v}m`}
-                        width={36}
-                      />
-                      <Tooltip
-                        cursor={{ fill: "rgba(148, 163, 184, 0.12)", radius: 6 }}
-                        contentStyle={{
-                          backgroundColor: "hsl(var(--card))",
-                          border: "1px solid hsl(var(--border))",
-                          borderRadius: "12px",
-                          color: "hsl(var(--foreground))",
-                          boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
-                          fontSize: "13px",
-                        }}
-                        itemStyle={{ color: "hsl(var(--foreground))" }}
-                        formatter={(value) => [`${value} min`, "Focus time"]}
-                      />
-                      <Bar dataKey="minutes" fill="url(#barGradient)" radius={[6, 6, 0, 0]} maxBarSize={48} activeBar={<Rectangle fill="url(#barGradient)" fillOpacity={0.75} radius={[6, 6, 0, 0]} />} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="flex h-[300px] flex-col items-center justify-center gap-3 text-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-                    <TrendingUp className="h-7 w-7 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">No focus sessions yet</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Start a session to see your daily progress here</p>
-                  </div>
-                </div>
-              )}
-            </Card>
-          </TabsContent>
+        <TabsContent value="daily" className="mt-6 space-y-4">
+          <div className="flex gap-2">
+            {[7, 14, 30].map((d) => (
+              <Button key={d} variant={days === d ? "default" : "outline"} size="sm" onClick={() => setDays(d)}>
+                {d} days
+              </Button>
+            ))}
+          </div>
+          <DataCard>
+            <MetricChart
+              type="bar"
+              data={dailyData}
+              xKey="date"
+              series={[{ key: "minutes", metric: "focus", label: "Focus time" }]}
+              height={300}
+              formatValue={(v) => `${v} min`}
+              empty={!dailyData.some((d) => d.minutes > 0)}
+            />
+          </DataCard>
+        </TabsContent>
 
-          <TabsContent value="heatmap" className="space-y-4 mt-6">
-            {isPro ? (
-              <Card className="border border-border bg-card p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Grid3X3 className="h-5 w-5 text-emerald-500" />
-                  <h3 className="text-lg font-semibold text-foreground">
-                    Activity Heatmap
-                  </h3>
-                </div>
+        <TabsContent value="heatmap" className="mt-6 space-y-4">
+          {isPro ? (
+            <Section title="Activity heatmap">
+              <DataCard>
                 <CalendarHeatmap data={dailyStats} />
-              </Card>
-            ) : (
-              <UpgradePrompt
-                feature="Activity Heatmap"
-                description="Visualize your entire year of focus sessions in a GitHub-style heatmap."
-              />
-            )}
-          </TabsContent>
+              </DataCard>
+            </Section>
+          ) : (
+            <UpgradePrompt
+              feature="Activity Heatmap"
+              description="Visualize your entire year of focus sessions in a GitHub-style heatmap."
+            />
+          )}
+        </TabsContent>
 
-          <TabsContent value="category" className="mt-6">
-            <Card className="border border-border bg-card p-6">
-              {categoryData.length > 0 ? (
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={categoryData}
-                        dataKey="hours"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        label={(props) => {
-                          const { name, value } = props as { name: string; value: number };
-                          return `${name}: ${value}h`;
-                        }}
-                      >
-                        {categoryData.map((_, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={COLORS[index % COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", color: "hsl(var(--foreground))" }}
-                        itemStyle={{ color: "hsl(var(--foreground))" }}
-                        formatter={(value) => [`${value}h`, "Hours"]}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="flex h-[300px] flex-col items-center justify-center gap-3 text-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-                    <BarChart3 className="h-7 w-7 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">No category data yet</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Tag your sessions with categories to see the breakdown</p>
-                  </div>
-                </div>
-              )}
-            </Card>
-          </TabsContent>
-        </Tabs>
+        <TabsContent value="category" className="mt-6">
+          <DataCard>
+            {categoryData.length > 0 ? (
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      dataKey="hours"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      label={(props) => {
+                        const { name, value } = props as { name: string; value: number };
+                        return `${name}: ${value}h`;
+                      }}
+                    >
+                      {categoryData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "var(--surface-overlay)",
+                        border: "1px solid var(--line)",
+                        borderRadius: "12px",
+                        color: "var(--ink)",
+                      }}
+                      itemStyle={{ color: "var(--ink)" }}
+                      formatter={(value) => [`${value}h`, "Hours"]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="flex h-[300px] items-center justify-center">
+                <EmptyState
+                  icon={BarChart3}
+                  title="No category data yet"
+                  description="Tag your sessions with categories to see the breakdown"
+                />
+              </div>
+            )}
+          </DataCard>
+        </TabsContent>
+      </Tabs>
     </PageShell>
   );
 }

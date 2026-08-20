@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { DataCard } from "@/components/ui-app/data-card";
 import { Sparkles, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,46 +26,33 @@ export function AiInsightsCard() {
   }
 
   return (
-    <Card className="p-5 border border-border bg-gradient-to-br from-purple-500/5 via-card to-blue-500/5">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-blue-500">
-            <Sparkles className="h-4 w-4 text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-foreground">AI Insights</p>
-            {generatedAt && (
-              <p className="text-[10px] text-muted-foreground">
-                {new Date(generatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-              </p>
-            )}
-          </div>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={generate}
-          disabled={loading}
-          className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-        >
+    <DataCard
+      title="AI insights"
+      description={
+        generatedAt
+          ? new Date(generatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+          : undefined
+      }
+      action={
+        <Button variant="ghost" size="sm" onClick={generate} disabled={loading} className="gap-1.5 text-xs text-ink-muted hover:text-ink">
           <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
           {insights ? "Refresh" : "Generate"}
         </Button>
-      </div>
-
+      }
+    >
       {insights ? (
-        <p className="text-sm text-foreground/80 leading-relaxed">{insights}</p>
+        <p className="text-sm leading-relaxed text-ink">{insights}</p>
       ) : (
         <div
           onClick={generate}
-          className="flex flex-col items-center justify-center py-6 gap-2 rounded-xl border border-dashed border-border cursor-pointer hover:border-purple-500/40 hover:bg-purple-500/5 transition-colors"
+          className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-line-strong py-6 transition-colors hover:border-accent-solid/40 hover:bg-accent-soft"
         >
-          <Sparkles className="h-5 w-5 text-muted-foreground/50" />
-          <p className="text-xs text-muted-foreground text-center">
+          <Sparkles className="h-5 w-5 text-ink-subtle" />
+          <p className="text-center text-xs text-ink-muted">
             {loading ? "Analyzing your focus patterns…" : "Click to generate your AI productivity insights"}
           </p>
         </div>
       )}
-    </Card>
+    </DataCard>
   );
 }

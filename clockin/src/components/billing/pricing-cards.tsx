@@ -138,49 +138,43 @@ export function PricingCards({ currentPlan, userId }: PricingCardsProps) {
           <Card
             key={tier.id}
             className={cn(
-              "relative flex flex-col p-6 border transition-all",
-              tier.highlight
-                ? "border-blue-500/50 shadow-lg shadow-blue-500/10 bg-gradient-to-b from-blue-500/5 to-transparent"
-                : "border-border bg-card"
+              "relative flex flex-col rounded-md border p-6 transition-colors",
+              tier.highlight ? "border-accent-solid/50 bg-accent-soft" : "border-line bg-card"
             )}
           >
             {tier.badge && (
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-transparent text-xs px-3 py-1">
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-transparent bg-accent-solid px-3 py-1 text-xs text-accent-fg">
                 {tier.badge}
               </Badge>
             )}
 
             <div className="mb-4">
-              <h3 className="text-base font-semibold text-foreground">{tier.label}</h3>
+              <h3 className="text-base font-semibold text-ink">{tier.label}</h3>
               <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-3xl font-bold text-foreground">{tier.price}</span>
-                <span className="text-sm text-muted-foreground">/{tier.period}</span>
+                <span className="text-3xl font-semibold text-ink">{tier.price}</span>
+                <span className="text-sm text-ink-muted">/{tier.period}</span>
               </div>
             </div>
 
             <ul className="mb-6 flex-1 space-y-2">
               {tier.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-cyan-500" />
+                <li key={feature} className="flex items-start gap-2 text-sm text-ink-muted">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent-solid" />
                   <span>{feature}</span>
                 </li>
               ))}
             </ul>
 
             {isActive ? (
-              <Button variant="outline" disabled className="w-full border-border">
-                Current Plan
+              <Button variant="outline" disabled className="w-full">
+                Current plan
               </Button>
             ) : tier.id === "free" ? (
-              <Button variant="outline" disabled className="w-full border-border">
-                Always Free
+              <Button variant="outline" disabled className="w-full">
+                Always free
               </Button>
             ) : (
-              <Button
-                onClick={() => handleUpgrade(productId)}
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:opacity-90"
-              >
+              <Button onClick={() => handleUpgrade(productId)} disabled={isLoading} className="w-full">
                 {isLoading ? "Redirecting..." : userId ? "Upgrade" : "Sign in to upgrade"}
               </Button>
             )}

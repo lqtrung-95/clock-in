@@ -31,7 +31,7 @@ function FriendCard({
     <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-card hover:bg-secondary/50 transition-colors">
       <div className="flex items-center gap-3">
         <Avatar className="h-10 w-10">
-          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm">
+          <AvatarFallback className="bg-data-focus/15 text-data-focus text-sm">
             {friend?.display_name?.charAt(0).toUpperCase() || "?"}
           </AvatarFallback>
         </Avatar>
@@ -65,7 +65,7 @@ function PendingRequestCard({
     <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-card">
       <div className="flex items-center gap-3">
         <Avatar className="h-10 w-10">
-          <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-500 text-white text-sm">
+          <AvatarFallback className="bg-data-streak/15 text-data-streak text-sm">
             {request.requester?.display_name?.charAt(0).toUpperCase() || "?"}
           </AvatarFallback>
         </Avatar>
@@ -84,7 +84,7 @@ function PendingRequestCard({
           onClick={() => onAccept(request.id)}
           className="h-8 w-8 p-0"
         >
-          <Check className="h-4 w-4 text-green-500" />
+          <Check className="h-4 w-4 text-success" />
         </Button>
         <Button
           variant="outline"
@@ -92,7 +92,7 @@ function PendingRequestCard({
           onClick={() => onDecline(request.id)}
           className="h-8 w-8 p-0"
         >
-          <X className="h-4 w-4 text-red-500" />
+          <X className="h-4 w-4 text-danger" />
         </Button>
       </div>
     </div>
@@ -140,7 +140,7 @@ function SearchResults({
               >
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-500 text-white text-sm">
+                    <AvatarFallback className="bg-data-goal/15 text-data-goal text-sm">
                       {user.display_name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>

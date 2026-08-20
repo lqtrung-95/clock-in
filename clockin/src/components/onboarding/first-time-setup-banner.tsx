@@ -44,7 +44,7 @@ export function FirstTimeSetupBanner({ entries, categories, isAuthenticated }: F
   const completedSteps = [hasCategory, hasCategory, hasEntry]; // step completion flags
 
   return (
-    <Card className="relative border border-blue-500/30 bg-blue-500/5 p-5">
+    <Card className="relative border border-accent-solid/30 bg-accent-soft p-5">
       <button
         onClick={handleDismiss}
         className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors"
@@ -64,14 +64,14 @@ export function FirstTimeSetupBanner({ entries, categories, isAuthenticated }: F
           return (
             <li key={step.label} className="flex items-start gap-3">
               {done ? (
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
               ) : (
                 <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/40" />
               )}
               <div className="flex-1 min-w-0">
                 <Link
                   href={step.href}
-                  className={`text-sm font-medium transition-colors ${done ? "line-through text-muted-foreground" : "text-foreground hover:text-blue-500"}`}
+                  className={`text-sm font-medium transition-colors ${done ? "line-through text-muted-foreground" : "text-foreground hover:text-accent-solid"}`}
                 >
                   {step.label}
                 </Link>

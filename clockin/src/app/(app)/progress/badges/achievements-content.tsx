@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useGamification } from "@/hooks/use-gamification";
 import { getLevelInfo, getAllBadgeDefinitions } from "@/services/gamification-service";
-import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { XPProgressBar } from "@/components/gamification/xp-progress-bar";
 import { BadgeCard } from "@/components/gamification/badge-card";
@@ -13,6 +12,8 @@ import { EvolvedCrystal } from "@/components/focus/evolved-crystal";
 import { Trophy, Target, Award, TrendingUp } from "lucide-react";
 import { AchievementsPageSkeleton } from "@/components/skeletons/achievements-page-skeleton";
 import { PageShell } from "@/components/ui-app/page-shell";
+import { DataCard } from "@/components/ui-app/data-card";
+import { EmptyState } from "@/components/ui-app/empty-state";
 import { SEGMENTS } from "@/lib/navigation";
 import type { BadgeDefinition } from "@/types/gamification";
 
@@ -84,25 +85,25 @@ export default function AchievementsContent() {
         {/* Level & Crystal Section */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Level Progress */}
-          <Card className="border border-border bg-card p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <TrendingUp className="h-5 w-5 text-blue-500" />
-              <h2 className="text-lg font-semibold text-foreground">Level Progress</h2>
+          <DataCard>
+            <div className="mb-2 flex items-center gap-3">
+              <TrendingUp className="h-5 w-5 text-data-xp" />
+              <h2 className="text-base font-semibold text-ink">Level progress</h2>
             </div>
             <div className="space-y-4">
               <XPProgressBar levelInfo={levelInfo} size="lg" />
-              <div className="flex justify-between text-sm text-muted-foreground">
+              <div className="flex justify-between text-sm text-ink-muted">
                 <span>Total XP: {userStats?.total_xp || 0}</span>
-                <span>Next Level: {levelInfo ? levelInfo.xpForNextLevel - (levelInfo.currentLevel - 1) * 1000 - levelInfo.xpProgress : 1000} XP</span>
+                <span>Next level: {levelInfo ? levelInfo.xpForNextLevel - (levelInfo.currentLevel - 1) * 1000 - levelInfo.xpProgress : 1000} XP</span>
               </div>
             </div>
-          </Card>
+          </DataCard>
 
           {/* Crystal Preview */}
-          <Card className="border border-border bg-card p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Award className="h-5 w-5 text-purple-500" />
-              <h2 className="text-lg font-semibold text-foreground">Your Crystal</h2>
+          <DataCard>
+            <div className="mb-2 flex items-center gap-3">
+              <Award className="h-5 w-5 text-data-xp" />
+              <h2 className="text-base font-semibold text-ink">Your crystal</h2>
             </div>
             <div className="flex items-center justify-center">
               <EvolvedCrystal
@@ -114,7 +115,7 @@ export default function AchievementsContent() {
                 size="md"
               />
             </div>
-          </Card>
+          </DataCard>
         </div>
 
         {/* Badges Section */}
@@ -152,9 +153,8 @@ export default function AchievementsContent() {
                   />
                 ))}
               {badges.length === 0 && (
-                <div className="col-span-full py-12 text-center">
-                  <Trophy className="mx-auto h-12 w-12 text-muted-foreground/30" />
-                  <p className="mt-4 text-muted-foreground">No badges earned yet. Start focusing to earn your first badge!</p>
+                <div className="col-span-full">
+                  <EmptyState icon={Trophy} title="No badges earned yet" description="Start focusing to earn your first badge!" />
                 </div>
               )}
             </div>
@@ -187,9 +187,8 @@ export default function AchievementsContent() {
                   />
                 ))}
               {allBadges.filter((b) => !earnedBadgeKeys.has(b.key)).length === 0 && (
-                <div className="col-span-full py-12 text-center">
-                  <Target className="mx-auto h-12 w-12 text-green-500" />
-                  <p className="mt-4 text-muted-foreground">Amazing! You&apos;ve earned all available badges!</p>
+                <div className="col-span-full">
+                  <EmptyState icon={Target} title="Amazing! You've earned all available badges" />
                 </div>
               )}
             </div>
