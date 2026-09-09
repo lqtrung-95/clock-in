@@ -211,7 +211,7 @@ export function FocusSetupView({
 
           {/* Atmosphere preview — the one expressive surface on this screen,
               because it's literally previewing the user's session background. */}
-          <div id="coachmark-atmosphere" className="border-t border-line md:border-t-0 md:border-l">
+          <div id="coachmark-atmosphere" className="min-w-0 border-t border-line md:border-t-0 md:border-l">
             <FocusSetupAtmosphere
               background={background}
               videoEmbedUrl={videoEmbedUrl}
