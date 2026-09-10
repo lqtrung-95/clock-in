@@ -11,7 +11,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const defaultCollapsed = cookieStore.get("sidebar-collapsed")?.value === "1";
 
   return (
-    <div className="flex min-h-screen bg-surface">
+    <div className="flex h-screen bg-surface">
       <AppSidebar defaultCollapsed={defaultCollapsed} />
       <div className="flex min-w-0 flex-1 flex-col">
         <AppTopbar />
