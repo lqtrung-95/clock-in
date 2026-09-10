@@ -6,7 +6,7 @@ import { checkProAccess } from "@/lib/check-pro-access";
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 type Entry = { duration_seconds: number };
-type Goal = { title: string; target_hours: number; current_hours: number };
+type Goal = { target_minutes: number; period: "daily" | "weekly" | "monthly"; categories: { name: string } | null };
 
 export async function POST(req: NextRequest) {
   let userId: string;
@@ -36,14 +36,14 @@ export async function POST(req: NextRequest) {
 
   const { data: goals } = await supabase
     .from("goals")
-    .select("title, target_hours, current_hours")
+    .select("target_minutes, period, categories(name)")
     .eq("user_id", userId)
-    .eq("is_completed", false)
+    .eq("is_active", true)
     .limit(5) as { data: Goal[] | null };
 
   const totalMins = (entries ?? []).reduce((s, e) => s + Math.floor(e.duration_seconds / 60), 0);
   const goalsText = goals?.length
-    ? goals.map(g => `"${g.title}" ${g.current_hours}/${g.target_hours}h`).join("; ")
+    ? goals.map(g => `${g.period} goal: ${(g.target_minutes / 60).toFixed(1)}h${g.categories ? ` (${g.categories.name})` : ""}`).join("; ")
     : "no active goals";
 
   const systemPrompt = `You are a friendly, motivating focus & productivity coach inside the Effortful app. Keep replies concise (2-4 sentences max unless asked for more). Be warm, specific, and actionable.

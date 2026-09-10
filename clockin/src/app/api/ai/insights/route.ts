@@ -9,7 +9,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const FREE_MONTHLY_LIMIT = 3;
 
 type Entry = { duration_seconds: number; started_at: string; categories: { name: string } | null };
-type Goal = { title: string; target_hours: number; current_hours: number };
+type Goal = { target_minutes: number; period: "daily" | "weekly" | "monthly"; categories: { name: string } | null };
 
 export async function POST() {
   let userId: string;
@@ -43,9 +43,9 @@ export async function POST() {
 
   const { data: goals } = await supabase
     .from("goals")
-    .select("title, target_hours, current_hours")
+    .select("target_minutes, period, categories(name)")
     .eq("user_id", userId)
-    .eq("is_completed", false)
+    .eq("is_active", true)
     .limit(10) as { data: Goal[] | null };
 
   if (!entries || entries.length === 0) {
@@ -68,7 +68,7 @@ export async function POST() {
   const dayBreakdown = Object.entries(byDay).sort((a, b) => b[1] - a[1])
     .map(([d, m]) => `${d}: ${(m / 60).toFixed(1)}h`).join(", ");
   const goalsText = goals?.length
-    ? goals.map(g => `"${g.title}" ${g.current_hours}/${g.target_hours}h`).join("; ")
+    ? goals.map(g => `${g.period} goal: ${(g.target_minutes / 60).toFixed(1)}h${g.categories ? ` (${g.categories.name})` : ""}`).join("; ")
     : "No active goals";
 
   const completion = await groq.chat.completions.create({
