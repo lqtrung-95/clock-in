@@ -7,8 +7,16 @@ export interface VideoBackground {
 }
 
 // YouTube ambient videos - looping background scenes
-// Note: These are popular ambient videos that are typically available long-term
+// Refreshed 2026-09 against currently popular focus/study content (verified
+// live + embeddable via `npm run check:videos`, which re-checks this list).
 export const VIDEO_BACKGROUNDS: VideoBackground[] = [
+  {
+    id: "lofi-girl-radio",
+    name: "Lofi Girl Radio",
+    embedUrl: "https://www.youtube.com/embed/X4VbdwhkE10?autoplay=1&mute=1&loop=1&playlist=X4VbdwhkE10&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/X4VbdwhkE10/mqdefault.jpg",
+    category: "ambient",
+  },
   {
     id: "rain-window",
     name: "Rain on Window",
@@ -19,43 +27,43 @@ export const VIDEO_BACKGROUNDS: VideoBackground[] = [
   {
     id: "fireplace",
     name: "Cozy Fireplace",
-    embedUrl: "https://www.youtube.com/embed/L_LUpnjgPso?autoplay=1&mute=1&loop=1&playlist=L_LUpnjgPso&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/L_LUpnjgPso/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/mKCieTImjvU?autoplay=1&mute=1&loop=1&playlist=mKCieTImjvU&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/mKCieTImjvU/mqdefault.jpg",
+    category: "ambient",
+  },
+  {
+    id: "ghibli-village-morning",
+    name: "Cozy Village Morning",
+    embedUrl: "https://www.youtube.com/embed/DFvd1WJKC6E?autoplay=1&mute=1&loop=1&playlist=DFvd1WJKC6E&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/DFvd1WJKC6E/mqdefault.jpg",
+    category: "ambient",
+  },
+  {
+    id: "coding-coffee-shop",
+    name: "Coding Coffee Shop",
+    embedUrl: "https://www.youtube.com/embed/GHyXy7GcKjI?autoplay=1&mute=1&loop=1&playlist=GHyXy7GcKjI&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/GHyXy7GcKjI/mqdefault.jpg",
     category: "ambient",
   },
   {
     id: "mountain-lake",
     name: "Mountain Lake",
-    embedUrl: "https://www.youtube.com/embed/xNN7iTA57jM?autoplay=1&mute=1&loop=1&playlist=xNN7iTA57jM&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/xNN7iTA57jM/mqdefault.jpg",
+    embedUrl: "https://www.youtube.com/embed/qAYkbkUE1Og?autoplay=1&mute=1&loop=1&playlist=qAYkbkUE1Og&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/qAYkbkUE1Og/mqdefault.jpg",
     category: "nature",
   },
   {
-    id: "forest-stream",
-    name: "Forest Stream",
-    embedUrl: "https://www.youtube.com/embed/IvjMgVS6kng?autoplay=1&mute=1&loop=1&playlist=IvjMgVS6kng&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/IvjMgVS6kng/mqdefault.jpg",
+    id: "forest-ambience",
+    name: "Forest Ambience",
+    embedUrl: "https://www.youtube.com/embed/HWBH-ei39KM?autoplay=1&mute=1&loop=1&playlist=HWBH-ei39KM&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/HWBH-ei39KM/mqdefault.jpg",
     category: "nature",
   },
   {
-    id: "jazz-cafe",
-    name: "Jazz Cafe",
-    embedUrl: "https://www.youtube.com/embed/qH3fETPsqXU?autoplay=1&mute=1&loop=1&playlist=qH3fETPsqXU&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/qH3fETPsqXU/mqdefault.jpg",
-    category: "ambient",
-  },
-  {
-    id: "coffee-shop",
-    name: "Coffee Shop",
-    embedUrl: "https://www.youtube.com/embed/1fueZCTYkpA?autoplay=1&mute=1&loop=1&playlist=1fueZCTYkpA&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/1fueZCTYkpA/mqdefault.jpg",
-    category: "ambient",
-  },
-  {
-    id: "newyork-night",
-    name: "New York Night",
-    embedUrl: "https://www.youtube.com/embed/eZe4Q_58UTU?autoplay=1&mute=1&loop=1&playlist=eZe4Q_58UTU&controls=0&rel=0&modestbranding=1",
-    thumbnail: "https://img.youtube.com/vi/eZe4Q_58UTU/mqdefault.jpg",
+    id: "nyc-rain-night",
+    name: "NYC Rain at Night",
+    embedUrl: "https://www.youtube.com/embed/6A-H1tni5Xg?autoplay=1&mute=1&loop=1&playlist=6A-H1tni5Xg&controls=0&rel=0&modestbranding=1",
+    thumbnail: "https://img.youtube.com/vi/6A-H1tni5Xg/mqdefault.jpg",
     category: "urban",
   },
 ];
