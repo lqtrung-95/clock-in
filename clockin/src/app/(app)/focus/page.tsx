@@ -50,6 +50,7 @@ export default function FocusPage() {
   const [overlay, setOverlay] = useState<OverlayType>("none");
   const [bgOpacity, setBgOpacity] = useState(50);
   const [videoMuted, setVideoMuted] = useState(false);
+  const [videoVolume, setVideoVolume] = useState(50);
 
   // Session state
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -336,13 +337,13 @@ export default function FocusPage() {
           progress={progress} isWork={isWork} isRunning={isRunning}
           showComplete={showComplete} waitingForNext={waitingForNext}
           background={background} videoEmbedUrl={videoEmbedUrl} overlay={overlay}
-          videoMuted={videoMuted} bgOpacity={bgOpacity}
+          videoMuted={videoMuted} videoVolume={videoVolume} bgOpacity={bgOpacity}
           selectedSound={selectedSound} isPlaying={isPlaying} volume={volume}
           isFullscreen={isFullscreen} showControls={showControls}
           timerSettingsOpen={timerSettingsOpen} timerSettings={timerSettings}
           onPause={handlePause} onResume={handleResume} onReset={handleReset}
           onStartNextPhase={handleStartNextPhase} onToggleFullscreen={toggleFullscreen}
-          onSetVideoMuted={setVideoMuted} onVolumeChange={setVolume}
+          onSetVideoMuted={setVideoMuted} onSetVideoVolume={setVideoVolume} onVolumeChange={setVolume}
           onPlayAudio={playAudio} onPauseAudio={pauseAudio}
           onSetOverlay={setOverlay} onSetBgOpacity={setBgOpacity}
           onOpenTimerSettings={() => setTimerSettingsOpen(true)}

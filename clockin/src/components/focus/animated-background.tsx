@@ -11,6 +11,7 @@ interface AnimatedBackgroundProps {
   overlay?: OverlayEffect;
   className?: string;
   videoMuted?: boolean;
+  videoVolume?: number;
   isRunning?: boolean;
 }
 
@@ -367,7 +368,7 @@ function VideoUnavailableFallback() {
 }
 
 // YouTube Background Component - uses postMessage to control playback/mute without re-mounting
-function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUrl: string; muted?: boolean; isRunning?: boolean }) {
+function VideoBackground({ embedUrl, muted = true, volume = 100, isRunning = true }: { embedUrl: string; muted?: boolean; volume?: number; isRunning?: boolean }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -417,9 +418,9 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
     }
   }, [embedUrl]);
 
-  const postCommand = (func: string) => {
+  const postCommand = (func: string, args: unknown[] = []) => {
     iframeRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ event: 'command', func, args: '' }), '*'
+      JSON.stringify({ event: 'command', func, args }), '*'
     );
   };
 
@@ -432,6 +433,7 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
     );
     if (!isIOS) {
       setTimeout(() => {
+        postCommand('setVolume', [volume]);
         if (!muted) postCommand('unMute');
         if (!isRunning) postCommand('pauseVideo');
       }, 800);
@@ -456,6 +458,10 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
   useEffect(() => {
     postCommand(muted ? 'mute' : 'unMute');
   }, [muted]);
+
+  useEffect(() => {
+    postCommand('setVolume', [volume]);
+  }, [volume]);
 
   useEffect(() => {
     postCommand(isRunning ? 'playVideo' : 'pauseVideo');
@@ -487,12 +493,12 @@ function VideoBackground({ embedUrl, muted = true, isRunning = true }: { embedUr
   );
 }
 
-export function AnimatedBackground({ imageUrl, embedUrl, overlay = "none", className, videoMuted = true, isRunning = true }: AnimatedBackgroundProps) {
+export function AnimatedBackground({ imageUrl, embedUrl, overlay = "none", className, videoMuted = true, videoVolume = 100, isRunning = true }: AnimatedBackgroundProps) {
   return (
     <div className={cn("absolute inset-0 overflow-hidden", className)}>
       {/* Base Layer - Image or YouTube Embed */}
       {embedUrl ? (
-        <VideoBackground embedUrl={embedUrl} muted={videoMuted} isRunning={isRunning} />
+        <VideoBackground embedUrl={embedUrl} muted={videoMuted} volume={videoVolume} isRunning={isRunning} />
       ) : imageUrl ? (
         <BaseImage url={imageUrl} />
       ) : null}

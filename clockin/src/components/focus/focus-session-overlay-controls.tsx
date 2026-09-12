@@ -1,7 +1,7 @@
 "use client";
 
 import { Slider } from "@/components/ui/slider";
-import { Volume2 } from "lucide-react";
+import { Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type OverlayType = "none" | "aurora" | "particles" | "vignette" | "gradient" | "rain" | "fireflies" | "snow" | "bokeh";
@@ -14,9 +14,13 @@ interface FocusSessionOverlayControlsProps {
   selectedSound: string;
   isPlaying: boolean;
   volume: number;
+  videoVolume: number;
+  videoMuted: boolean;
   bgOpacity: number;
   overlay: OverlayType;
   onVolumeChange: (v: number) => void;
+  onVideoVolumeChange: (v: number) => void;
+  onSetVideoMuted: (v: boolean) => void;
   onBgOpacityChange: (v: number) => void;
   onOverlayChange: (v: OverlayType) => void;
 }
@@ -27,9 +31,13 @@ export function FocusSessionOverlayControls({
   selectedSound,
   isPlaying,
   volume,
+  videoVolume,
+  videoMuted,
   bgOpacity,
   overlay,
   onVolumeChange,
+  onVideoVolumeChange,
+  onSetVideoMuted,
   onBgOpacityChange,
   onOverlayChange,
 }: FocusSessionOverlayControlsProps) {
@@ -54,6 +62,34 @@ export function FocusSessionOverlayControls({
         </div>
       )}
 
+      {/* Video volume slider — right side, only for ambient video scenes */}
+      {videoEmbedUrl && (
+        <div
+          className={cn(
+            "absolute top-20 right-6 z-20 flex items-center gap-2 rounded-full bg-black/60 backdrop-blur-md px-4 py-2 border border-white/20 transition-all",
+            showControls ? "opacity-100" : "opacity-0"
+          )}
+        >
+          <button type="button" onClick={() => onSetVideoMuted(!videoMuted)} className="shrink-0">
+            {videoMuted || videoVolume === 0 ? (
+              <VolumeX className="h-4 w-4 text-white/80" />
+            ) : (
+              <Volume2 className="h-4 w-4 text-white/80" />
+            )}
+          </button>
+          <Slider
+            value={[videoMuted ? 0 : videoVolume]}
+            onValueChange={([v]) => {
+              onVideoVolumeChange(v);
+              onSetVideoMuted(v === 0);
+            }}
+            max={100}
+            step={10}
+            className="w-24"
+          />
+        </div>
+      )}
+
       {/* Brightness + overlay FX panel — left side */}
       <div
         className={cn(
@@ -64,7 +100,7 @@ export function FocusSessionOverlayControls({
         <div className="flex flex-col gap-1">
           <span className="text-[10px] text-white/60 uppercase tracking-wider font-medium">Brightness</span>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-white/40">Dark</span>
+            <span className="text-xs text-white/40">Light</span>
             <Slider
               value={[bgOpacity]}
               onValueChange={([v]) => onBgOpacityChange(v)}
@@ -73,7 +109,7 @@ export function FocusSessionOverlayControls({
               step={5}
               className="w-20"
             />
-            <span className="text-xs text-white/40">Light</span>
+            <span className="text-xs text-white/40">Dark</span>
           </div>
         </div>
         <div className="flex flex-col gap-1">

@@ -26,6 +26,7 @@ interface FocusSessionViewProps {
   videoEmbedUrl: string;
   overlay: OverlayType;
   videoMuted: boolean;
+  videoVolume: number;
   bgOpacity: number;
   // Audio
   selectedSound: string;
@@ -43,6 +44,7 @@ interface FocusSessionViewProps {
   onStartNextPhase: () => void;
   onToggleFullscreen: () => void;
   onSetVideoMuted: (v: boolean) => void;
+  onSetVideoVolume: (v: number) => void;
   onVolumeChange: (v: number) => void;
   onPlayAudio: () => void;
   onPauseAudio: () => void;
@@ -56,11 +58,11 @@ interface FocusSessionViewProps {
 export function FocusSessionView({
   phase, cycle, totalCycles, formatted, progress, isWork, isRunning,
   showComplete, waitingForNext,
-  background, videoEmbedUrl, overlay, videoMuted, bgOpacity,
+  background, videoEmbedUrl, overlay, videoMuted, videoVolume, bgOpacity,
   selectedSound, isPlaying, volume,
   isFullscreen, showControls, timerSettingsOpen, timerSettings,
   onPause, onResume, onReset, onStartNextPhase, onToggleFullscreen,
-  onSetVideoMuted, onVolumeChange, onPlayAudio, onPauseAudio,
+  onSetVideoMuted, onSetVideoVolume, onVolumeChange, onPlayAudio, onPauseAudio,
   onSetOverlay, onSetBgOpacity, onOpenTimerSettings, onCloseTimerSettings, onSaveTimerSettings,
 }: FocusSessionViewProps) {
   return (
@@ -71,6 +73,7 @@ export function FocusSessionView({
           embedUrl={videoEmbedUrl || undefined}
           overlay={overlay}
           videoMuted={videoMuted}
+          videoVolume={videoVolume}
           isRunning={isRunning}
         />
         {/* Dim overlay for brightness control */}
@@ -99,9 +102,13 @@ export function FocusSessionView({
           selectedSound={selectedSound}
           isPlaying={isPlaying}
           volume={volume}
+          videoVolume={videoVolume}
+          videoMuted={videoMuted}
           bgOpacity={bgOpacity}
           overlay={overlay}
           onVolumeChange={onVolumeChange}
+          onVideoVolumeChange={onSetVideoVolume}
+          onSetVideoMuted={onSetVideoMuted}
           onBgOpacityChange={onSetBgOpacity}
           onOverlayChange={onSetOverlay}
         />
